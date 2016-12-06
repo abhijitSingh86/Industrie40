@@ -50,12 +50,8 @@ public class Main {
 
     public static void main(String[] args) {
         Main main = new Main();
-
         List<Component> comps = main.schedule(main.component,main.assembly);
-
         System.out.println(comps.size());
-
-
     }
 
 
@@ -65,8 +61,9 @@ public class Main {
             HashMap<Operation, List<Component>> passedMap) {
         List<Operation> mapKeys = new ArrayList<>(passedMap.keySet());
         List<List<Component>> mapValues = new ArrayList<>(passedMap.values());
-        Collections.sort(mapValues,(o1,o2) -> new Integer(o1.size()).compareTo(new Integer(o2.size())));
+        mapValues.sort((o1,o2) -> new Integer(o1.size()).compareTo(new Integer(o2.size())));
         Collections.sort(mapKeys);
+
 
         LinkedHashMap<Operation, List<Component>> sortedMap =
                 new LinkedHashMap<>();
@@ -93,20 +90,44 @@ public class Main {
 
     private List<Component> schedule(List<Component> components , List<Assembly> assemblies) {
         //Create resource Map
-        HashMap<Operation,ArrayList<Assembly>> resourceMap = new HashMap<>();
-        for(Assembly a:assemblies){
-            for(Operation o:a.getOperations()){
-                if(!a.getAllocatedOperations().contains(o)){
-                    if(resourceMap.containsKey(o)){
-                        resourceMap.get(o).add(a);
-                    }else{
-                        resourceMap.put(o,(new ArrayList<>(Arrays.asList(a))));
+        HashMap<Operation,ArrayList<Assembly>> availableResourceMap = getAvailableResourceMap(assemblies);
+
+        //iterate components and get their requirement map
+        HashMap<Operation, List<Component>> requiredOperationMap = getRequiredOperationMap(components);
+
+        LinkedHashMap<Operation,List<Component>> sortedByValueCountRequiredOperationMap = sortHashMapByValues(requiredOperationMap);
+
+        //Allocate operation to Component and start their allocation
+        //first get the minimum required operation and allocate to component list.
+        for(Operation operation :sortedByValueCountRequiredOperationMap.keySet()){
+            List<Component> comps = sortedByValueCountRequiredOperationMap.get(operation);
+            for(Component comp:comps){
+                //operation is available and there are assemblies to take request
+                if(availableResourceMap.containsKey(operation) && availableResourceMap.get(operation).size()>0){
+                    //Resource available... start scheduling if component is not scheduled
+                    if(comp.getSteps().getCurrentState() == STATE.QUEUED){
+                        //remove the assembly from the available assembly list.
+                        Assembly assembly = availableResourceMap.get(operation).remove(0);
+                        comp.getSteps().setCurrentState(STATE.INTRANSFER);
+                        comp.getSteps().setCurrentOperation(operation);
+                        comp.getSteps().setCurrentAssembly(assembly);
+                        comp.start();
+                        assembly.allocateOperation(operation);
                     }
                 }
             }
         }
 
-        //iterate components and get their requirement map
+        //return a list of component which were not scheduled due to unavailability of resources.
+        return components.stream().filter(x-> x.getSteps().getCurrentState() == STATE.QUEUED).collect(Collectors.toList());
+    }
+
+    /**
+     * Function to iterate through components and get all required operations.This also takes care of multiple path
+     * operations which the return map is mapping between operation and the components where they are required.
+     * @param components
+     */
+    private HashMap<Operation, List<Component>> getRequiredOperationMap(List<Component> components) {
         HashMap<Operation,List<Component>> opCount = new HashMap<>();
         for(Component c:components){
                 List<Operation> op = c.getSteps().getCurrentOperationOptions();
@@ -119,28 +140,28 @@ public class Main {
                     }
                 }
         }
+        return opCount;
+    }
 
-        LinkedHashMap<Operation,List<Component>> sortedHashMap = sortHashMapByValues(opCount);
-
-        //Allocate operation to Component and start their allocation
-        for(Operation o :sortedHashMap.keySet()){
-            List<Component> comps = sortedHashMap.get(o);
-            for(Component comp:comps){
-                if(resourceMap.containsKey(o) && resourceMap.get(o).size()>0){
-                    Assembly assembly = resourceMap.get(o).remove(0);
-                    //Resource available... start scheduling if component is not scheduled
-                    if(comp.getSteps().getCurrentState() == STATE.QUEUED){
-                        comp.getSteps().setCurrentState(STATE.INTRANSFER);
-                        comp.getSteps().setCurrentOperation(o);
-                        comp.getSteps().setCurrentAssembly(assembly);
-                        comp.start();
-                        assembly.allocateOperation(o);
+    /**
+     * Function to iterate through assemblies and get all available operations i.e. which are not allocated. The return
+     * map is mapping between functions and the Assemblies where they are available.
+     * @param assemblies
+     */
+    private  HashMap<Operation,ArrayList<Assembly>> getAvailableResourceMap(List<Assembly> assemblies) {
+        HashMap<Operation,ArrayList<Assembly>> resourceMap = new HashMap<>();
+        for(Assembly a:assemblies){
+            for(Operation o:a.getOperations()){
+                if(!a.getAllocatedOperations().contains(o)){
+                    if(resourceMap.containsKey(o)){
+                        resourceMap.get(o).add(a);
+                    }else{
+                        resourceMap.put(o,(new ArrayList<>(Arrays.asList(a))));
                     }
                 }
             }
         }
-
-        return components.stream().filter(x-> x.getSteps().getCurrentState() == STATE.QUEUED).collect(Collectors.toList());
+        return resourceMap;
     }
 
 }
