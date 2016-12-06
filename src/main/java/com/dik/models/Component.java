@@ -60,4 +60,8 @@ public class Component {
     public void setName(String name) {
         this.name = name;
     }
+
+    //Start the transfer and execution of the component
+    public void start() {
+    }
 }

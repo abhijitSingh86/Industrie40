@@ -33,17 +33,16 @@ public class SchedulingapplicationApplication {
     @Bean
     public CommandLineRunner loadData(ComponentRepository repo) {
         return args -> {
-            List<LinkedHashSet<String>> step1 = new ArrayList<LinkedHashSet<String>>();
-            step1.add(new LinkedHashSet<>(Arrays.asList("A", "B", "C")));
-            step1.add(new LinkedHashSet<>(Arrays.asList("B", "C", "A")));
-            AssemblyProcessingStep stepForTask1 = new AssemblyProcessingStep(0, STATE.WAITING,
-                    new LinkedHashSet<String>(), step1);
-
-            repo.save(new com.dik.models.Component("A", stepForTask1, PRIORITY.MEDIUM));
-            repo.save(new com.dik.models.Component("Ab", stepForTask1, PRIORITY.MEDIUM));
-            repo.save(new com.dik.models.Component("Ad", stepForTask1, PRIORITY.MEDIUM));
-            repo.save(new com.dik.models.Component("Ac", stepForTask1, PRIORITY.MEDIUM));
-            repo.save(new com.dik.models.Component("Ae", stepForTask1, PRIORITY.MEDIUM));
+//            List<LinkedHashSet<String>> step1 = new ArrayList<LinkedHashSet<String>>();
+//            step1.add(new LinkedHashSet<>(Arrays.asList("A", "B", "C")));
+//            step1.add(new LinkedHashSet<>(Arrays.asList("B", "C", "A")));
+//            AssemblyProcessingStep stepForTask1 = new AssemblyProcessingStep(step1);
+//
+//            repo.save(new com.dik.models.Component("A", stepForTask1, PRIORITY.MEDIUM));
+//            repo.save(new com.dik.models.Component("Ab", stepForTask1, PRIORITY.MEDIUM));
+//            repo.save(new com.dik.models.Component("Ad", stepForTask1, PRIORITY.MEDIUM));
+//            repo.save(new com.dik.models.Component("Ac", stepForTask1, PRIORITY.MEDIUM));
+//            repo.save(new com.dik.models.Component("Ae", stepForTask1, PRIORITY.MEDIUM));
 
         };
     }

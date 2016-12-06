@@ -1,15 +1,32 @@
 package com.dik.models;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by billa on 2016-12-01.
  */
 public class Assembly {
     private String name;
-    private String operations;
+    private List<Operation> operations;
+    private List<Operation> allocatedOperations;
 
-    public Assembly(String name, String operations) {
+    public Assembly(String name, List<Operation> operations) {
         this.name = name;
         this.operations = operations;
+        allocatedOperations = new ArrayList<>();
+    }
+
+    public boolean allocateOperation(Operation operation){
+        if(operations.contains(operation)){
+            allocatedOperations.add(operation);
+            return true;
+        }
+        return false;
+    }
+
+    public List<Operation> getAllocatedOperations() {
+        return allocatedOperations;
     }
 
     public String getName() {
@@ -21,11 +38,11 @@ public class Assembly {
         this.name = name;
     }
 
-    public String getOperations() {
+    public List<Operation> getOperations() {
         return operations;
     }
 
-    public void setOperations(String operations) {
+    public void setOperations(List<Operation> operations) {
         this.operations = operations;
     }
 }
