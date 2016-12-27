@@ -30,7 +30,6 @@ public class Assembly {
     }
 
     public String getName() {
-
         return name;
     }
 

@@ -42,7 +42,7 @@ public class PersistenceConfiguration {
         LocalContainerEntityManagerFactoryBean entityManagerFactoryBean = new LocalContainerEntityManagerFactoryBean();
         entityManagerFactoryBean.setDataSource(dataSource);
         entityManagerFactoryBean.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
-        entityManagerFactoryBean.setPackagesToScan("net.petrikainulainen.springdata.jpa.todo");
+        entityManagerFactoryBean.setPackagesToScan("com.dik.models");
 
         Properties jpaProperties = new Properties();
 

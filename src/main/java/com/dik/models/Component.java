@@ -8,7 +8,8 @@ import javax.persistence.*;
  * Created by billa on 2016-12-01.
  */
 @Entity
-public class Component {
+public class
+Component {
     @Id
     @GeneratedValue
     private Long id;
