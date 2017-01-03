@@ -1,7 +1,7 @@
 package scheduler
 
 import enums.PriorityEnum
-import models.{Assembly, Component, Operation, ProcessingSequence}
+import models._
 import org.junit.runner.RunWith
 import org.specs2.mutable._
 import org.specs2.runner.JUnitRunner
@@ -13,10 +13,10 @@ import org.specs2.runner.JUnitRunner
 class ComponentSchedulerSpec extends Specification with BeforeAfter{
 
 
-  var stepA = Operation("A",2.2f)
-  var stepB = Operation("B",2.1f)
-  var stepC = Operation("C",2.3f)
-  var stepD = Operation("D",3.4f)
+  val stepA = new ComponentOperation(name ="A")
+  val stepB = new ComponentOperation(name ="B")
+  val stepC = new ComponentOperation(name ="C")
+  val stepD = new ComponentOperation(name ="D")
 
   var seq1 = ProcessingSequence(List(stepA,stepB,stepC,stepD))
   var seq2 = ProcessingSequence(List(stepB,stepA,stepC,stepD))
@@ -71,10 +71,10 @@ class ComponentSchedulerSpec extends Specification with BeforeAfter{
   }
 
   override def before: Any = {
-    stepA = Operation("A",2.2f)
-    stepB = Operation("B",2.1f)
-    stepC = Operation("C",2.3f)
-    stepD = Operation("D",3.4f)
+    val stepA = new ComponentOperation(name ="A")
+    val stepB = new ComponentOperation(name ="B")
+    val stepC = new ComponentOperation(name ="C")
+    val stepD = new ComponentOperation(name ="D")
 
     seq1 = ProcessingSequence(List(stepA,stepB,stepC,stepD))
     seq2 = ProcessingSequence(List(stepB,stepA,stepC,stepD))

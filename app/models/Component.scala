@@ -9,7 +9,7 @@ import scala.collection.mutable
 /**
   * Created by billa on 2016-12-15.
   */
-case class Component(id: Long, name: String, priority: PriorityEnum, processingSequences: List[ProcessingSequence]) {
+case class Component(id: Int, name: String, priority: PriorityEnum, processingSequences: List[ProcessingSequence]) {
   private var currentStep: Int = 0
   private var currentState: StateEnum = StateEnum.WAITING
   private var currentAllocatedAssembly: Option[Assembly] = None

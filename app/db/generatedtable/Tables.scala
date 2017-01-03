@@ -150,9 +150,9 @@ trait Tables {
     val sequence: Rep[Int] = column[Int]("sequence")
 
     /** Foreign key referencing Component (database name fk_component_operation_mapping_1) */
-    lazy val componentFk = foreignKey("fk_component_operation_mapping_1", componentId, Component)(r => r.id, onUpdate=ForeignKeyAction.NoAction, onDelete=ForeignKeyAction.NoAction)
+    lazy val componentFk = foreignKey("fk_component_operation_mapping_1", componentId, Component)(r => r.id, onUpdate=ForeignKeyAction.NoAction, onDelete=ForeignKeyAction.Cascade)
     /** Foreign key referencing Operation (database name fk_component_operation_mapping_2) */
-    lazy val operationFk = foreignKey("fk_component_operation_mapping_2", operationId, Operation)(r => r.id, onUpdate=ForeignKeyAction.NoAction, onDelete=ForeignKeyAction.NoAction)
+    lazy val operationFk = foreignKey("fk_component_operation_mapping_2", operationId, Operation)(r => r.id, onUpdate=ForeignKeyAction.NoAction, onDelete=ForeignKeyAction.Cascade)
   }
   /** Collection-like TableQuery object for table ComponentOperationMapping */
   lazy val ComponentOperationMapping = new TableQuery(tag => new ComponentOperationMapping(tag))

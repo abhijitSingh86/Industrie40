@@ -18,6 +18,7 @@ libraryDependencies += "com.typesafe.play" %% "play-slick" % "2.0.0"
 
 libraryDependencies += "com.typesafe.slick" %% "slick-codegen" % "3.0.0"
 
+libraryDependencies += "com.h2database" % "h2" % "1.4.187" %  "test"
 
 unmanagedResourceDirectories in Test <+=  baseDirectory ( _ /"target/web/public/test" )
 

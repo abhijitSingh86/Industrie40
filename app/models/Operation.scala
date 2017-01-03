@@ -11,7 +11,7 @@ trait Operation{
 }
 
 
-class AssemblyOperation(private val id:Int,private val  name:String,private val time:Float) extends Operation(){
+class AssemblyOperation(private val id:Int =0,private val  name:String,private val time:Float) extends Operation(){
   def getOperationTime():Float =time
 
   override def getId(): Int = id
@@ -34,7 +34,7 @@ class AssemblyOperation(private val id:Int,private val  name:String,private val 
 }
 
 
-class ComponentOperation(private val id:Int,private val  name:String) extends Operation(){
+class ComponentOperation(private val id:Int =0,private val  name:String) extends Operation(){
 
 
   /**

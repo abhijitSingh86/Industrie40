@@ -5,7 +5,7 @@ import scala.collection.mutable
 /**
   * Created by billa on 2016-12-15.
   */
-case class Assembly(name:String,totalOperations:List[Operation] =List[Operation](),
+case class Assembly(id:Int,name:String,totalOperations:List[Operation] =List[Operation](),
                     allocatedOperations:mutable.ArrayBuffer[Operation] =mutable.ArrayBuffer[Operation]()) {
 
   def freeOperation(maybeOperation: Option[Operation]):Unit ={

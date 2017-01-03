@@ -36,7 +36,7 @@ trait AssemblyDao{
   def add(assembly:models.Assembly) : Int
   def update(assembly: models.Assembly):Boolean
   def delete(assemblyId:Int):Boolean
-  def selectAll():List[models.Assembly]
+  def selectAllAssembly():List[models.Assembly]
   def selectBySimulationId(simulationId:Int):List[models.Assembly]
   def selectByAssemblyId(assemblyId:Int):Option[models.Assembly]
 }
