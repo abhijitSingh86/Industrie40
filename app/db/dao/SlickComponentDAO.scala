@@ -91,19 +91,6 @@ class SlickComponentDAO extends ComponentDao{
     }
   }
 
-  override def selectBySimulationId(simulationId: Int): List[Component] = ???
-//    Await.result(db.run(components.filter(_.id === componentId).result),Duration.Inf) match {
-//      case x:Tables.ComponentRow=> {
-//        Await.result(db.run(componentsOperationMapping.filter(_.componentId === x.id).result),Duration.Inf) match{
-//          case row:List[ComponentOperationMappingRow] => {
-//            Some(Component(x.id, x.name, PriorityEnum.NORMAL, createProcessingSequenceList(row)))
-//          }
-//          case _ => None
-//        }
-//      }
-//    }
-//  }
-
   override def selectByComponentId(componentId: Int): Option[Component] = {
     Await.result(db.run(components.filter(_.id === componentId).result),Duration.Inf) match {
       case x:Tables.ComponentRow=> {
@@ -116,4 +103,19 @@ class SlickComponentDAO extends ComponentDao{
         }
       }
   }
+
+  //---------------------simulation id based database methods
+
+  override def selectBySimulationId(simulationId: Int): List[Component] = ???
+  //    Await.result(db.run(components.filter(_.id === componentId).result),Duration.Inf) match {
+  //      case x:Tables.ComponentRow=> {
+  //        Await.result(db.run(componentsOperationMapping.filter(_.componentId === x.id).result),Duration.Inf) match{
+  //          case row:List[ComponentOperationMappingRow] => {
+  //            Some(Component(x.id, x.name, PriorityEnum.NORMAL, createProcessingSequenceList(row)))
+  //          }
+  //          case _ => None
+  //        }
+  //      }
+  //    }
+  //  }
 }
