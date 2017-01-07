@@ -2,6 +2,7 @@ package db.dao
 import db.DBComponent
 import dbgeneratedtable.Tables
 import dbgeneratedtable.Tables.AssemblyOperationMappingRow
+import models.AssemblyOperation
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
@@ -10,16 +11,17 @@ import scala.concurrent.duration.Duration
   * Created by billa on 26.12.16.
   */
 class SlickAssemblyDAO extends AssemblyDao{
-  this: DBComponent =>
+  this: DBComponent with SlickOperationDao =>
   import driver.api._
 
   private lazy val assemblies = Tables.Assembly
-  private lazy val assemblyOperationMappin = Tables.AssemblyOperationMapping
+  private lazy val assemblyOperationMapping = Tables.AssemblyOperationMapping
+  private lazy val simulationAssemblyMapping = Tables.Simulationassemblymap
 
 
   def addAssemblyOperationMapping(assemblyId:Int,operations:List[(models.Operation,Int)]) = {
     operations.map(obj=>
-      assemblyOperationMappin += AssemblyOperationMappingRow(assemblyId,obj._1.getId(),obj._2)
+      assemblyOperationMapping += AssemblyOperationMappingRow(assemblyId,obj._1.getId(),obj._2)
     )
   }
 
@@ -56,17 +58,24 @@ class SlickAssemblyDAO extends AssemblyDao{
 //    case _ => List.empty[models.Assembly]
 //  }
 
-  override def selectBySimulationId(simulationId: Int): List[models.Assembly] = ???
+  override def selectBySimulationId(simulationId: Int): Seq[models.Assembly] = {
+    Await.result(db.run(simulationAssemblyMapping.filter(_.simulationId === simulationId).result),Duration.Inf).map(x=>selectByAssemblyId(x.assemblyId)).flatten
+  }
 
-  override def selectByAssemblyId(assemblyId: Int): Option[models.Assembly] = ???
-//  Await.result(db.run(assemblies.filter(_.id === assemblyId).result.headOption)
-//    ,Duration.Inf)match{
-//    case Some(x) => {
-//      //transform into assembly object
-//    }
-//    case None => {
-//      // do something in case of none
-//      None
-//    }
-//  }
+  override def selectByAssemblyId(assemblyId: Int): Option[models.Assembly] = {
+    Await.result(db.run(assemblies.filter(_.id === assemblyId).result.headOption)
+      , Duration.Inf) match {
+      case Some(x) => {
+        //transform into assembly object
+        val operations = Await.result(db.run(assemblyOperationMapping.filter(_.assemblyId === x.id).result),Duration.Inf).map(x =>
+          AssemblyOperation.mapAssemblyOperationRowToModel(x,selectByOperationId(x.operationId)))
+        Some(new models.Assembly(x.id,x.name,operations.toList))
+
+      }
+      case None => {
+        // do something in case of none
+        None
+      }
+    }
+  }
 }

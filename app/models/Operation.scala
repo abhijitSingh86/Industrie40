@@ -1,5 +1,7 @@
 package models
 
+import dbgeneratedtable.Tables
+
 
 /**
   * Created by billa on 2016-12-15.
@@ -10,6 +12,11 @@ trait Operation{
   def getName():String
 }
 
+object AssemblyOperation{
+  def mapAssemblyOperationRowToModel(rowObj:Tables.AssemblyOperationMappingRow,operationObj:Operation): AssemblyOperation ={
+      new AssemblyOperation(rowObj.operationId,operationObj.getName(),rowObj.operationTime)
+  }
+}
 
 class AssemblyOperation(private val id:Int =0,private val  name:String,private val time:Float) extends Operation(){
   def getOperationTime():Float =time

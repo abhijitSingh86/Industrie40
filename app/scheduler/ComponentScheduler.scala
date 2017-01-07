@@ -24,23 +24,24 @@ class ComponentScheduler extends Scheduler {
     val requiredOperationMap = ListMap(getRequiredOperationMap(components).toSeq.sortWith(_._2.size < _._2.size):_*)
     val list = List[Option[Component]](None)
     requiredOperationMap.map {
-      case (k, v) => {
-        v.map(c => {
-          if (availableResourceMap.contains(k) && availableResourceMap.get(k).get.size > 0 ) {
+      case (operation, componentList) => {
+        componentList.map(component => {
+          if (availableResourceMap.contains(operation) && availableResourceMap.get(operation).get.size > 0 ) {
 
-            c.getCurrentOperation() match {
+            component.getCurrentOperation() match {
               case None => {
-                val assembly = availableResourceMap.get(k).get(0)
-                assembly.allocateOperation(k)
-                c.scheduleCurrentOperation(k, assembly)
-                availableResourceMap + (k -> (availableResourceMap.get(k).drop(1)))
+                val assembly = availableResourceMap.get(operation).get(0)
+                assembly.allocateOperation(operation)
+                component.scheduleCurrentOperation(operation, assembly)
+                availableResourceMap + (operation -> (availableResourceMap.get(operation).drop(1)))
+
               }
               case Some(operation) =>{
                 //Component Already scheduled, no action needed
               }
             }
           }else{
-            Some(c) :: list
+            Some(component) :: list
           }
         })
 

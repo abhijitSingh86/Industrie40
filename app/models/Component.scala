@@ -3,6 +3,7 @@ package models
 import enums.PriorityEnum.PriorityEnum
 import enums.StateEnum.StateEnum
 import enums.{PriorityEnum, StateEnum}
+import network.NetworkProxy
 
 import scala.collection.mutable
 
@@ -37,6 +38,8 @@ case class Component(id: Int, name: String, priority: PriorityEnum, processingSe
   def scheduleCurrentOperation(operation: Operation, assembly: Assembly): Unit = {
     this.currentOperation = Some(operation)
     this.currentAllocatedAssembly = Some(assembly)
+    proxy.sendScheduleInformationToComponent()
+
   }
 
   /**

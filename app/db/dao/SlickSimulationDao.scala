@@ -25,7 +25,7 @@ trait SlickSimulationDao{
 
 
 
-  def selectByOperationId(simulationId:Int):models.Simulation ={
+  def selectBySimulationId(simulationId:Int):models.Simulation ={
       Await.result(db.run(simulations.filter(_.id === simulationId).result.headOption),Duration.Inf ) match{
         case Some(x:Tables.SimulationRow) =>new models.Simulation(x.id,x.name,x.desc.getOrElse(""))
       }
@@ -74,7 +74,23 @@ trait SlickSimulationDao{
 
   def addAssembliesToSimulation(simunlationId:Int,assemblies:List[Int])={
     assemblies.map(assemblyId=>
-    Await.result(db.run(simulationAssemblyMapping += SimulationassemblymapRow(simunlationId,assemblyId)),Duration.Inf))
+        Await.result(db.run(simulationAssemblyMapping += SimulationassemblymapRow(simunlationId,assemblyId)),Duration.Inf))
+  }
+
+  def assignAssemblytoComponentSimulationMapping(assemblyId:Int,ComponentId:Int,simulationId:Int) = {
+    val q = for{ c <- simulationComponentMapping if c.simulationId === simulationId && c.componentId === ComponentId} yield (c.assignedassemblyid)
+    val query = q.update(Some(assemblyId))
+    Await.result(db.run(query), Duration.Inf) == 1
+  }
+
+  def getAllComponentUrlBySimulationId(simunlationId:Int):List[(Int,String)]={
+      Await.result(db.run(simulationComponentMapping.filter(_.simulationId === simunlationId).result),Duration.Inf).
+        map(x=>(x.componentId,x.url.getOrElse(""))).toList
+  }
+
+  def getAllAssemblyUrlBySimulationId(simunlationId:Int):List[(Int,String)]={
+      Await.result(db.run(simulationAssemblyMapping.filter(_.simulationId === simunlationId).result),Duration.Inf).
+        map(x=>(x.assemblyId,x.url.getOrElse(""))).toList
   }
 
   def add(simulation:models.Simulation):Int = {
