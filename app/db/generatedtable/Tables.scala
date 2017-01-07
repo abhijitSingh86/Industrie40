@@ -45,20 +45,18 @@ trait Tables {
   /** Entity class storing rows of table AssemblyOperationMapping
     *  @param assemblyId Database column assembly_id SqlType(INT)
     *  @param operationId Database column operation_id SqlType(INT)
-    *  @param operationTime Database column operation_time SqlType(INT)
-    *  @param state Database column state SqlType(VARCHAR), Length(255,true), Default(None)
-    *  @param simulationId Database column simulation_id SqlType(INT) */
-  case class AssemblyOperationMappingRow(assemblyId: Int, operationId: Int, operationTime: Int, state: Option[String] = None, simulationId: Int)
+    *  @param operationTime Database column operation_time SqlType(INT)*/
+  case class AssemblyOperationMappingRow(assemblyId: Int, operationId: Int, operationTime: Int)
   /** GetResult implicit for fetching AssemblyOperationMappingRow objects using plain SQL queries */
   implicit def GetResultAssemblyOperationMappingRow(implicit e0: GR[Int], e1: GR[Option[String]]): GR[AssemblyOperationMappingRow] = GR{
     prs => import prs._
-      AssemblyOperationMappingRow.tupled((<<[Int], <<[Int], <<[Int], <<?[String], <<[Int]))
+      AssemblyOperationMappingRow.tupled((<<[Int], <<[Int], <<[Int]))
   }
   /** Table description of table assembly_operation_mapping. Objects of this class serve as prototypes for rows in queries. */
   class AssemblyOperationMapping(_tableTag: Tag) extends Table[AssemblyOperationMappingRow](_tableTag, "assembly_operation_mapping") {
-    def * = (assemblyId, operationId, operationTime, state, simulationId) <> (AssemblyOperationMappingRow.tupled, AssemblyOperationMappingRow.unapply)
+    def * = (assemblyId, operationId, operationTime) <> (AssemblyOperationMappingRow.tupled, AssemblyOperationMappingRow.unapply)
     /** Maps whole row to an option. Useful for outer joins. */
-    def ? = (Rep.Some(assemblyId), Rep.Some(operationId), Rep.Some(operationTime), state, Rep.Some(simulationId)).shaped.<>({r=>import r._; _1.map(_=> AssemblyOperationMappingRow.tupled((_1.get, _2.get, _3.get, _4, _5.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+    def ? = (Rep.Some(assemblyId), Rep.Some(operationId), Rep.Some(operationTime)).shaped.<>({r=>import r._; _1.map(_=> AssemblyOperationMappingRow.tupled((_1.get, _2.get, _3.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
 
     /** Database column assembly_id SqlType(INT) */
     val assemblyId: Rep[Int] = column[Int]("assembly_id")
@@ -66,19 +64,11 @@ trait Tables {
     val operationId: Rep[Int] = column[Int]("operation_id")
     /** Database column operation_time SqlType(INT) */
     val operationTime: Rep[Int] = column[Int]("operation_time")
-    /** Database column state SqlType(VARCHAR), Length(255,true), Default(None) */
-    val state: Rep[Option[String]] = column[Option[String]]("state", O.Length(255,varying=true), O.Default(None))
-    /** Database column simulation_id SqlType(INT) */
-    val simulationId: Rep[Int] = column[Int]("simulation_id")
-
     /** Foreign key referencing Assembly (database name fk_assembly_operation_mapping_1) */
     lazy val assemblyFk = foreignKey("fk_assembly_operation_mapping_1", assemblyId, Assembly)(r => r.id, onUpdate=ForeignKeyAction.Cascade, onDelete=ForeignKeyAction.Cascade)
     /** Foreign key referencing AssemblyState (database name fk_assembly_operation_mapping_4) */
-    lazy val assemblyStateFk = foreignKey("fk_assembly_operation_mapping_4", state, AssemblyState)(r => Rep.Some(r.name), onUpdate=ForeignKeyAction.NoAction, onDelete=ForeignKeyAction.NoAction)
     /** Foreign key referencing Operation (database name fk_assembly_operation_mapping_2) */
     lazy val operationFk = foreignKey("fk_assembly_operation_mapping_2", operationId, Operation)(r => r.id, onUpdate=ForeignKeyAction.NoAction, onDelete=ForeignKeyAction.NoAction)
-    /** Foreign key referencing Simulation (database name fk_assembly_operation_mapping_3) */
-    lazy val simulationFk = foreignKey("fk_assembly_operation_mapping_3", simulationId, Simulation)(r => r.id, onUpdate=ForeignKeyAction.NoAction, onDelete=ForeignKeyAction.NoAction)
   }
   /** Collection-like TableQuery object for table AssemblyOperationMapping */
   lazy val AssemblyOperationMapping = new TableQuery(tag => new AssemblyOperationMapping(tag))
@@ -229,22 +219,23 @@ trait Tables {
   /** Entity class storing rows of table Simulationassemblymap
     *  @param simulationId Database column simulation_id SqlType(INT), PrimaryKey
     *  @param assemblyId Database column assembly_id SqlType(INT) */
-  case class SimulationassemblymapRow(simulationId: Int, assemblyId: Int)
+  case class SimulationassemblymapRow(simulationId: Int, assemblyId: Int,url:Option[String] = None)
   /** GetResult implicit for fetching SimulationassemblymapRow objects using plain SQL queries */
   implicit def GetResultSimulationassemblymapRow(implicit e0: GR[Int]): GR[SimulationassemblymapRow] = GR{
     prs => import prs._
-      SimulationassemblymapRow.tupled((<<[Int], <<[Int]))
+      SimulationassemblymapRow.tupled((<<[Int], <<[Int] , <<[Option[String]]))
   }
   /** Table description of table SimulationAssemblyMap. Objects of this class serve as prototypes for rows in queries. */
   class Simulationassemblymap(_tableTag: Tag) extends Table[SimulationassemblymapRow](_tableTag, "SimulationAssemblyMap") {
-    def * = (simulationId, assemblyId) <> (SimulationassemblymapRow.tupled, SimulationassemblymapRow.unapply)
+    def * = (simulationId, assemblyId ,url) <> (SimulationassemblymapRow.tupled, SimulationassemblymapRow.unapply)
     /** Maps whole row to an option. Useful for outer joins. */
-    def ? = (Rep.Some(simulationId), Rep.Some(assemblyId)).shaped.<>({r=>import r._; _1.map(_=> SimulationassemblymapRow.tupled((_1.get, _2.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+    def ? = (Rep.Some(simulationId), Rep.Some(assemblyId),url).shaped.<>({r=>import r._; _1.map(_=> SimulationassemblymapRow.tupled((_1.get, _2.get,_3)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
 
     /** Database column simulation_id SqlType(INT), PrimaryKey */
     val simulationId: Rep[Int] = column[Int]("simulation_id", O.PrimaryKey)
     /** Database column assembly_id SqlType(INT) */
     val assemblyId: Rep[Int] = column[Int]("assembly_id")
+    val url:Rep[Option[String]] = column[Option[String]]("url")
 
     /** Foreign key referencing Assembly (database name fk_SimulationAssemblyMap_1) */
     lazy val assemblyFk = foreignKey("fk_SimulationAssemblyMap_1", assemblyId, Assembly)(r => r.id, onUpdate=ForeignKeyAction.NoAction, onDelete=ForeignKeyAction.NoAction)
@@ -261,17 +252,17 @@ trait Tables {
     *  @param assignedassemblyid Database column assignedAssemblyId SqlType(INT), Default(None)
     *  @param completedoperationids Database column completedOperationIds SqlType(VARCHAR), Length(500,true), Default(None)
     *  @param currentoperationid Database column currentOperationId SqlType(INT), Default(None) */
-  case class SimulationComponentMappingRow(simulationId: Int, componentId: Int, status: Option[String] = None, assignedassemblyid: Option[Int] = None, completedoperationids: Option[String] = None, currentoperationid: Option[Int] = None)
+  case class SimulationComponentMappingRow(simulationId: Int, componentId: Int, status: Option[String] = None,url: Option[String] = None, assignedassemblyid: Option[Int] = None, completedoperationids: Option[String] = None, currentoperationid: Option[Int] = None)
   /** GetResult implicit for fetching SimulationComponentMappingRow objects using plain SQL queries */
   implicit def GetResultSimulationComponentMappingRow(implicit e0: GR[Int], e1: GR[Option[String]], e2: GR[Option[Int]]): GR[SimulationComponentMappingRow] = GR{
     prs => import prs._
-      SimulationComponentMappingRow.tupled((<<[Int], <<[Int], <<?[String], <<?[Int], <<?[String], <<?[Int]))
+      SimulationComponentMappingRow.tupled((<<[Int], <<[Int], <<?[String],<<?[String], <<?[Int], <<?[String], <<?[Int]))
   }
   /** Table description of table simulation_component_mapping. Objects of this class serve as prototypes for rows in queries. */
   class SimulationComponentMapping(_tableTag: Tag) extends Table[SimulationComponentMappingRow](_tableTag, "simulation_component_mapping") {
-    def * = (simulationId, componentId, status, assignedassemblyid, completedoperationids, currentoperationid) <> (SimulationComponentMappingRow.tupled, SimulationComponentMappingRow.unapply)
+    def * = (simulationId, componentId, status,url, assignedassemblyid, completedoperationids, currentoperationid) <> (SimulationComponentMappingRow.tupled, SimulationComponentMappingRow.unapply)
     /** Maps whole row to an option. Useful for outer joins. */
-    def ? = (Rep.Some(simulationId), Rep.Some(componentId), status, assignedassemblyid, completedoperationids, currentoperationid).shaped.<>({r=>import r._; _1.map(_=> SimulationComponentMappingRow.tupled((_1.get, _2.get, _3, _4, _5, _6)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+    def ? = (Rep.Some(simulationId), Rep.Some(componentId), status,url, assignedassemblyid, completedoperationids, currentoperationid).shaped.<>({r=>import r._; _1.map(_=> SimulationComponentMappingRow.tupled((_1.get, _2.get, _3, _4, _5, _6,_7)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
 
     /** Database column simulation_id SqlType(INT) */
     val simulationId: Rep[Int] = column[Int]("simulation_id")
@@ -279,6 +270,7 @@ trait Tables {
     val componentId: Rep[Int] = column[Int]("component_id")
     /** Database column status SqlType(VARCHAR), Length(255,true), Default(None) */
     val status: Rep[Option[String]] = column[Option[String]]("status", O.Length(255,varying=true), O.Default(None))
+    val url: Rep[Option[String]] = column[Option[String]]("url", O.Length(255,varying=true), O.Default(None))
     /** Database column assignedAssemblyId SqlType(INT), Default(None) */
     val assignedassemblyid: Rep[Option[Int]] = column[Option[Int]]("assignedAssemblyId", O.Default(None))
     /** Database column completedOperationIds SqlType(VARCHAR), Length(500,true), Default(None) */

@@ -22,7 +22,7 @@ trait SlickSimulationDao{
 
   private lazy val simulationAssemblyMapping = Tables.Simulationassemblymap
 
-  private lazy val assemblyOperationMappin = Tables.AssemblyOperationMapping
+
 
 
   def selectByOperationId(simulationId:Int):models.Simulation ={
@@ -50,6 +50,28 @@ trait SlickSimulationDao{
     )
   }
 
+  def isComponentMappedToSimulation(simulationId:Int, componentId:Int):Boolean = {
+    Await.result(db.run(simulationComponentMapping.filter(x => x.simulationId === simulationId && x.componentId === componentId).result),Duration.Inf).size > 0
+  }
+
+  def isAssemblyMappedToSimulation(simulationId:Int, assemblyId:Int):Boolean = {
+    Await.result(db.run(simulationAssemblyMapping.filter(x => x.simulationId === simulationId && x.assemblyId === assemblyId).result),Duration.Inf).size > 0
+  }
+
+  def addComponentUrlToItsMappingEntry(simulationId:Int, componentId:Int,url:String):Boolean = {
+    val q =  for{ x <- simulationComponentMapping if  x.simulationId === simulationId && x.componentId === componentId } yield x.url
+    val updateAction = q.update(Some(url))
+
+    Await.result(db.run(updateAction), Duration.Inf) == 1
+  }
+
+  def addAssemblyUrlToItsMappingEntry(simulationId:Int, assemblyId:Int, url:String):Boolean = {
+    val q =  for{ x <- simulationAssemblyMapping if  x.simulationId === simulationId && x.assemblyId === assemblyId } yield x.url
+    val updateAction = q.update(Some(url))
+
+    Await.result(db.run(updateAction), Duration.Inf) == 1
+  }
+
   def addAssembliesToSimulation(simunlationId:Int,assemblies:List[Int])={
     assemblies.map(assemblyId=>
     Await.result(db.run(simulationAssemblyMapping += SimulationassemblymapRow(simunlationId,assemblyId)),Duration.Inf))
@@ -61,10 +83,5 @@ trait SlickSimulationDao{
     k
   }
 
-  def addAssemblyOperationMapping(assemblyId:Int,operations:List[models.AssemblyOperation],simulationId:Int) = {
-        operations.map(obj=>
-          assemblyOperationMappin += AssemblyOperationMappingRow(assemblyId,obj.getId(),obj.getOperationTime().toInt,
-            Some(""),simulationId )
-        )
-  }
+
 }

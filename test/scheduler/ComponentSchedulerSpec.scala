@@ -26,8 +26,8 @@ class ComponentSchedulerSpec extends Specification with BeforeAfter{
   var componentA = Component(123123,"myCompA",PriorityEnum.NORMAL,List(seq1,seq2))
   var componentB = Component(123123,"myCompB",PriorityEnum.NORMAL,List(seq3,seq4))
 
-  var assemblyA = Assembly("AssemblyA",List(stepA,stepB,stepC))
-  var assemblyB = Assembly("AssemblyB",List(stepD,stepC))
+  var assemblyA = Assembly(1,"AssemblyA",List(stepA,stepB,stepC))
+  var assemblyB = Assembly(1,"AssemblyB",List(stepD,stepC))
 
   "Component Scheduler" should {
 
@@ -84,8 +84,8 @@ class ComponentSchedulerSpec extends Specification with BeforeAfter{
     componentA = Component(123123,"myCompA",PriorityEnum.NORMAL,List(seq1,seq2))
     componentB = Component(123123,"myCompB",PriorityEnum.NORMAL,List(seq3,seq4))
 
-    assemblyA = Assembly("AssemblyA",List(stepA,stepB,stepC))
-    assemblyB = Assembly("AssemblyB",List(stepD,stepC))
+    assemblyA = Assembly(1,"AssemblyA",List(stepA,stepB,stepC))
+    assemblyB = Assembly(1,"AssemblyB",List(stepD,stepC))
   }
 
   override def after: Any = {}

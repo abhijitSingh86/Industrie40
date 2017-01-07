@@ -39,7 +39,7 @@ class ComponentSpec extends Specification{
       val component = Component(123123,"myComp",PriorityEnum.NORMAL,List(seq1,seq2))
       val operations = component.getCurrentProcessingStepOptions()
       //scheduler scheduled some operation and assembly
-      component.scheduleCurrentOperation(operations(0), new Assembly("someAssembly"))
+      component.scheduleCurrentOperation(operations(0), new Assembly(1,"someAssembly"))
       //assembly marked complete the assembly
       component.completeCurrentStep()
 
@@ -63,7 +63,7 @@ class ComponentSpec extends Specification{
       val component = Component(123123,"myComp",PriorityEnum.NORMAL,List(seq1,seq2,seq3,seq4))
       val operations = component.getCurrentProcessingStepOptions()
       //scheduler scheduled some operation and assembly
-      component.scheduleCurrentOperation(operations(0), new Assembly("someAssembly"))
+      component.scheduleCurrentOperation(operations(0), new Assembly(0,"someAssembly"))
       //assembly marked complete the assembly
       component.completeCurrentStep()
 
@@ -88,7 +88,7 @@ class ComponentSpec extends Specification{
       val component = Component(123123,"myComp",PriorityEnum.NORMAL,List(seq1,seq2,seq3,seq4))
       val operations = component.getCurrentProcessingStepOptions()
       //scheduler scheduled some operation and assembly
-      component.scheduleCurrentOperation(operations(1), new Assembly("someAssembly"))
+      component.scheduleCurrentOperation(operations(1), new Assembly(1,"someAssembly"))
       //assembly marked complete the assembly
       component.completeCurrentStep()
 

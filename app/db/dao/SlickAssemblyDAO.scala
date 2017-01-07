@@ -14,9 +14,23 @@ class SlickAssemblyDAO extends AssemblyDao{
   import driver.api._
 
   private lazy val assemblies = Tables.Assembly
+  private lazy val assemblyOperationMappin = Tables.AssemblyOperationMapping
+
+
+  def addAssemblyOperationMapping(assemblyId:Int,operations:List[(models.Operation,Int)]) = {
+    operations.map(obj=>
+      assemblyOperationMappin += AssemblyOperationMappingRow(assemblyId,obj._1.getId(),obj._2)
+    )
+  }
 
   override def add(assembly: models.Assembly): Int = {
-    Await.result(db.run(assemblies returning assemblies.map(_.id)  += new Tables.AssemblyRow(0,assembly.name)),Duration.Inf)
+    Await.result(db.run(assemblies returning assemblies.map(_.id)  += new Tables.AssemblyRow(0,assembly.name)),Duration.Inf) match{
+      case id:Int => {
+        val list = assembly.totalOperations.map(x=> (x,x.asInstanceOf[models.AssemblyOperation].getOperationTime().toInt))
+        addAssemblyOperationMapping(id,list)
+        id
+      }
+    }
   }
 
 
@@ -33,24 +47,26 @@ class SlickAssemblyDAO extends AssemblyDao{
     case _ => false
   }
 
-  override def selectAllAssembly(): List[models.Assembly] = Await.result(db.run(assemblies.result),Duration.Inf)match {
-    case x:IndexedSeq[Tables.AssemblyRow] => {
-      //convert all objects into Assembly object with other values
-//      def create
-    }
-    case _ => List.empty[models.Assembly]
-  }
+  override def selectAllAssembly(): List[models.Assembly] = ???
+//  Await.result(db.run(assemblies.result),Duration.Inf)match {
+//    case x:IndexedSeq[Tables.AssemblyRow] => {
+//      //convert all objects into Assembly object with other values
+////      def create
+//    }
+//    case _ => List.empty[models.Assembly]
+//  }
 
   override def selectBySimulationId(simulationId: Int): List[models.Assembly] = ???
 
-  override def selectByAssemblyId(assemblyId: Int): Option[models.Assembly] = Await.result(db.run(assemblies.filter(_.id === assemblyId).result.headOption)
-    ,Duration.Inf)match{
-    case Some(x) => {
-      //transform into assembly object
-    }
-    case None => {
-      // do something in case of none
-      None
-    }
-  }
+  override def selectByAssemblyId(assemblyId: Int): Option[models.Assembly] = ???
+//  Await.result(db.run(assemblies.filter(_.id === assemblyId).result.headOption)
+//    ,Duration.Inf)match{
+//    case Some(x) => {
+//      //transform into assembly object
+//    }
+//    case None => {
+//      // do something in case of none
+//      None
+//    }
+//  }
 }
