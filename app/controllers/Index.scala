@@ -18,7 +18,7 @@ class Index extends Controller with MySqlDBComponent{
     //initialize Database DAOs
     val componentDao:ComponentDao = new SlickComponentDAO  with SlickOperationDao with MySqlDBComponent
     val operationDao:SlickOperationDao  = new SlickOperationDao with MySqlDBComponent
-    val assemblyDao = new SlickAssemblyDAO with MySqlDBComponent
+    val assemblyDao = new SlickAssemblyDAO with MySqlDBComponent with SlickOperationDao
     val simulationDao = new SlickSimulationDao with MySqlDBComponent
 
     //add operations
@@ -62,41 +62,13 @@ class Index extends Controller with MySqlDBComponent{
   }
 
 
-  def initComponentRequest() = Action { implicit request =>
-    val json =request.body.asJson
 
-    //get Component DAO
-    val componentDao:ComponentDao = new SlickComponentDAO  with SlickOperationDao with MySqlDBComponent
-    val simulationDao = new SlickSimulationDao with MySqlDBComponent
-    val componentId = (json.get \ "componentId").get.as[Int]
-    val simulationId = (json.get \ "simulationId").get.as[Int]
-
-    val url =(json.get \ "url").get.as[String]
-    //check for init id and url params
-    componentDao.selectByComponentId(componentId ) match{
-      //check if this exist for simulation ID
-      case Some(x) if simulationDao.isComponentMappedToSimulation(simulationId,x.id) =>
-        {
-          // In Future -- check the url existence by calling hearbeat check on given url
-          //add url into component simulation table
-            simulationDao.addComponentUrlToItsMappingEntry(simulationId,x.id,url) match{
-              case true =>
-                //return OK response
-                Ok(DefaultRequestFormat.getEmptySuccessResponse())
-              case false=>
-                Ok(DefaultRequestFormat.getValidationErrorResponse(List(("error","adding Url failed, try again"))))
-            }
-        }
-      case None =>
-        Ok(DefaultRequestFormat.getValidationErrorResponse(List(("componentId","provided component Id is invalid"))))
-    }
-  }
 
   def initAssemblyRequest() = Action { implicit request =>
     val json =request.body.asJson
 
     //get Component DAO
-    val assemblyDao:AssemblyDao = new SlickAssemblyDAO with MySqlDBComponent
+    val assemblyDao:AssemblyDao = new SlickAssemblyDAO with MySqlDBComponent with SlickOperationDao
     val simulationDao = new SlickSimulationDao with MySqlDBComponent
     val assemblyId = (json.get \ "assemblyId").get.as[Int]
     val simulationId = (json.get \ "simulationId").get.as[Int]
@@ -122,26 +94,6 @@ class Index extends Controller with MySqlDBComponent{
     }
   }
 
-  def startComponentScheduling() = Action { implicit request =>
-    val json =request.body.asJson
 
-    //get Component DAO
-    val componentDao:ComponentDao = new SlickComponentDAO  with SlickOperationDao with MySqlDBComponent
-    val simulationDao = new SlickSimulationDao with MySqlDBComponent
-    val componentId = (json.get \ "componentId").get.as[Int]
-    val simulationId = (json.get \ "simulationId").get.as[Int]
-    //check for init id and url params
-    componentDao.selectByComponentId(componentId ) match{
-      //check if this exist for simulation ID
-      case Some(x) if simulationDao.isComponentMappedToSimulation(simulationId,x.id) =>
-      {
-            ComponentQueue.push(x)
-            //return OK response
-            Ok(DefaultRequestFormat.getEmptySuccessResponse())
-      }
-      case None =>
-        Ok(DefaultRequestFormat.getValidationErrorResponse(List(("componentId","provided component Id is invalid"))))
-    }
-  }
 
 }

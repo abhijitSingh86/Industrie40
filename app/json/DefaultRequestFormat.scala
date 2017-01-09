@@ -33,8 +33,13 @@ object DefaultRequestFormat {
     Json.obj("responseCode"-> 200,"responseType" -> "successEmpty" , "body" -> Json.obj())
   }
 
+  def getSuccessResponse(data:JsObject)={
+    Json.obj("responseCode"-> 200,"responseType" -> "success" , "body" -> data)
+  }
+
   def getValidationErrorResponse(errorTuples:List[(String,String)]) ={
-    Json.obj("responseCode"-> 403 ,"responseType" -> "validationType" , "body" -> errorTuples.map(x=> Json.obj(x._1->x._2)))
+    Json.obj("responseCode"-> 403 ,"responseType" -> "validationType" , "body" -> errorTuples.map(x=>
+      Json.obj("element" ->x._1 , "errormsg"->x._2)))
   }
 
 

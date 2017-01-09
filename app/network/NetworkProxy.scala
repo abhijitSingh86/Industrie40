@@ -15,6 +15,7 @@ import scala.concurrent.duration.Duration
 class NetworkProxy(@Inject ws:WSClient) {
   this: SlickSimulationDao =>
 
+  val componentAssemblyHook = "/assignAssembly"
   def sendAssemblyDetails(url: String, assembly: Assembly, assemblyUrls: Map[Int, String]) = {
       //send http request using assemblies details
     import play.api.libs.json._
@@ -23,7 +24,7 @@ class NetworkProxy(@Inject ws:WSClient) {
     ,"url" -> assemblyUrls.get(assembly.id))
     var status=0
     do {
-      val req = Await.result(ws.url(url).post(data), Duration.Inf)
+      val req = Await.result(ws.url(url+componentAssemblyHook).post(data), Duration.Inf)
       status = if(req.status !=200)status+1 else req.status
     }while (status != 200 || status !=5)
 

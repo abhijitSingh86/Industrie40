@@ -58,8 +58,8 @@ class SlickAssemblyDAO extends AssemblyDao{
 //    case _ => List.empty[models.Assembly]
 //  }
 
-  override def selectBySimulationId(simulationId: Int): Seq[models.Assembly] = {
-    Await.result(db.run(simulationAssemblyMapping.filter(_.simulationId === simulationId).result),Duration.Inf).map(x=>selectByAssemblyId(x.assemblyId)).flatten
+  override def selectBySimulationId(simulationId: Int): List[models.Assembly] = {
+    Await.result(db.run(simulationAssemblyMapping.filter(_.simulationId === simulationId).result),Duration.Inf).map(x=>selectByAssemblyId(x.assemblyId)).flatten.toList
   }
 
   override def selectByAssemblyId(assemblyId: Int): Option[models.Assembly] = {
