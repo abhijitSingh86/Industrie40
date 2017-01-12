@@ -33,7 +33,7 @@ trait SlickSimulationDao{
 
   def selectAllSimulations():List[models.Simulation] ={
     Await.result(db.run(simulations.result),Duration.Inf ) match{
-      case x:IndexedSeq[Tables.OperationRow] =>x.map(y=> new models.Simulation(y.id,y.name,y.desc.getOrElse(""))).toList
+      case x =>x.map(y=> new models.Simulation(y.id,y.name,y.desc.getOrElse(""))).toList
     }
   }
 

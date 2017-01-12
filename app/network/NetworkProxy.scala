@@ -12,7 +12,7 @@ import scala.concurrent.duration.Duration
 /**
   * Created by billa on 07.01.17.
   */
-class NetworkProxy(@Inject ws:WSClient) {
+class NetworkProxy(ws:WSClient) {
   this: SlickSimulationDao =>
 
   val componentAssemblyHook = "/assignAssembly"

@@ -1,50 +1,33 @@
 package scheduler
 
-import db.MySqlDBComponent
-import db.dao.{AssemblyDao, SlickAssemblyDAO, SlickOperationDao, SlickSimulationDao}
-import network.NetworkProxy
+import play.api.Logger
+import scheduler.commands.Command
 
 /**
   * Created by billa on 07.01.17.
   */
-class SchedulerThread(private val simulationId:Int,proxy:NetworkProxy )  extends Runnable{
+class SchedulerThread(sleepTime:Int,command:Command)  extends Runnable{
 
-  val sleepTime = 5000
-  val assemblyDao:AssemblyDao = new SlickAssemblyDAO with MySqlDBComponent with SlickOperationDao
-  val simulationDao = new SlickSimulationDao  with MySqlDBComponent
-  val scheduler:Scheduler = new ComponentScheduler
-
+  val logger = Logger(this.getClass())
   override def run(): Unit = {
+    logger.info("Scheduler thread started")
     while(true){
+      logger.info("Scheduler thread run method started")
       //Sleep for a while before scheduling
       try{
+        logger.info("Scheduler thread run method in sleep call")
         Thread.sleep(sleepTime)
+        logger.info("Scheduler thread run method after sleep call")
       }
       catch{
         case ex:Exception => {
+          logger.error("Exception while sleeping",ex)
           print("error occurred while Sleeping thread")
         }
       }
-
-      //retrieve all the assemblies to schedule on
-      assemblyDao.selectBySimulationId(simulationId)
-      val assemblies = assemblyDao.selectBySimulationId(simulationId)
-      //retrieve all components from the queue
-      val components = ComponentQueue.popAll()
-
-      //call algorithm for scheduling
-      val unscheduledComponents = scheduler.scheduleComponents(components,assemblies)
-      //get scheduled component and send them to network proxy for information sending
-      proxy.sendScheduleInformationToComponent(simulationId,components.filter(unscheduledComponents.contains(_)))
-
-
-
-      //add pending if any to the component queue again
-      unscheduledComponents.map(ComponentQueue.push(_))
+      logger.info("Scheduler thread is invoking the command")
+      command.execute()
+      logger.info("Scheduler thread is finished invoking the command")
     }
-
-
-
-
   }
 }

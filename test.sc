@@ -22,5 +22,10 @@ var num:Int =2
 num += 1
 num
 
+val q = mutable.Queue[Int]()
+q += 1
+q+=2
+q.dequeueAll(_ => true)
+q
 
 

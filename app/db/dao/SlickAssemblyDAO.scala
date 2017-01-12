@@ -59,7 +59,8 @@ class SlickAssemblyDAO extends AssemblyDao{
 //  }
 
   override def selectBySimulationId(simulationId: Int): List[models.Assembly] = {
-    Await.result(db.run(simulationAssemblyMapping.filter(_.simulationId === simulationId).result),Duration.Inf).map(x=>selectByAssemblyId(x.assemblyId)).flatten.toList
+    Await.result(db.run(simulationAssemblyMapping.filter(_.simulationId === simulationId).result),Duration.Inf).map(x=>
+      selectByAssemblyId(x.assemblyId)).flatten.toList
   }
 
   override def selectByAssemblyId(assemblyId: Int): Option[models.Assembly] = {
@@ -67,8 +68,8 @@ class SlickAssemblyDAO extends AssemblyDao{
       , Duration.Inf) match {
       case Some(x) => {
         //transform into assembly object
-        val operations = Await.result(db.run(assemblyOperationMapping.filter(_.assemblyId === x.id).result),Duration.Inf).map(x =>
-          AssemblyOperation.mapAssemblyOperationRowToModel(x,selectByOperationId(x.operationId)))
+        val operations = Await.result(db.run(assemblyOperationMapping.filter(_.assemblyId === x.id).result),Duration.Inf).map(y =>
+          AssemblyOperation.mapAssemblyOperationRowToModel(y,selectByOperationId(y.operationId)))
         Some(new models.Assembly(x.id,x.name,operations.toList))
 
       }

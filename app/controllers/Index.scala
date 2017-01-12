@@ -1,17 +1,22 @@
 package controllers
 
+import javax.inject.Inject
+
 import db.MySqlDBComponent
 import db.dao._
 import json.DefaultRequestFormat
+import network.NetworkProxy
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
+import play.api.libs.ws.WSClient
 import play.api.mvc.{Action, Controller}
-import scheduler.ComponentQueue
+import scheduler.commands.ScheduleCommand
+import scheduler.{ComponentQueue, ComponentScheduler, SchedulerThread}
 
 /**
   * Created by billa on 03.01.17.
   */
-class Index extends Controller with MySqlDBComponent{
+class Index @Inject()(ws:WSClient)  extends Controller{
 
   def start() =Action{
 
@@ -62,6 +67,15 @@ class Index extends Controller with MySqlDBComponent{
   }
 
 
+  def index() =Action{
+    val proxy = new NetworkProxy(ws) with SlickSimulationDao with MySqlDBComponent
+    val assemblyDao:AssemblyDao = new SlickAssemblyDAO with MySqlDBComponent with SlickOperationDao
+    val simulationDao = new SlickSimulationDao with MySqlDBComponent
+    val command = new ScheduleCommand(2,proxy,assemblyDao,simulationDao,new ComponentScheduler())
+    val scheduler = new SchedulerThread(5000,command)
+    new Thread(scheduler).start()
+    Ok("Starting the scheduler")
+  }
 
 
   def initAssemblyRequest() = Action { implicit request =>
