@@ -36,7 +36,7 @@ class ComponentScheduler extends Scheduler {
                 availableResourceMap + (operation -> (availableResourceMap.get(operation).drop(1)))
 
               }
-              case Some(operation) =>{
+              case Some(_) =>{
                 //Component Already scheduled, no action needed
               }
             }
@@ -51,7 +51,7 @@ class ComponentScheduler extends Scheduler {
   }
 
 
-  def getRequiredOperationMap(components: List[Component]):Map[Operation, List[Component]] = {
+  private def getRequiredOperationMap(components: List[Component]):Map[Operation, List[Component]] = {
 
     val requiredOperationMap = new mutable.HashMap[Operation, List[Component]]()
 
@@ -78,7 +78,7 @@ class ComponentScheduler extends Scheduler {
   }
 
 
-  def getAvailableResourceMap(assemblies: List[Assembly]) = {
+  private def getAvailableResourceMap(assemblies: List[Assembly]) :Map[Operation,List[Assembly]]= {
 
     val availableOperationMap = new mutable.HashMap[Operation, List[Assembly]]()
 
@@ -106,6 +106,6 @@ class ComponentScheduler extends Scheduler {
     //start the tail recursion
     processAssemblies(availableOperationMap, 0)
     //return the operation map
-    availableOperationMap
+    availableOperationMap.toMap
   }
 }

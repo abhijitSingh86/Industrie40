@@ -28,7 +28,7 @@ class ScheduleCommand(private val simulationId:Int,proxy:NetworkProxy,assemblyDa
       //call algorithm for scheduling
       val unscheduledComponents = scheduler.scheduleComponents(components, assemblies)
       //get scheduled component and send them to network proxy for information sending
-      proxy.sendScheduleInformationToComponent(simulationId, components.filter(unscheduledComponents.contains(_)))
+      proxy.sendScheduleInformationToComponent(simulationId, components.filter(!unscheduledComponents.contains(_)))
 
 
       logger.debug("command nearly finished, processed UnScheduled components are " + unscheduledComponents.mkString(","))

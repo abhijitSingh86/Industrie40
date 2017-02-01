@@ -56,6 +56,9 @@ class MyComponents(context:Context) extends BuiltInComponentsFromContext(context
     val ahcConfig = ahcBuilder.build()
     new AhcWSClient(ahcConfig)
   }
+
+
+
   applicationLifecycle.addStopHook(() => Future.successful(ws.close))
 }
 

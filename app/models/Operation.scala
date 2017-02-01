@@ -10,6 +10,19 @@ import dbgeneratedtable.Tables
 trait Operation{
   def getId():Int
   def getName():String
+
+  /**
+    * Check test cases for all condition for equals i.e. consistensy,transivity,reflexive
+    * @param obj
+    */
+  override def equals(obj: scala.Any): Boolean = {
+    obj match {
+      case null => false
+      case obj:AssemblyOperation => getName().equalsIgnoreCase(obj.getName()) &&
+        getId().compareTo(obj.getId())==0
+      case _ => false
+    }
+  }
 }
 
 object AssemblyOperation{
