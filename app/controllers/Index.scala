@@ -18,53 +18,6 @@ import scheduler.{ComponentQueue, ComponentScheduler, SchedulerThread}
   */
 class Index @Inject()(ws:WSClient)  extends Controller{
 
-  def start() =Action{
-
-    //initialize Database DAOs
-    val componentDao:ComponentDao = new SlickComponentDAO  with SlickOperationDao with MySqlDBComponent
-    val operationDao:SlickOperationDao  = new SlickOperationDao with MySqlDBComponent
-    val assemblyDao = new SlickAssemblyDAO with MySqlDBComponent with SlickOperationDao
-    val simulationDao = new SlickSimulationDao with MySqlDBComponent
-
-    //add operations
-
-//      def getOp(name:String) = new ComponentOperation(name=name)
-//
-//      val ids = List(getOp("A"),getOp("B"),getOp("C"),getOp("D")).map(x=> (x.getName() ,
-//        new ComponentOperation(operationDao.add(x),x.getName()))).toMap
-//
-//    //add component with operations
-//    val seq1 = ProcessingSequence(List(ids("A"),ids("B"),ids("C"),ids("D")))
-//    val seq2 = ProcessingSequence(List(ids("B"),ids("A"),ids("C"),ids("D")))
-//
-//    val  component = new Component(0,"component1",PriorityEnum.NORMAL, List(seq1,seq2))
-//    val  component2 = new Component(0,"componnt2",PriorityEnum.NORMAL, List(ProcessingSequence(List(ids("C"),ids("D"))),ProcessingSequence(List(ids("D"),ids("C")))))
-//    val cmp1Id = componentDao.add(component)
-//    val cmp2Id  = componentDao.add(component2)
-//
-//    //add assemblies
-//    val assemblyA = new Assembly(0,"assembly1",List(ids("A"),ids("B"),ids("C")).map(x=>new AssemblyOperation(0,x.getName(),1.2f)))
-//    val assemblyB = new Assembly(0,"assembly2",List(ids("D"),ids("B")).map(x=>new AssemblyOperation(0,x.getName(),1.2f)))
-//    val assemId = assemblyDao.add(assemblyA)
-//    val assemId2 = assemblyDao.add(assemblyB)
-//
-//    //add simulation
-//    val simulatio1 = new Simulation(0,"simulation1","dummy simulation db entry")
-//    val simId = simulationDao.add(simulatio1)
-//
-//    //add components in simulation
-//    simulationDao.addComponentsToSimulation(simId,List(cmp1Id,cmp2Id))
-//
-//
-//    //add assemblies in simulation with operation time
-//    simulationDao.addAssembliesToSimulation(simId,List(assemId,assemId2))
-      val simulationIdInDb = 2;
-
-    //start schedular operation
-
-
-    Ok("Started the server with following component and assembly")
-  }
 
 
   def index() =Action{
@@ -94,6 +47,7 @@ class Index @Inject()(ws:WSClient)  extends Controller{
       case Some(x) if simulationDao.isAssemblyMappedToSimulation(simulationId,x.id) =>
       {
         // In Future -- check the url existence by calling hearbeat check on given url
+
         //add url into component simulation table
         simulationDao.addAssemblyUrlToItsMappingEntry(simulationId,x.id,url) match{
           case true =>

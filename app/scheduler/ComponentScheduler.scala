@@ -31,7 +31,8 @@ class ComponentScheduler extends Scheduler {
             component.getCurrentOperation() match {
               case None => {
                 val assembly = availableResourceMap.get(operation).get(0)
-                assembly.allocateOperation(operation)
+                val o = availableResourceMap.keySet.filter(_ == operation).head
+                assembly.allocateOperation(o)
                 component.scheduleCurrentOperation(operation, assembly)
                 availableResourceMap + (operation -> (availableResourceMap.get(operation).drop(1)))
 

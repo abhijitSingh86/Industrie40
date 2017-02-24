@@ -14,6 +14,8 @@ val map = HashMap("a"->2,"d"->5,"b"->1)
 
 val list = mutable.ArrayBuffer(1,2,3)
 
+list.toSet.filter(_ == 2).head
+
 list -= 5
 
 map.toSeq.sortWith(_._2 < _._2)

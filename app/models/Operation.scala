@@ -10,6 +10,7 @@ import dbgeneratedtable.Tables
 trait Operation{
   def getId():Int
   def getName():String
+  def getOperationTime():Float
 
   /**
     * Check test cases for all condition for equals i.e. consistensy,transivity,reflexive
@@ -19,6 +20,8 @@ trait Operation{
     obj match {
       case null => false
       case obj:AssemblyOperation => getName().equalsIgnoreCase(obj.getName()) &&
+        getId().compareTo(obj.getId())==0
+      case obj:Operation=> getName().equalsIgnoreCase(obj.getName()) &&
         getId().compareTo(obj.getId())==0
       case _ => false
     }
@@ -48,6 +51,7 @@ class AssemblyOperation(private val id:Int =0,private val  name:String,private v
       case obj:AssemblyOperation => getName().equalsIgnoreCase(obj.getName()) &&
         getId().compareTo(obj.getId())==0 &&
         getOperationTime().compareTo(obj.getOperationTime()) ==0
+      case obj:Operation => getName().equalsIgnoreCase(obj.getName()) && getId().compareTo(obj.getId())==0
       case _ => false
     }
   }
@@ -73,4 +77,5 @@ class ComponentOperation(private val id:Int =0,private val  name:String) extends
 
   override def getName(): String = name
 
+  override def getOperationTime(): Float = 0f
 }
