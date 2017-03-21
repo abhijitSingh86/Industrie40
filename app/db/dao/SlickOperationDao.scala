@@ -2,7 +2,7 @@ package db.dao
 
 import db.DBComponent
 import dbgeneratedtable.Tables
-import models.{ComponentOperation, Operation}
+import models.Operation
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
@@ -19,14 +19,14 @@ trait SlickOperationDao{
 
   def selectByOperationId(operationId:Int):models.Operation ={
       Await.result(db.run(operations.filter(_.id === operationId).result.headOption),Duration.Inf ) match{
-        case Some(x:Tables.OperationRow) =>new ComponentOperation(x.id,x.name)
+        case Some(x:Tables.OperationRow) =>new Operation(x.id,x.name)
 
       }
   }
 
   def selectAllOperations():List[models.Operation] ={
     Await.result(db.run(operations.result),Duration.Inf ) match{
-      case x:IndexedSeq[Tables.OperationRow] =>x.map(y=> new ComponentOperation(y.id,y.name)).toList
+      case x:IndexedSeq[Tables.OperationRow] =>x.map(y=> new Operation(y.id,y.name)).toList
     }
   }
 
@@ -38,7 +38,7 @@ trait SlickOperationDao{
   }
 
   def add(operation:Operation ):Int = {
-    val o = db.run(operations returning operations.map(_.id) += Tables.OperationRow(0,operation.getName))
+    val o = db.run(operations returning operations.map(_.id) += Tables.OperationRow(0,operation.name))
     val k =Await.result(o , Duration.Inf)
     k
   }

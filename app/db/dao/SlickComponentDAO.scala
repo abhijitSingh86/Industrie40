@@ -26,7 +26,7 @@ class SlickComponentDAO extends ComponentDao{
         component.processingSequences.map(l => {
           var seqCounter = 1
           l.seq.map(x => {
-            Await.result(db.run(componentsOperationMapping +=ComponentOperationMappingRow(id,x.getId(),seqCounter)),Duration.Inf)
+            Await.result(db.run(componentsOperationMapping +=ComponentOperationMappingRow(id,x.id,seqCounter)),Duration.Inf)
             seqCounter=seqCounter+1
           } )
         })

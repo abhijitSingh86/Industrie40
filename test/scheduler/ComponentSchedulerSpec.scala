@@ -13,10 +13,10 @@ import org.specs2.runner.JUnitRunner
 class ComponentSchedulerSpec extends Specification with BeforeAfter{
 
 
-  val stepA = new ComponentOperation(name ="A")
-  val stepB = new ComponentOperation(name ="B")
-  val stepC = new ComponentOperation(name ="C")
-  val stepD = new ComponentOperation(name ="D")
+  val stepA = new Operation(1,"A")
+  val stepB = new Operation(1,"B")
+  val stepC = new Operation(1,"C")
+  val stepD = new Operation(1,"D")
 
   var seq1 = ProcessingSequence(List(stepA,stepB,stepC,stepD))
   var seq2 = ProcessingSequence(List(stepB,stepA,stepC,stepD))
@@ -26,8 +26,8 @@ class ComponentSchedulerSpec extends Specification with BeforeAfter{
   var componentA = Component(123123,"myCompA",PriorityEnum.NORMAL,List(seq1,seq2))
   var componentB = Component(123123,"myCompB",PriorityEnum.NORMAL,List(seq3,seq4))
 
-  var assemblyA = Assembly(1,"AssemblyA",List(stepA,stepB,stepC))
-  var assemblyB = Assembly(1,"AssemblyB",List(stepD,stepC))
+  var assemblyA = Assembly(1,"AssemblyA",List((stepA,1),(stepB,2),(stepC,3)))
+  var assemblyB = Assembly(1,"AssemblyB",List((stepD,2),(stepC,3)))
 
   "Component Scheduler" should {
 
@@ -71,10 +71,10 @@ class ComponentSchedulerSpec extends Specification with BeforeAfter{
   }
 
   override def before: Any = {
-    val stepA = new ComponentOperation(name ="A")
-    val stepB = new ComponentOperation(name ="B")
-    val stepC = new ComponentOperation(name ="C")
-    val stepD = new ComponentOperation(name ="D")
+    val stepA = new Operation(1,"A")
+    val stepB = new Operation(1,"B")
+    val stepC = new Operation(1,"C")
+    val stepD = new Operation(1,"D")
 
     seq1 = ProcessingSequence(List(stepA,stepB,stepC,stepD))
     seq2 = ProcessingSequence(List(stepB,stepA,stepC,stepD))
@@ -84,8 +84,8 @@ class ComponentSchedulerSpec extends Specification with BeforeAfter{
     componentA = Component(123123,"myCompA",PriorityEnum.NORMAL,List(seq1,seq2))
     componentB = Component(123123,"myCompB",PriorityEnum.NORMAL,List(seq3,seq4))
 
-    assemblyA = Assembly(1,"AssemblyA",List(stepA,stepB,stepC))
-    assemblyB = Assembly(1,"AssemblyB",List(stepD,stepC))
+    var assemblyA = Assembly(1,"AssemblyA",List((stepA,1),(stepB,2),(stepC,3)))
+    var assemblyB = Assembly(1,"AssemblyB",List((stepD,2),(stepC,3)))
   }
 
   override def after: Any = {}

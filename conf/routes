@@ -6,7 +6,8 @@
 GET /start                          controllers.Index.index
 
 POST /initComponent                 controllers.ComponentController.initComponentRequest
-POST /initAssembly                 controllers.Index.initAssemblyRequest
+POST /initAssembly                  controllers.Index.initAssemblyRequest
+POST /assemblyOperationCompletion   controllers.Index.assemblyOperationCompletion
 
 POST /startComponentScheduling      controllers.ComponentController.startComponentScheduling
 

@@ -31,6 +31,40 @@ class Index @Inject()(ws:WSClient)  extends Controller{
   }
 
 
+  def assemblyOperationCompletion() = Action { implicit request =>
+    val json =request.body.asJson
+
+    //get Component DAO
+    val assemblyDao:AssemblyDao = new SlickAssemblyDAO with MySqlDBComponent with SlickOperationDao
+    val simulationDao = new SlickSimulationDao with MySqlDBComponent
+    val assemblyId = (json.get \ "assemblyId").get.as[Int]
+    val simulationId = (json.get \ "simulationId").get.as[Int]
+
+    val url =(json.get \ "url").get.as[String]
+    //check for init id and url params
+    assemblyDao.selectByAssemblyId(assemblyId ) match{
+      //check if this exist for simulation ID
+      case Some(x) if simulationDao.isAssemblyMappedToSimulation(simulationId,x.id) =>
+      {
+        // In Future -- check the url existence by calling hearbeat check on given url
+
+        //add url into component simulation table
+        simulationDao.addAssemblyUrlToItsMappingEntry(simulationId,x.id,url) match{
+          case true =>
+            //return OK response
+            Ok(DefaultRequestFormat.getSuccessResponse(Json.obj("id" -> x.id,"simulationId" -> simulationId ,
+              "availableOperations" -> x.totalOperations.map(_._1.id) ,
+              "usedOperationRecords" -> JsArray(List.empty) ,
+           "toDoRetryOperations" ->JsArray(List.empty) , "toBefailedOperations" -> JsArray(List.empty) )))
+          case false=>
+            Ok(DefaultRequestFormat.getValidationErrorResponse(List(("error","adding Url failed, try again"))))
+        }
+      }
+      case None =>
+        Ok(DefaultRequestFormat.getValidationErrorResponse(List(("assemblyId","provided assembly Id is invalid"))))
+    }
+  }
+
   def initAssemblyRequest() = Action { implicit request =>
     val json =request.body.asJson
 
@@ -52,7 +86,10 @@ class Index @Inject()(ws:WSClient)  extends Controller{
         simulationDao.addAssemblyUrlToItsMappingEntry(simulationId,x.id,url) match{
           case true =>
             //return OK response
-            Ok(DefaultRequestFormat.getEmptySuccessResponse())
+            Ok(DefaultRequestFormat.getSuccessResponse(Json.obj("id" -> x.id,"simulationId" -> simulationId ,
+              "availableOperations" -> x.totalOperations.map(_._1.id) ,
+              "usedOperationRecords" -> JsArray(List.empty) ,
+              "toDoRetryOperations" ->JsArray(List.empty) , "toBefailedOperations" -> JsArray(List.empty) )))
           case false=>
             Ok(DefaultRequestFormat.getValidationErrorResponse(List(("error","adding Url failed, try again"))))
         }

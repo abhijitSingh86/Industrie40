@@ -1,11 +1,9 @@
 package network
 
-import javax.inject.Inject
-
 import db.dao.SlickSimulationDao
-import play.api.libs.ws._
-import models.{Assembly, AssemblyOperation, Component, Operation}
+import models.{Assembly, Component, Operation}
 import play.api.Logger
+import play.api.libs.ws._
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
@@ -23,9 +21,13 @@ class NetworkProxy(ws:WSClient) {
   def sendAssemblyDetails(url: String, assembly: Assembly, assemblyUrls: Map[Int, String],operation:Operation) = {
       //send http request using assemblies details
     import play.api.libs.json._
-    import play.api.libs.functional.syntax._
+    val aurl = assemblyUrls.get(assembly.id).getOrElse("")
+    val host = if(aurl.split(":").size >2) aurl.split(":")(1).substring(2) else ""
+    val port = if(aurl.split(":").size >2) aurl.split(":")(2).toInt else 0
+
     val data = Json.obj("assemblyId" -> assembly.id,"assemblyName"->assembly.name
-    ,"url" -> assemblyUrls.get(assembly.id),"transportationTime"->50 , "operationTime"->operation.getOperationTime())
+    ,"url" -> url,"transportationTime"->5 , "operationTime"->assembly.totalOperations.filter(_._1.equals(operation)).head._2 ,
+    "hostname" -> host, "port" -> port , "operationId" -> operation.id )
     var status=0
     do {
       logger.info(s"Posted Url ${url}${componentAssemblyHook}")

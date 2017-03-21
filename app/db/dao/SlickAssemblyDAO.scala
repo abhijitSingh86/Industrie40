@@ -2,7 +2,6 @@ package db.dao
 import db.DBComponent
 import dbgeneratedtable.Tables
 import dbgeneratedtable.Tables.AssemblyOperationMappingRow
-import models.AssemblyOperation
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
@@ -21,15 +20,14 @@ class SlickAssemblyDAO extends AssemblyDao{
 
   def addAssemblyOperationMapping(assemblyId:Int,operations:List[(models.Operation,Int)]) = {
     operations.map(obj=>
-      assemblyOperationMapping += AssemblyOperationMappingRow(assemblyId,obj._1.getId(),obj._2)
+      assemblyOperationMapping += AssemblyOperationMappingRow(assemblyId,obj._1.id,obj._2)
     )
   }
 
   override def add(assembly: models.Assembly): Int = {
     Await.result(db.run(assemblies returning assemblies.map(_.id)  += new Tables.AssemblyRow(0,assembly.name)),Duration.Inf) match{
       case id:Int => {
-        val list = assembly.totalOperations.map(x=> (x,x.asInstanceOf[models.AssemblyOperation].getOperationTime().toInt))
-        addAssemblyOperationMapping(id,list)
+        addAssemblyOperationMapping(id,assembly.totalOperations)
         id
       }
     }
@@ -69,7 +67,7 @@ class SlickAssemblyDAO extends AssemblyDao{
       case Some(x) => {
         //transform into assembly object
         val operations = Await.result(db.run(assemblyOperationMapping.filter(_.assemblyId === x.id).result),Duration.Inf).map(y =>
-          AssemblyOperation.mapAssemblyOperationRowToModel(y,selectByOperationId(y.operationId)))
+          (selectByOperationId(y.operationId),y.operationTime))
         Some(new models.Assembly(x.id,x.name,operations.toList))
 
       }
