@@ -1,6 +1,12 @@
 import scala.collection.immutable.HashMap
 import scala.collection.mutable
 
+val url = "http://localhost:8080"
+
+url.split(":")(1).substring(2)
+url.split(":")(2)
+
+/*
 val a:List[Int]=List(1,2,4)
 val b:List[Int] =List(4,2,1 )
 

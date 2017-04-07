@@ -90,11 +90,11 @@ class ComponentScheduler extends Scheduler {
         val assembly = assemblies(count)
         assembly.totalOperations.map(x => {
           //if the operation is not in allocated operation, put it into a map for scheduling
-          assembly.allocatedOperations.contains(x) match {
+          assembly.allocatedOperations.contains(x._1) match {
             case false => {
-              opMap.contains(x) match {
-                case true => opMap += (x -> (opMap.get(x).get :+ assembly))
-                case false => opMap += (x -> List(assembly))
+              opMap.contains(x._1) match {
+                case true => opMap += (x._1 -> (opMap.get(x._1).get :+ assembly))
+                case false => opMap += (x._1 -> List(assembly))
               }
             }
             case true => None

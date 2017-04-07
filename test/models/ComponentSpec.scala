@@ -12,10 +12,10 @@ class ComponentSpec extends Specification{
 
   "Component" should{
     "return available processing step options for step 0" in {
-      val stepA = new ComponentOperation(name ="A")
-      val stepB = new ComponentOperation(name ="B")
-      val stepC = new ComponentOperation(name ="C")
-      val stepD = new ComponentOperation(name ="D")
+      val stepA = new Operation(1,"A")
+      val stepB = new Operation(1,"B")
+      val stepC = new Operation(1,"C")
+      val stepD = new Operation(1,"D")
 
       val seq1 = ProcessingSequence(List(stepA,stepB,stepC,stepD))
       val seq2 = ProcessingSequence(List(stepC,stepD,stepA,stepB))
@@ -28,10 +28,10 @@ class ComponentSpec extends Specification{
     }
 
     "return available processing step options for valid stepCounter i.e. 2" in {
-      val stepA = new ComponentOperation(name ="A")
-      val stepB = new ComponentOperation(name ="B")
-      val stepC = new ComponentOperation(name ="C")
-      val stepD = new ComponentOperation(name ="D")
+      val stepA = new Operation(1,"A")
+      val stepB = new Operation(1,"B")
+      val stepC = new Operation(1,"C")
+      val stepD = new Operation(1,"D")
 
       val seq1 = ProcessingSequence(List(stepA,stepB,stepC,stepD))
       val seq2 = ProcessingSequence(List(stepB,stepA,stepC,stepD))
@@ -50,10 +50,10 @@ class ComponentSpec extends Specification{
     }
 
     "return available processing step options for valid stepCounter i.e. 2" in {
-      val stepA = new ComponentOperation(name ="A")
-      val stepB = new ComponentOperation(name ="B")
-      val stepC = new ComponentOperation(name ="C")
-      val stepD = new ComponentOperation(name ="D")
+      val stepA = new Operation(1,"A")
+      val stepB = new Operation(1,"B")
+      val stepC = new Operation(1,"C")
+      val stepD = new Operation(1,"D")
 
       val seq1 = ProcessingSequence(List(stepA,stepB,stepC,stepD))
       val seq2 = ProcessingSequence(List(stepB,stepA,stepC,stepD))
@@ -75,10 +75,10 @@ class ComponentSpec extends Specification{
     }
 
     "return available processing step options for valid stepCounter i.e. 2" in {
-      val stepA = new ComponentOperation(name ="A")
-      val stepB = new ComponentOperation(name ="B")
-      val stepC = new ComponentOperation(name ="C")
-      val stepD = new ComponentOperation(name ="D")
+      val stepA = new Operation(1,"A")
+      val stepB = new Operation(1,"B")
+      val stepC = new Operation(1,"C")
+      val stepD = new Operation(1,"D")
 
       val seq1 = ProcessingSequence(List(stepA,stepB,stepC,stepD))
       val seq2 = ProcessingSequence(List(stepB,stepA,stepC,stepD))

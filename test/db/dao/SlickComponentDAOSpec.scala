@@ -1,8 +1,6 @@
 package db.dao
 
 import db.H2DBComponent
-import enums.PriorityEnum
-import models.{Component, ComponentOperation, ProcessingSequence}
 import org.junit.runner.RunWith
 import org.specs2.runner.JUnitRunner
 

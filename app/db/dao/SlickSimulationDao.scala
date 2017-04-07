@@ -2,8 +2,7 @@ package db.dao
 
 import db.DBComponent
 import dbgeneratedtable.Tables
-import dbgeneratedtable.Tables.{AssemblyOperationMappingRow, SimulationComponentMappingRow, SimulationassemblymapRow}
-import models.ComponentOperation
+import dbgeneratedtable.Tables.{SimulationComponentMappingRow, SimulationassemblymapRow}
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration

@@ -5,7 +5,7 @@ import scala.collection.mutable
 /**
   * Created by billa on 2016-12-15.
   */
-case class Assembly(id:Int,name:String,totalOperations:List[Operation] =List[Operation](),
+case class Assembly(id:Int,name:String,totalOperations:List[(Operation,Int)] =List[(Operation,Int)](),
                     allocatedOperations:mutable.ArrayBuffer[Operation] =mutable.ArrayBuffer[Operation]()) {
 
   def freeOperation(maybeOperation: Option[Operation]):Unit ={
@@ -19,7 +19,7 @@ case class Assembly(id:Int,name:String,totalOperations:List[Operation] =List[Ope
 
   def allocateOperation(operation: Operation): Boolean ={
     synchronized {
-      totalOperations.contains(operation) match {
+      totalOperations.filter(_._1.equals(operation)).contains(operation) match {
         case true =>
           allocatedOperations += operation
           true

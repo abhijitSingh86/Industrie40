@@ -1,8 +1,5 @@
 package db
 
-import db.dao.{SlickComponentDAO, SlickOperationDao}
-import enums.PriorityEnum
-import models.{Component, ComponentOperation, ProcessingSequence}
 import org.junit.runner.notification.RunNotifier
 import org.specs2.runner.JUnitRunner
 
