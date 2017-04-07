@@ -4,7 +4,7 @@ import db.DBComponent
 import dbgeneratedtable.Tables
 import models.{ComponentOperation, Operation}
 
-import scala.concurrent.Await
+import scala.concurrent.{Await, Future}
 import scala.concurrent.duration.Duration
 
 /**
@@ -37,9 +37,11 @@ trait SlickOperationDao{
     }
   }
 
-  def add(operation:Operation ):Int = {
+  def add(operation:Operation ):Future[Int]
+  = {
     val o = db.run(operations returning operations.map(_.id) += Tables.OperationRow(0,operation.getName))
-    val k =Await.result(o , Duration.Inf)
-    k
+//    val k =Await.result(o , Duration.Inf)
+//    k
+    o
   }
 }

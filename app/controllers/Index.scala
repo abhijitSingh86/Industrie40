@@ -20,7 +20,11 @@ class Index @Inject()(ws:WSClient)  extends Controller{
 
 
 
-  def index() =Action{
+  def index() =Action {
+    Ok(views.html.react()).as("text/html")
+  }
+
+  def start() =Action{
     val proxy = new NetworkProxy(ws) with SlickSimulationDao with MySqlDBComponent
     val assemblyDao:AssemblyDao = new SlickAssemblyDAO with MySqlDBComponent with SlickOperationDao
     val simulationDao = new SlickSimulationDao with MySqlDBComponent
