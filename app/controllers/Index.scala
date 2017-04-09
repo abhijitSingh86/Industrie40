@@ -6,6 +6,7 @@ import db.MySqlDBComponent
 import db.dao._
 import json.DefaultRequestFormat
 import network.NetworkProxy
+import play.api.Logger
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
 import play.api.libs.ws.WSClient
@@ -19,25 +20,31 @@ import scheduler.{ComponentQueue, ComponentScheduler, SchedulerThread}
 class Index @Inject()(ws:WSClient)  extends Controller{
 
 
+
   var schedulerThread:SchedulerThread = null
   def index() =Action {
     Ok(views.html.react()).as("text/html")
   }
 
   def start() =Action{
+    Logger.info("Start request recieved.. current thread"+schedulerThread)
+
     val proxy = new NetworkProxy(ws) with SlickSimulationDao with MySqlDBComponent
     val assemblyDao:AssemblyDao = new SlickAssemblyDAO with MySqlDBComponent with SlickOperationDao
     val simulationDao = new SlickSimulationDao with MySqlDBComponent
     val command = new ScheduleCommand(2,proxy,assemblyDao,simulationDao,new ComponentScheduler())
     val scheduler = new SchedulerThread(5000,command)
     schedulerThread = scheduler
-    scheduler.startExecution()
+    SchedulerThread.startExecution(scheduler)
+    Logger.info("Schedule thread created.. current thread"+schedulerThread.toString)
     Ok("Starting the scheduler")
   }
 
   def stop() = Action {
+    Logger.info("Stop request recieved.. current thread"+schedulerThread)
     if(schedulerThread !=null){
-      schedulerThread.endExecution()
+      SchedulerThread.endExecution(schedulerThread)
+      Logger.info("Stop request processed.. current thread"+schedulerThread.toString)
     }
     Ok("Thread Stopped")
   }

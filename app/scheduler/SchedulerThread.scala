@@ -6,29 +6,38 @@ import scheduler.commands.Command
 /**
   * Created by billa on 07.01.17.
   */
+
+
+object SchedulerThread{
+
+  var thread:Thread  = null
+  def  startExecution(o:SchedulerThread): Unit ={
+    synchronized {
+      o.runflag = true
+      thread = new Thread(o)
+      thread.start()
+      Logger.info("****************************************************************************")
+    }
+  }
+
+  def endExecution(o:SchedulerThread): Unit ={
+    synchronized {
+      if (thread != null) {
+        o.runflag = false
+        //  thread.join()
+      }
+    }
+  }
+}
+
 class SchedulerThread(sleepTime:Int,command:Command)  extends Runnable{
 
   val logger = Logger(this.getClass())
 
   private  var runflag = false
-  private var thread:Thread = null
+//  private var thread:Thread = null
 
-  def  startExecution(): Unit ={
-    synchronized {
-      runflag = true
-      thread = new Thread(this)
-      thread.run()
-    }
-  }
 
-  def endExecution(): Unit ={
-    synchronized {
-      if (thread != null) {
-        runflag = false
-        thread.join()
-      }
-    }
-  }
 
   override def run(): Unit = {
     logger.info("Scheduler thread started")
