@@ -34,7 +34,7 @@ case class ApiResponse[A] private (underlying: Future[Either[ApiErrors, A]]) {
   def asFuture(implicit ec: ExecutionContext): Future[Either[ApiErrors, A]] = {
     underlying recover { case err =>
       val apiErrors = ApiErrors(List(ApiError.unexpected(err.getMessage)))
-      scala.Left(apiErrors)
+      Left(apiErrors)
     }
   }
 }

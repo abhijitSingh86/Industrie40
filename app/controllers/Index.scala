@@ -19,7 +19,7 @@ import scheduler.{ComponentQueue, ComponentScheduler, SchedulerThread}
 class Index @Inject()(ws:WSClient)  extends Controller{
 
 
-
+  var schedulerThread:SchedulerThread = null
   def index() =Action {
     Ok(views.html.react()).as("text/html")
   }
@@ -30,8 +30,16 @@ class Index @Inject()(ws:WSClient)  extends Controller{
     val simulationDao = new SlickSimulationDao with MySqlDBComponent
     val command = new ScheduleCommand(2,proxy,assemblyDao,simulationDao,new ComponentScheduler())
     val scheduler = new SchedulerThread(5000,command)
-    new Thread(scheduler).start()
+    schedulerThread = scheduler
+    scheduler.startExecution()
     Ok("Starting the scheduler")
+  }
+
+  def stop() = Action {
+    if(schedulerThread !=null){
+      schedulerThread.endExecution()
+    }
+    Ok("Thread Stopped")
   }
 
 

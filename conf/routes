@@ -4,6 +4,7 @@
 
 # Home page
 GET /start                          controllers.Index.start
+GET /stop                          controllers.Index.stop
 GET /                               controllers.Index.index
 POST /initComponent                 controllers.ComponentController.initComponentRequest
 POST /initAssembly                  controllers.Index.initAssemblyRequest

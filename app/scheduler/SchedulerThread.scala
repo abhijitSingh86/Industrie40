@@ -9,9 +9,30 @@ import scheduler.commands.Command
 class SchedulerThread(sleepTime:Int,command:Command)  extends Runnable{
 
   val logger = Logger(this.getClass())
+
+  private  var runflag = false
+  private var thread:Thread = null
+
+  def  startExecution(): Unit ={
+    synchronized {
+      runflag = true
+      thread = new Thread(this)
+      thread.run()
+    }
+  }
+
+  def endExecution(): Unit ={
+    synchronized {
+      if (thread != null) {
+        runflag = false
+        thread.join()
+      }
+    }
+  }
+
   override def run(): Unit = {
     logger.info("Scheduler thread started")
-    while(true){
+    while(runflag){
       logger.info("Scheduler thread run method started")
       //Sleep for a while before scheduling
       try{
