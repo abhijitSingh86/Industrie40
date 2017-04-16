@@ -1,12 +1,13 @@
 package db.dao
 
+import controllers.{ApiError, ApiErrors, ApiResponse}
 import db.DBComponent
 import dbgeneratedtable.Tables
 import models.Operation
 
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration.Duration
-
+import scala.concurrent.ExecutionContext.Implicits.global
 /**
   * Created by billa on 27.12.16.
   */
@@ -37,9 +38,8 @@ trait SlickOperationDao{
     }
   }
 
-  def add(operation:Operation ):Int = {
+  def add(operation:Operation ):ApiResponse[Int] = {
     val o = db.run(operations returning operations.map(_.id) += Tables.OperationRow(0,operation.name))
-    val k =Await.result(o , Duration.Inf)
-    k
+    ApiResponse.Async.Right(o)
   }
 }

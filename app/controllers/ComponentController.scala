@@ -10,27 +10,25 @@ import scheduler.ComponentQueue
 /**
   * Created by billa on 09.01.17.
   */
-class ComponentController extends Controller{
+class ComponentController extends Controller with SlickSimulationDao with SlickComponentDAO with SlickOperationDao with MySqlDBComponent{
 
 
   def initComponentRequest() = Action { implicit request =>
     val json =request.body.asJson
 
     //get Component DAO
-    val componentDao:ComponentDao = new SlickComponentDAO  with SlickOperationDao with MySqlDBComponent
-    val simulationDao = new SlickSimulationDao with MySqlDBComponent
     val componentId = (json.get \ "componentId").get.as[Int]
     val simulationId = (json.get \ "simulationId").get.as[Int]
 
     val url =(json.get \ "url").get.as[String]
     //check for init id and url params
-    componentDao.selectByComponentId(componentId ) match{
+      selectByComponentId(componentId ) match{
       //check if this exist for simulation ID
-      case Some(x) if simulationDao.isComponentMappedToSimulation(simulationId,x.id) =>
+      case Some(x) if isComponentMappedToSimulation(simulationId,x.id) =>
       {
         // In Future -- check the url existence by calling hearbeat check on given url
         //add url into component simulation table
-        simulationDao.addComponentUrlToItsMappingEntry(simulationId,x.id,url) match{
+        addComponentUrlToItsMappingEntry(simulationId,x.id,url) match{
           case true =>
             //return OK response
             Ok(DefaultRequestFormat.getSuccessResponse(Json.obj("id" -> x.id,"name" -> x.name , "totalOperationCount" -> x.totalReqdOperationCount)))
@@ -49,14 +47,12 @@ class ComponentController extends Controller{
     val json =request.body.asJson
 
     //get Component DAO
-    val componentDao:ComponentDao = new SlickComponentDAO  with SlickOperationDao with MySqlDBComponent
-    val simulationDao = new SlickSimulationDao with MySqlDBComponent
     val componentId = (json.get \ "componentId").get.as[Int]
     val simulationId = (json.get \ "simulationId").get.as[Int]
     //check for init id and url params
-    componentDao.selectByComponentId(componentId ) match{
+    selectByComponentId(componentId ) match{
       //check if this exist for simulation ID
-      case Some(x) if simulationDao.isComponentMappedToSimulation(simulationId,x.id) =>
+      case Some(x) if isComponentMappedToSimulation(simulationId,x.id) =>
       {
         ComponentQueue.push(x)
         //return OK response

@@ -1,7 +1,7 @@
 <configuration>
 
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${user.dir}/logs/application.log</file>
+        <file>./logs/application.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <!-- Daily rollover with compression -->
             <fileNamePattern>application-log-%d{yyyy-MM-dd}.gz</fileNamePattern>
@@ -14,10 +14,25 @@
     </appender>
 
     <appender name="ACCESS_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${user.dir}/logs/access.log</file>
+        <file>./logs/access.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <!-- daily rollover with compression -->
             <fileNamePattern>access-log-%d{yyyy-MM-dd}.gz</fileNamePattern>
+            <!-- keep 1 week worth of history -->
+            <maxHistory>7</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%date{yyyy-MM-dd HH:mm:ss ZZZZ} %message%n</pattern>
+            <!-- this quadruples logging throughput -->
+            <immediateFlush>false</immediateFlush>
+        </encoder>
+    </appender>
+
+    <appender name="SEP_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>./logs/file.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- daily rollover with compression -->
+            <fileNamePattern>file-log-%d{yyyy-MM-dd}.gz</fileNamePattern>
             <!-- keep 1 week worth of history -->
             <maxHistory>7</maxHistory>
         </rollingPolicy>
@@ -43,6 +58,9 @@
     <!-- additivity=false ensures access log data only goes to the access log -->
     <logger name="access" level="INFO" additivity="false">
         <appender-ref ref="ACCESS_FILE" />
+    </logger>
+    <logger name="file" level="INFO" additivity="false">
+        <appender-ref ref="SEP_FILE" />
     </logger>
 
     <root level="DEBUG">

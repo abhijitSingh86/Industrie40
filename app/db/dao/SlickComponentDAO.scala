@@ -11,7 +11,7 @@ import scala.concurrent.duration.Duration
 /**
   * Created by billa on 2016-12-24.
   */
-class SlickComponentDAO extends ComponentDao{
+trait SlickComponentDAO extends ComponentDao{
   this: SlickOperationDao with  DBComponent  =>
 
   import driver.api._
@@ -106,7 +106,7 @@ class SlickComponentDAO extends ComponentDao{
 
   //---------------------simulation id based database methods
 
-  override def selectBySimulationId(simulationId: Int): List[Component] = ???
+  override def selectBySimulationId1(simulationId: Int): List[Component] = ???
   //    Await.result(db.run(components.filter(_.id === componentId).result),Duration.Inf) match {
   //      case x:Tables.ComponentRow=> {
   //        Await.result(db.run(componentsOperationMapping.filter(_.componentId === x.id).result),Duration.Inf) match{

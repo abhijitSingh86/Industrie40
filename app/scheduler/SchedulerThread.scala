@@ -1,7 +1,7 @@
 package scheduler
 
-import play.api.Logger
 import scheduler.commands.Command
+import utils.LoggingUtil._
 
 /**
   * Created by billa on 07.01.17.
@@ -16,7 +16,7 @@ object SchedulerThread{
       o.runflag = true
       thread = new Thread(o)
       thread.start()
-      Logger.info("****************************************************************************")
+      fileLog.info("****************************************************************************")
     }
   }
 
@@ -32,7 +32,6 @@ object SchedulerThread{
 
 class SchedulerThread(sleepTime:Int,command:Command)  extends Runnable{
 
-  val logger = Logger(this.getClass())
 
   private  var runflag = false
 //  private var thread:Thread = null
@@ -40,24 +39,24 @@ class SchedulerThread(sleepTime:Int,command:Command)  extends Runnable{
 
 
   override def run(): Unit = {
-    logger.info("Scheduler thread started")
+    fileLog.info("Scheduler thread started")
     while(runflag){
-      logger.info("Scheduler thread run method started")
+      fileLog.info("Scheduler thread run method started")
       //Sleep for a while before scheduling
       try{
-        logger.info("Scheduler thread run method in sleep call")
+        fileLog.info("Scheduler thread run method in sleep call")
         Thread.sleep(sleepTime)
-        logger.info("Scheduler thread run method after sleep call")
+        fileLog.info("Scheduler thread run method after sleep call")
       }
       catch{
         case ex:Exception => {
-          logger.error("Exception while sleeping",ex)
+          fileLog.error("Exception while sleeping",ex)
           print("error occurred while Sleeping thread")
         }
       }
-      logger.info("Scheduler thread is invoking the command")
+      fileLog.info("Scheduler thread is invoking the command")
       command.execute()
-      logger.info("Scheduler thread is finished invoking the command")
+      fileLog.info("Scheduler thread is finished invoking the command")
     }
   }
 }

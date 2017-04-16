@@ -11,7 +11,7 @@ trait MySqlDBComponent extends DBComponent {
 
   import driver.api._
 
-  val db: Database = MySqlDB.connectionPool
+  override val db: Database = MySqlDB.connectionPool
 
 }
 

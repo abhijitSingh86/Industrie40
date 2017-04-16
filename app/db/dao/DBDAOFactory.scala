@@ -28,7 +28,7 @@ trait ComponentDao{
   def update(component:models.Component):Boolean
   def delete(componentId:Int):Boolean
   def selectAll():List[models.Component]
-  def selectBySimulationId(simulationId:Int):List[models.Component]
+  def selectBySimulationId1(simulationId:Int):List[models.Component]
   def selectByComponentId(componentId:Int):Option[models.Component]
 }
 

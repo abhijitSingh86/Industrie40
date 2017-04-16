@@ -23,7 +23,7 @@ class Index @Inject()(ws:WSClient)  extends Controller{
 
   var schedulerThread:SchedulerThread = null
   def index() =Action {
-    Ok(views.html.react()).as("text/html")
+    Ok("react")
   }
 
   def start() =Action{

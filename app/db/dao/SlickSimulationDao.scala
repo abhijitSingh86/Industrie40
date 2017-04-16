@@ -1,12 +1,13 @@
 package db.dao
 
+import controllers.ApiResponse
 import db.DBComponent
 import dbgeneratedtable.Tables
 import dbgeneratedtable.Tables.{SimulationComponentMappingRow, SimulationassemblymapRow}
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
-
+import scala.concurrent.ExecutionContext.Implicits.global
 /**
   * Created by billa on 27.12.16.
   */
@@ -92,10 +93,9 @@ trait SlickSimulationDao{
         map(x=>(x.assemblyId,x.url.getOrElse(""))).toList
   }
 
-  def add(simulation:models.Simulation):Int = {
+  def add(simulation:models.Simulation):ApiResponse[Int] = {
     val o = db.run(simulations returning simulations.map(_.id) += Tables.SimulationRow(0,simulation.name,Some(simulation.desc)))
-    val k =Await.result(o , Duration.Inf)
-    k
+    ApiResponse.Async.Right(o)
   }
 
 
