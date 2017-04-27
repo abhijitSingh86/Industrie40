@@ -1,7 +1,6 @@
 package controllers
 
-import db.MySqlDBComponent
-import db.dao.{ComponentDao, SlickComponentDAO, SlickOperationDao, SlickSimulationDao}
+import db.DbModule
 import json.DefaultRequestFormat
 import play.api.libs.json.Json
 import play.api.mvc.{Action, Controller}
@@ -10,8 +9,7 @@ import scheduler.ComponentQueue
 /**
   * Created by billa on 09.01.17.
   */
-class ComponentController extends Controller with SlickSimulationDao with SlickComponentDAO with SlickOperationDao with MySqlDBComponent{
-
+class ComponentController(db:DbModule) extends Controller {
 
   def initComponentRequest() = Action { implicit request =>
     val json =request.body.asJson
@@ -22,13 +20,13 @@ class ComponentController extends Controller with SlickSimulationDao with SlickC
 
     val url =(json.get \ "url").get.as[String]
     //check for init id and url params
-      selectByComponentId(componentId ) match{
+    db.getComponentMappedToSimulationId(componentId ,simulationId) match{
       //check if this exist for simulation ID
-      case Some(x) if isComponentMappedToSimulation(simulationId,x.id) =>
+      case Some(x) =>
       {
         // In Future -- check the url existence by calling hearbeat check on given url
         //add url into component simulation table
-        addComponentUrlToItsMappingEntry(simulationId,x.id,url) match{
+        db.addComponentUrlToSimulationMapEntry(simulationId,x.id,url) match{
           case true =>
             //return OK response
             Ok(DefaultRequestFormat.getSuccessResponse(Json.obj("id" -> x.id,"name" -> x.name , "totalOperationCount" -> x.totalReqdOperationCount)))
@@ -50,9 +48,8 @@ class ComponentController extends Controller with SlickSimulationDao with SlickC
     val componentId = (json.get \ "componentId").get.as[Int]
     val simulationId = (json.get \ "simulationId").get.as[Int]
     //check for init id and url params
-    selectByComponentId(componentId ) match{
-      //check if this exist for simulation ID
-      case Some(x) if isComponentMappedToSimulation(simulationId,x.id) =>
+    db.getComponentMappedToSimulationId(componentId,simulationId ) match{
+      case Some(x)  =>
       {
         ComponentQueue.push(x)
         //return OK response

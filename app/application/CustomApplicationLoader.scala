@@ -1,8 +1,13 @@
 package application
 
+import db._
+import db.dao._
 import play.api.ApplicationLoader.Context
 import play.api._
+import network.NetworkProxy
 import router.Routes
+import scheduler.{ComponentScheduler, SchedulerThread}
+import scheduler.commands.ScheduleCommand
 
 import scala.concurrent.Future
 
@@ -21,12 +26,22 @@ class CustomApplicationLoader extends ApplicationLoader {
 class MyComponents(context:Context) extends BuiltInComponentsFromContext(context){
   val logger = Logger(this.getClass())
 
-  logger.info("MyComponent class in initializing -- about to start the Timely scheduler")
+  logger.info("Creating the instantiation graph for Compile time dependency injection")
+//  lazy val slickSimulationDao = new SlickSimulationDao with SlickOperationDao with MySqlDBComponent
+  lazy val networkProxy = new NetworkProxy(ws)
+  lazy val dbModule:DbModule = new SlickModuleImplementation() with SlickSimulationDaoRepo with SlickAssemblyDaoRepo
+    with SlickComponentDaoRepo with SlickOperationDao with MySqlDBComponent
 
+  lazy val command = new ScheduleCommand(dbModule,new ComponentScheduler(),networkProxy)
+
+
+  lazy val schedulerThread = new SchedulerThread(5000,command)
   logger.info("MyComponent started the Timely scheduler")
-  lazy val router = new Routes(httpErrorHandler, applicationController,componentController, assets)
-  lazy val componentController = new controllers.ComponentController
-  lazy val applicationController = new controllers.Index(ws)
+  lazy val router = new Routes(httpErrorHandler,schedulingController, applicationController,componentController, assets)
+  lazy val componentController = new controllers.ComponentController(dbModule)
+  lazy val applicationController = new controllers.Index(ws) with SlickAssemblyDaoRepo with SlickSimulationDaoRepo
+    with SlickOperationDao with MySqlDBComponent
+  lazy val schedulingController = new controllers.SchedulingController(schedulerThread)
   lazy val assets = new controllers.Assets(httpErrorHandler)
 
 

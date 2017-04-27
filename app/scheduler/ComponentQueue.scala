@@ -12,7 +12,12 @@ object ComponentQueue {
 
   val logger = Logger(this.getClass())
   val requestQueue:mutable.Queue[Component] = new mutable.Queue[Component]()
+  private var simulationId =0
 
+  def updateSimulationId(id:Int): Unit ={
+    simulationId  = id
+  }
+  def getSimulationId():Int=simulationId
 
   def push(component:Component): Unit ={
     logger.info("push invoked size"+requestQueue.size)

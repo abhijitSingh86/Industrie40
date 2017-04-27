@@ -11,9 +11,9 @@ import org.specs2.runner.JUnitRunner
 class SlickComponentDAOSpec extends WithDbSpec  {
 
   "Component Dao" should{
-    val obj:ComponentDao = new SlickComponentDAO with H2DBComponent with SlickOperationDao
+    val obj = new SlickComponentDaoRepo  with H2DBComponent with SlickOperationDao
     "Select all component returns null " in {
-        val list = obj.selectAll()
+        val list = obj.component.selectAll()
         list.size mustEqual(1)
       }
 
@@ -33,7 +33,7 @@ class SlickComponentDAOSpec extends WithDbSpec  {
 //      val  component = new Component(0,"someName",PriorityEnum.NORMAL, List(seq1,seq2))
 //      componentDao.add(component)
 
-      val list = obj.selectAll()
+      val list = obj.component.selectAll()
       list.size mustEqual(1)
 //      list(0).processingSequences.contains(ProcessingSequence(List(ids("A"),ids("B"),ids("C"),ids("D")))) mustEqual(true)
 

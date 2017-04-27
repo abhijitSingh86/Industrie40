@@ -2,19 +2,19 @@ package filters
 
 
 import javax.inject.Inject
+
 import akka.stream.Materializer
+import play.api.mvc._
+import utils.LoggingUtil
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import play.api.Logger
-import play.api.mvc._
-import play.api._
 
 /**
   * Created by billa on 10.01.17.
   */
 class AccessLoggingFilter @Inject() (implicit val mat: Materializer) extends Filter {
 
-  val accessLogger = Logger("access")
 
   def apply(next: (RequestHeader) => Future[Result])(request: RequestHeader): Future[Result] = {
 
@@ -29,7 +29,7 @@ class AccessLoggingFilter @Inject() (implicit val mat: Materializer) extends Fil
 
       val msg = s"method=${request.method} uri=${request.uri} remote-address=${request.remoteAddress}" +
         s" status=${result.header.status} requestTime=${requestTime}";
-      accessLogger.info(msg)
+      LoggingUtil.accessLog.info(msg)
 
 
     })

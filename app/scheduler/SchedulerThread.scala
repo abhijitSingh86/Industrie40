@@ -7,35 +7,29 @@ import utils.LoggingUtil._
   * Created by billa on 07.01.17.
   */
 
+class SchedulerThread(sleepTime:Int,command:Command)  extends Runnable{
 
-object SchedulerThread{
 
-  var thread:Thread  = null
-  def  startExecution(o:SchedulerThread): Unit ={
+  private  var runflag = false
+  private var thread:Thread  = null
+
+  def  startExecution(): Unit ={
     synchronized {
-      o.runflag = true
-      thread = new Thread(o)
+      runflag = true
+      thread = new Thread(this)
       thread.start()
       fileLog.info("****************************************************************************")
     }
   }
 
-  def endExecution(o:SchedulerThread): Unit ={
+  def endExecution(): Unit ={
     synchronized {
       if (thread != null) {
-        o.runflag = false
+        runflag = false
         //  thread.join()
       }
     }
   }
-}
-
-class SchedulerThread(sleepTime:Int,command:Command)  extends Runnable{
-
-
-  private  var runflag = false
-//  private var thread:Thread = null
-
 
 
   override def run(): Unit = {

@@ -1,7 +1,6 @@
 package network
 
-import db.dao.SlickSimulationDao
-import models.{Assembly, Component, Operation}
+import models.{Assembly, Operation}
 import play.api.Logger
 import play.api.libs.ws._
 
@@ -12,7 +11,6 @@ import scala.concurrent.duration.Duration
   * Created by billa on 07.01.17.
   */
 class NetworkProxy(ws:WSClient) {
-  this: SlickSimulationDao =>
 
   val logger = Logger(this.getClass())
   val componentAssemblyHook = "/assignAssembly"
@@ -37,15 +35,6 @@ class NetworkProxy(ws:WSClient) {
     }while (status != 200 && status !=5)
   }
 
-  def sendScheduleInformationToComponent(simulationId: Int, components: List[Component]) = {
-    val urls = getAllComponentUrlBySimulationId(simulationId).toMap
-    val assemblyUrls =getAllAssemblyUrlBySimulationId(simulationId).toMap
-    components.map(x => {
-      // attach assembly in simulationAssemblyMapping
-      assignAssemblytoComponentSimulationMapping(x.getCurrentAllocatedAssembly().get.id,x.id,simulationId)
-      // send request at component attached urls for assembly assignments
-      sendAssemblyDetails(urls.get(x.id).get,x.getCurrentAllocatedAssembly().get,assemblyUrls,x.getCurrentOperation().get)
-    })
-  }
+
 
 }

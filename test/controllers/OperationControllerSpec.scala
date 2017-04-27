@@ -1,7 +1,7 @@
 package controllers
 
 import db.H2DBComponent
-import db.dao.{SlickOperationDao, SlickSimulationDao}
+import db.dao.SlickOperationDao
 import play.api.libs.json.Json
 import play.api.mvc._
 import play.api.test._

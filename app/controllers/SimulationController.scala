@@ -1,25 +1,25 @@
 package controllers
 
-import db.{DBComponent, MySqlDBComponent}
-import db.dao.SlickSimulationDao
+import db.DBComponent
+import db.dao.SimulationDaoRepo
 import models.Simulation
 import play.api.mvc.{Action, AnyContent, Controller, Request}
 
-import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 /**
   * Created by billa on 16.04.17.
   */
 class SimulationController extends Controller {
-  this: SlickSimulationDao with DBComponent =>
+  this: SimulationDaoRepo with DBComponent =>
 
 
   def addSimulation() = Action.async { request =>
     ApiResponse{
       for{
-        simulation <- validationHandler(request)
-        id <- add(simulation)
+        simulationObj <- validationHandler(request)
+        id <- simulation.add(simulationObj)
       }yield id
 
     }

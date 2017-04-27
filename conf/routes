@@ -3,8 +3,8 @@
 # ~~~~
 
 # Home page
-GET /start                          controllers.Index.start
-GET /stop                          controllers.Index.stop
+GET /start                          controllers.SchedulingController.start
+GET /stop                           controllers.SchedulingController.stop
 GET /                               controllers.Index.index
 POST /initComponent                 controllers.ComponentController.initComponentRequest
 POST /initAssembly                  controllers.Index.initAssemblyRequest
