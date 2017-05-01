@@ -8,26 +8,11 @@
   "directories": {
     "test": "test"
   },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/nouhoum/play-react-webpack.git"
-  },
-  "keywords": [
-    "play",
-    "reactjs",
-    "webpack"
-  ],
-  "bugs": {
-    "url": "https://github.com/nouhoum/play-react-webpack/issues"
-  },
   "homepage": "https://github.com/nouhoum/play-react-webpack#readme",
   "dependencies": {
+    "axios": "^0.16.1",
     "react": "^0.14.5",
     "react-dom": "^0.14.5"
-
   },
   "devDependencies": {
     "babel-core": "^6.4.0",
@@ -44,9 +29,11 @@
     "sass-loader": "^3.2.3",
     "style-loader": "^0.13.2",
     "webpack": "^1.12.10",
-    "react-data-grid":"2.0.1",
-    "jquery":"3.2.1"
-
-
+    "react-data-grid": "2.0.1",
+    "jquery": "3.2.1",
+    "immutable": "^3.4.1",
+    "object-assign": "^4.1.1",
+    "react-tools": "^0.13.3",
+    "reactify": "^1.1.1"
   }
 }

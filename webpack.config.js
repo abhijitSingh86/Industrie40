@@ -3,7 +3,7 @@
 var webpack = require('webpack'),
     jsPath  = 'app/assets/javascripts',
     path = require('path'),
-    srcPath = path.join(__dirname, 'app/assets/javascripts');
+    srcPath = path.join(__dirname, './app/assets/javascripts');
 
 var config = {
     target: 'web',
@@ -12,12 +12,7 @@ var config = {
         //, common: ['react-dom', 'react']
     },
     resolve: {
-        alias: {
-            rdg:"react-data-grid/dist/react-data-grid.js"
-        },
-        // root: srcPath,
-        extensions: ['.js'],
-        modules: ['node_modules', jsPath]
+        extensions: [ '', '.js', '.jsx' ]
     },
     output: {
         path:path.resolve(__dirname, jsPath, 'build'),
@@ -33,7 +28,10 @@ var config = {
                 exclude: /node_modules/,
                 loader: 'babel-loader'
             },
-            { test: /\.css$/, loader: 'style-loader!css-loader' },
+            {
+                test: /\.css$/,
+                loader: 'style-loader!css-loader'
+            },
             {
                 test: /\.scss$/,
                 include: /\/app\/assets/,
@@ -46,12 +44,6 @@ var config = {
         new webpack.optimize.UglifyJsPlugin({
             compress: { warnings: false },
             output: { comments: false }
-        }),
-        new webpack.NoEmitOnErrorsPlugin(),
-        new webpack.ProvidePlugin({
-            jQuery: 'jquery',
-            $: 'jquery',
-            jquery: 'jquery'
         })
     ]
 };
