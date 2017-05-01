@@ -1,3 +1,4 @@
+
 name := "dikschedulingapp"
 
 version := "1.0"
@@ -5,6 +6,22 @@ version := "1.0"
 lazy val `dikschedulingapp` = (project in file(".")).enablePlugins(PlayScala)
 
 scalaVersion := "2.11.8"
+
+
+PlayKeys.playRunHooks <+= baseDirectory.map(Webpack(_))
+
+excludeFilter in (Assets, JshintKeys.jshint) := "*.js"
+
+watchSources ~= { (ws: Seq[File]) =>
+  ws filterNot { path =>
+    path.getName.endsWith(".js") || path.getName == ("build")
+  }
+}
+
+pipelineStages := Seq(digest, gzip)
+
+resolvers += "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases"
+
 
 
 libraryDependencies ++= Seq( cache , ws   , specs2 % Test )

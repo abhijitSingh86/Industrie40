@@ -23,7 +23,7 @@ this : AssemblyDaoRepo with SimulationDaoRepo=>
 
   var schedulerThread:SchedulerThread = null
   def index() =Action {
-    Ok("react")
+    Ok(views.html.index("Your new application is ready."))
   }
 
 //  def start() =Action{
