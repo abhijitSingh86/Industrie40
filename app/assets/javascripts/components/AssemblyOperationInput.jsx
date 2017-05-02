@@ -18,7 +18,7 @@ class AssemblyOperationInput extends React.Component{
     var value = e.target.value;
     if(!isNaN(value) && value != ""){
     var arr = this.props.focusArr;
-    arr[e.target.id].time = e.target.value;
+    arr[e.target.id].time = parseInt(e.target.value);
     this.props.saveHandler(arr);
     }else{
       e.target.value="";
@@ -28,7 +28,7 @@ class AssemblyOperationInput extends React.Component{
   handleCustomSelectChange(id,valueId){
     if(id != undefined) {
       var arr = this.props.focusArr;
-      arr[id].opid = valueId;
+      arr[id].id = parseInt(valueId);
       this.props.saveHandler(arr);
     }
   }
@@ -40,7 +40,7 @@ class AssemblyOperationInput extends React.Component{
     var row1=[];
     var row2=[];
     for(var i=0;i<this.props.count;i++){
-          row1.push(<td><CustomSelect fieldValues={this.props.fieldValues} id={i} focusId={this.props.focusArr[i].opid} saveHandler={this.handleCustomSelectChange} /></td>);
+          row1.push(<td><CustomSelect fieldValues={this.props.fieldValues} id={i} focusId={this.props.focusArr[i].id} saveHandler={this.handleCustomSelectChange} /></td>);
           row2.push(<td><input type="text"  id={i} onChange={this.handleInputTimeChange} value={this.props.focusArr[i].time}/></td>);
       }
 

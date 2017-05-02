@@ -35,7 +35,7 @@ class CustomAssemblyRow extends React.Component {
     for(var i=0;i<opd.length;i++){
       otable.push(
         <tr>
-          <td>{opd[i].opid}</td>
+          <td>{opd[i].label}</td>
           <td>{
             opd[i].time
           }</td>

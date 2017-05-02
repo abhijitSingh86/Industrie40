@@ -15,17 +15,17 @@ var Assembly = React.createClass({
     var value = e.target.value;
     if(!isNaN(value) && value != ""){
       var count = (parseInt(value));
-      this.inputOperationCount = value;
+      this.inputOperationCount = count;
 
       var arr=[];
-      for(var i=0;i<value;i++){
+      for(var i=0;i<count;i++){
         arr.push({
           time:10,
-          opid:this.props.fieldValues.operations[i%this.props.fieldValues.operations.length].id
+          id:this.props.fieldValues.operations[i%this.props.fieldValues.operations.length].id
         });
       }
       this.setState({
-        opCount:value,
+        opCount:count,
         operationDetails:arr
       })
     }else{
@@ -100,10 +100,27 @@ var Assembly = React.createClass({
     );
   },
   add(){
+   var od = this.state.operationDetails
+      var tempArr = []
+      for(var i=0;i< od.length; i++) {
+        var propOp =  this.props.fieldValues.operations;
+          for(var j=0;j<propOp.length; j++) {
+          if(od[i].id == propOp[j].id) {
+            tempArr.push({
+                time:od[i].time,
+                id:propOp[j].id,
+                label:propOp[j].label
+            });
+            }
+          }
+          }
+
+          console.log("Assembly")
+      console.log(tempArr)
     var data = {
       id:this.state.localAssemblyCounter,
       name:this.assemblyName.value,
-      operationDetails:this.state.operationDetails
+      operationDetails:tempArr
     }
     var arr=this.state.assemblyArr
     arr.push(data);

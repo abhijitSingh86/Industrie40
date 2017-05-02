@@ -84,7 +84,8 @@ var Registration = React.createClass({
                          saveValues={this.saveValues}
                          nextStep={this.nextStep}/>
       case 5:
-        return <Success fieldValues={fieldValues} />
+        return <Success fieldValues={fieldValues}
+                        previousStep={this.previousStep}/>
     }
   },
 

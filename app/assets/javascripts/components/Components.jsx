@@ -45,7 +45,7 @@ var Components = React.createClass({
       var opSeqArr=[];
       var defaultSelectArr=[];
       for(var i=0;i<count;i++){
-        defaultSelectArr[i] = i % this.props.fieldValues.operations.length;
+        defaultSelectArr[i] = this.props.fieldValues.operations[i % this.props.fieldValues.operations.length];
       }
       opSeqArr[0]=defaultSelectArr;
 

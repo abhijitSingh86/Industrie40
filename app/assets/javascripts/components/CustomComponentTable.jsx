@@ -17,9 +17,9 @@ class CustomComponentRow extends React.Component {
   colFun(arr){
     var out = [];
     for(var i=0;i<arr.length;i++){
-      out.push(<td>{arr[i]}</td>)
+      out.push(<td>{arr[i].label}</td>)
     }
-    console.log(arr);
+    console.log(out);
     return out;
   };
   render() {
