@@ -90,14 +90,25 @@ trait SlickSimulationDaoRepo extends SimulationDaoRepo{
       map(x => (x.componentId, x.url.getOrElse(""))).toList
   }
 
-  def getAllAssemblyUrlBySimulationId(simunlationId: Int): List[(Int, String)] = {
+    def getAllComponentIdsBySimulationId(simunlationId: Int): List[Int] = {
+      Await.result(db.run(simulationComponentMapping.filter(_.simulationId === simunlationId).result), Duration.Inf)
+        .map(_.componentId).toList
+    }
+
+    def getAllAssemblyUrlBySimulationId(simunlationId: Int): List[(Int, String)] = {
     Await.result(db.run(simulationAssemblyMapping.filter(_.simulationId === simunlationId).result), Duration.Inf).
       map(x => (x.assemblyId, x.url.getOrElse(""))).toList
   }
 
-  def add(simulation: models.Simulation): ApiResponse[Int] = {
+    def getAllAssemblyIdsBySimulationId(simunlationId: Int): List[Int] = {
+    Await.result(db.run(simulationAssemblyMapping.filter(_.simulationId === simunlationId).result), Duration.Inf).
+      map(_.assemblyId).toList
+  }
+
+  def add(simulation: models.Simulation):Int = {
     val o = db.run(simulations returning simulations.map(_.id) += Tables.SimulationRow(0, simulation.name, Some(simulation.desc)))
-    ApiResponse.Async.Right(o)
+//    ApiResponse.Async.Right(o)
+    Await.result(o,Duration.Inf)
   }
 }
 

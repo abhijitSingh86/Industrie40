@@ -23,8 +23,8 @@ trait BeforeAllAfterAll extends Specification {
 
 
 trait WithDbSpec extends BeforeAllAfterAll with H2DBComponent {//with BeforeEach with AfterAll{
-  val operationDao:SlickOperationDao  = new SlickOperationDao with H2DBComponent
-  val componentDao = new SlickComponentDaoRepo   with SlickOperationDao with H2DBComponent
+  val operation  = (new SlickOperationDaoRepo  with H2DBComponent).operation
+  val componentDao = new SlickComponentDaoRepo   with SlickOperationDaoRepo with H2DBComponent
 
   override def beforeAll = {
     //initializeDatabase
@@ -34,11 +34,10 @@ trait WithDbSpec extends BeforeAllAfterAll with H2DBComponent {//with BeforeEach
     def getOp(name1:String) = new Operation(0,name1)
 
     val ids = List(getOp("A"),getOp("B"),getOp("C"),getOp("D"))
-              .map(x=> (x.name , (Await.result((operationDao.add(x).underlying), Duration.Inf) match {
-                case Right(i) =>  Some(new Operation(i,x.name ))
+              .map(x=> (x.name , operation.add(x)match {
+                case id:Int =>  Some(new Operation(id,x.name ))
                 case _ => None
-                })
-              )).toMap
+                })).toMap
 
     val seq1 = ProcessingSequence(List(ids("A").get,ids("B").get,ids("C").get,ids("D").get))
     val seq2 = ProcessingSequence(List(ids("B").get,ids("A").get,ids("C").get,ids("D").get))
@@ -50,7 +49,7 @@ trait WithDbSpec extends BeforeAllAfterAll with H2DBComponent {//with BeforeEach
   override def afterAll={
     println("*********************destroy method**********************")
     for(x <- componentDao.component.selectAll()) componentDao.component.delete(x.id)
-    for(x <- operationDao.selectAllOperations()) operationDao.deleteOperation(x.id)
+    for(x <- operation.selectAllOperations()) operation.deleteOperation(x.id)
 
   }
 }

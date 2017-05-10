@@ -1,4 +1,4 @@
-package json
+package factory
 
 import enums.PriorityEnum
 import models.{Assembly, Component, Operation, ProcessingSequence}
@@ -7,15 +7,15 @@ import play.api.libs.functional.syntax._
 /**
   * Created by billa on 02.05.17.
   */
-object JsonImplicits {
+object JsonImplicitFactory {
 
 
-   class PlayJsonImplicits {
 
-    implicit val opRead: Reads[Operation] = (
-      (JsPath \ "id").read[Int] and
-        (JsPath \ "label").read[String]
-      ) (models.Operation.apply _)
+
+    implicit val opRead: Format[Operation] = (
+      (JsPath \ "id").format[Int] and
+        (JsPath \ "label").format[String]
+      ) (models.Operation.apply _ , unlift(models.Operation.unapply))
 
 
     implicit val processingSeqReads: Reads[List[ProcessingSequence]] =
@@ -44,5 +44,5 @@ object JsonImplicits {
       } yield (Assembly apply(id = id, name = name, totalOperations = od))
     }
 
-  }
+
 }

@@ -47,7 +47,7 @@
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%coloredLevel %logger{15} - %message%n%xException{10}</pattern>
+            <pattern>%date %coloredLevel %logger - [%level] %message%n%xException</pattern>
         </encoder>
     </appender>
 
@@ -62,6 +62,8 @@
     <logger name="file" level="INFO" additivity="false">
         <appender-ref ref="SEP_FILE" />
     </logger>
+
+    <logger name="reactivemongo" level="WARN" />
 
     <root level="DEBUG">
         <appender-ref ref="FILE"/>

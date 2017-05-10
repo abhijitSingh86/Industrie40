@@ -1,15 +1,33 @@
 package db.dao
 
-import controllers.ApiResponse
+import models.Operation
 
 /**
   * Created by billa on 26.12.16.
   */
+
+trait OperationDaoRepo {
+  def operation:OperationDao
+
+  trait OperationDao {
+    def add(operation: Operation): Int
+    def deleteOperation(id:Int):Boolean
+    def selectAllOperations():List[Operation]
+    def selectByOperationId(operationId:Int):Operation
+    }
+
+}
+
 trait SimulationDaoRepo{
 
   def simulation:SimulationDao
 
   trait SimulationDao{
+
+    def getAllComponentIdsBySimulationId(simunlationId: Int): List[Int]
+
+    def getAllAssemblyIdsBySimulationId(simunlationId: Int): List[Int]
+
     def getSimulationById(simulationId:Int):models.Simulation
 
     def selectAllSimulations():List[models.Simulation]
@@ -34,7 +52,7 @@ trait SimulationDaoRepo{
 
     def getAllAssemblyUrlBySimulationId(simunlationId:Int):List[(Int,String)]
 
-    def add(simulation:models.Simulation):ApiResponse[Int]
+    def add(simulation:models.Simulation):Int
 
   }
 }

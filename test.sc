@@ -10,11 +10,16 @@ val str1 = """{"simulationName":"abhi","simulationDesc":"test","operations":[{"i
 val jsonObj = Json.parse(str1)
 
 
+implicit val opRead: Format[Operation] = (
+  (JsPath \ "id").format[Int] and
+    (JsPath \ "label").format[String]
+  ) (models.Operation.apply _ , unlift(models.Operation.unapply))
+
 val op = (jsonObj \ "operations").validate[List[Operation]]
 
 op match {
   case s:JsSuccess[Operation] =>
-    println(s.get)
+    println("sdf"+s.get)
   case f:JsError =>
     println(f)
 }

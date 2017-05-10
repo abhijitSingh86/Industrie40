@@ -33,7 +33,7 @@ object DefaultRequestFormat {
     Json.obj("responseCode"-> 200,"responseType" -> "successEmpty" , "body" -> Json.obj())
   }
 
-  def getSuccessResponse(data:JsObject)={
+  def getSuccessResponse(data:JsValue)={
     Json.obj("responseCode"-> 200,"responseType" -> "success" , "body" -> data)
   }
 

@@ -9,7 +9,13 @@ GET /                               controllers.Index.index
 POST /initComponent                 controllers.ComponentController.initComponentRequest
 POST /initAssembly                  controllers.Index.initAssemblyRequest
 POST /assemblyOperationCompletion   controllers.Index.assemblyOperationCompletion
-POST /simulation                    controllers.SimulationController.addSimulation
+
+
+POST    /simulation                 controllers.SimulationController.addSimulation
+GET     /simulation                 controllers.SimulationController.getAllSimulations
+GET     /simulation/:id             controllers.SimulationController.getSimulation(id:Int)
+DELETE  /simulation/:id             controllers.SimulationController.deleteSimulation(id:Int)
+
 
 POST /startComponentScheduling      controllers.ComponentController.startComponentScheduling
 

@@ -12,7 +12,7 @@ import scala.concurrent.duration.Duration
   * Created by billa on 2016-12-24.
   */
 trait SlickComponentDaoRepo extends ComponentDaoRepo {
-  this: SlickOperationDao with DBComponent =>
+  this: SlickOperationDaoRepo with DBComponent =>
 
   def component = new SlickComponentDao()
 
@@ -65,7 +65,7 @@ trait SlickComponentDaoRepo extends ComponentDaoRepo {
         var counter = 0
         (for (_ <- 0 until listSize) yield ({
           val arr = for (a <- counter until sortedRow.size by listSize) yield ({
-            selectByOperationId(sortedRow(a).operationId)
+            operation.selectByOperationId(sortedRow(a).operationId)
           })
           counter = counter + 1
           new ProcessingSequence(
