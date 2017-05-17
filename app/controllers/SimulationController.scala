@@ -28,31 +28,33 @@ class SimulationController(database:DbModule) extends Controller {
     Ok(DefaultRequestFormat.getSuccessResponse(Json.arr(database.getAllSimulation().map(getJsonStructure(_)))))
   }
 
-  def getSimulation(id:Int) = {
+  def getSimulation(id:Int) = Action{
     Ok(DefaultRequestFormat.getSuccessResponse(getJsonStructure(database.getSimulation(id))))
   }
 
   def getJsonStructure(simualtion:Simulation):JsObject = {
-    Json.obj("simulationName" -> simualtion.name,
+//    println(simualtion)
+    Json.obj("simulationId"->simualtion.id,
+      "simulationName" -> simualtion.name,
       "simulationDesc" -> simualtion.desc,
-      "components" -> Json.arr(simualtion.components.map(x=> {
+      "components" -> simualtion.components.map(x=> {
         Json.obj("id"-> x.id,
         "name"-> x.name,
         "opCount"->x.processingSequences(0).seq.size,
-          "operationDetails" -> Json.arr(x.processingSequences.map(y=>{
-            Json.arr(y.seq.map(Json.toJson(_)))
-          })))
-      })),
-      "assemblies" -> Json.arr(simualtion.assemblies.map(x=>{
+          "operationDetails" -> x.processingSequences.map(y=>{
+            y.seq.map(Json.toJson(_))
+          }))
+      }),
+      "assemblies" -> simualtion.assemblies.map(x=>{
         Json.obj("id"->x.id,
         "name" -> x.name,
-        "operationDetails" -> Json.arr(x.totalOperations.map(y=>{
-          Json.obj("id"-> y._1.id,
-          "name"-> y._1.name,
-            "time"->y._2
+        "operationDetails" -> x.totalOperations.map(y=>{
+          Json.obj("id"-> y.operation.id,
+          "name"-> y.operation.name,
+            "time"->y.time
           )
-        })))
-      }))
+        }))
+      })
     )
   }
 
@@ -79,8 +81,8 @@ class SimulationController(database:DbModule) extends Controller {
       case s:JsSuccess[List[Operation]] => {
         val opMap = s.get.map(x => (x.id -> database.addOperation(x))).toMap
 
-        val updatedComps = compo.map(x=> { new Component(x.id,x.name,PriorityEnum.NORMAL,
-          (x.processingSequences.map(y=> new ProcessingSequence(y.seq.map(a=> new Operation(opMap(a.id),a.name)))))
+        val updatedComps = compo.map(x=> {
+          x.copy(processingSequences = x.processingSequences.map(y=> new ProcessingSequence(y.seq.map(a=> new Operation(opMap(a.id),a.name))))
         )
         })
 
@@ -90,8 +92,9 @@ class SimulationController(database:DbModule) extends Controller {
 
         database.addComponentsToSimulation(simulationId,componentIds)
 
-        val assemblyIds = assem.map(x=> x.copy(totalOperations = x.totalOperations.map(y => (new Operation(opMap(y._1.id),y._1.name),y._2)
-        ))).map(database.addAssembly(_))
+        val assemblyIds = assem.map(x=> x.copy(totalOperations = x.totalOperations.map(y => new AssemblyOperation(
+          new Operation(opMap(y.operation.id),y.operation.name),y.time,FreeOperationStatus))
+        )).map(database.addAssembly(_))
 
         database.addAssembliesToSimulation(simulationId,assemblyIds)
 
@@ -101,12 +104,7 @@ class SimulationController(database:DbModule) extends Controller {
         println(f)
     }
 
-
-
-
-
-
-    Ok(DefaultRequestFormat.getEmptySuccessResponse())
+    Ok(DefaultRequestFormat.getSuccessResponse(getJsonStructure(database.getSimulation(simulationId))))
   }
 
 //  def updateSimulation() = Action.async{

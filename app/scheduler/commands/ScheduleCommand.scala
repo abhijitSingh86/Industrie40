@@ -40,13 +40,17 @@ class ScheduleCommand(dbModule : DbModule,scheduler:Scheduler,proxy: NetworkProx
   }
 
   def sendScheduleInformationToComponent(simulationId: Int, components: List[Component]) = {
+    val updatedCmps = components.map(x=> dbModule.getComponentMappedToSimulationId(x.id,simulationId)).flatten
     val urls = dbModule.getAllComponentUrlBySimulationId(simulationId).toMap
     val assemblyUrls =dbModule.getAllAssemblyUrlBySimulationId(simulationId).toMap
-    components.map(x => {
-      // attach assembly in simulationAssemblyMapping
-      dbModule.assignAssemblytoComponentSimulationMapping(x.getCurrentAllocatedAssembly().get.id,x.id,simulationId)
+
+    val assemblies = dbModule.getAllAssembliesForSimulation(simulationId)
+    val assemMap = assemblies.map(x=>(x.id -> x)).toMap
+    updatedCmps.map(x => {
+      //TODO
       // send request at component attached urls for assembly assignments
-      proxy.sendAssemblyDetails(urls.get(x.id).get,x.getCurrentAllocatedAssembly().get,assemblyUrls,x.getCurrentOperation().get)
+      val ass = assemMap.get(x.componentSchedulingInfo.currentProcessing.get.assemblyId).get
+      proxy.sendAssemblyDetails(urls.get(x.id).get,ass,assemblyUrls,x.componentSchedulingInfo.currentProcessing.get.operationId)
     })
   }
 }

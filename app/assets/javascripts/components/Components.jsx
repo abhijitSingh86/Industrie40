@@ -40,7 +40,7 @@ var Components = React.createClass({
       var value = e.target.value;
     if(!isNaN(value) && value != ""){
       var count = (parseInt(value));
-      this.inputOperationCount = value;
+      this.inputOperationCount.value = value;
 
       var opSeqArr=[];
       var defaultSelectArr=[];
@@ -99,6 +99,10 @@ var Components = React.createClass({
             <label>Operation Count</label>
             <input type="text" ref={(o)=>{this.inputOperationCount=o}} onChange = {this.handleInputChange} />
           </li>
+          <li>
+            <label>Component Count</label>
+            <input type="text" ref={(o)=>{this.inputComponentCount=o}} onChange = {this.handleComponentCOuntInputChange} />
+          </li>
           {rows}
           <button onClick={this.handleOperationsSequenceAddClick} style={{display}}>Add</button>
 
@@ -115,6 +119,13 @@ var Components = React.createClass({
       </div>
     )
   },
+    handleComponentCOuntInputChange(e){
+        var value = e.target.value;
+        if(!isNaN(value) && value != ""){
+            var count = (parseInt(value));
+            this.inputComponentCount.value = value;
+        }
+  },
   handleOperationsSequenceAddClick(){
     var count =this.state.rowCount;
     if(count !=0){
@@ -129,20 +140,38 @@ var Components = React.createClass({
     }
   },
   add(){
-    var data = {
-      id:this.localComponentCounter,
-      name:this.componentName.value,
-      opCount:this.state.opCount,
-      operationDetails:this.state.opSeqArr
-    }
-    var arr=this.state.componentArr
-    arr.push(data);
-    this.localComponentCounter = this.localComponentCounter+1;
 
-    this.props.saveValues({
-      components: arr,
-      componentCounter:this.localComponentCounter
-    });
+      var arr = this.state.componentArr
+      var cmpCount = 1
+      if (!isNaN(this.inputComponentCount.value) && parseInt(this.inputComponentCount.value) > cmpCount){
+          cmpCount = parseInt(this.inputComponentCount.value)
+      }
+
+      // console.log("--int print -- "+this.inputComponentCount)
+
+    for(var i=0;i<cmpCount;i++){
+        var data = {
+            id:this.localComponentCounter,
+            name:this.componentName.value,
+            opCount:this.state.opCount,
+            operationDetails:this.state.opSeqArr
+        }
+
+        arr.push(data);
+        this.localComponentCounter = this.localComponentCounter+1;
+
+        // console.log("************************")
+        // console.log(data)
+        // console.log(this.localComponentCounter)
+        // console.log("************************")
+    }
+
+
+    var data ={
+             components: arr,
+              componentCounter:this.localComponentCounter
+      }
+    this.props.saveValues(data);
 
     this.setState({
       componentArr: arr,

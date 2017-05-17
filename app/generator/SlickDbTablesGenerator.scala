@@ -21,7 +21,7 @@ class SlickDbTablesGenerator {
 
   var outputFolder = "app"
 
-  var pkg = "db.tablemodel"
+  var pkg = "db"
 
   var user = "root"
 

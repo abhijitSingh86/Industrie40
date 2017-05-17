@@ -27,25 +27,5 @@ class SimulationControllerSpec extends PlaySpecification with Results {
 
         (json \ "responseType").get.as[String] must be equalTo "successEmpty"
       }
-
-
   }
-
-  "sim "  should
-     {
-       "send simulation object " in {
-
-         val mod = new SlickModuleImplementation() with SlickSimulationDaoRepo with SlickAssemblyDaoRepo
-           with SlickComponentDaoRepo with SlickOperationDaoRepo with H2DBComponent
-         val simulationController = new SimulationController(mod)
-         val id =9
-         val result:Future[Result] = simulationController.getAllSimulations().apply(FakeRequest())
-         //getSimulation(id).apply(FakeRequest())
-         val json =contentAsJson(result)
-
-         println(json)
-
-         (json \ "responseType").get.as[String] must be equalTo "success"
-       }
-     }
 }

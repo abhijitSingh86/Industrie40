@@ -1,6 +1,6 @@
 package db.dao
 
-import models.Operation
+import models.{Component, Operation}
 
 /**
   * Created by billa on 26.12.16.
@@ -46,7 +46,7 @@ trait SimulationDaoRepo{
 
     def addAssembliesToSimulation(simunlationId:Int,assemblies:List[Int]):Unit
 
-    def assignAssemblytoComponentSimulationMapping(assemblyId:Int,ComponentId:Int,simulationId:Int):Unit
+//    def assignAssemblytoComponentSimulationMapping(assemblyId:Int,ComponentId:Int,simulationId:Int):Unit
 
     def getAllComponentUrlBySimulationId(simunlationId:Int):List[(Int,String)]
 
@@ -73,6 +73,10 @@ trait ComponentDaoRepo {
     def selectBySimulationId1(simulationId: Int): List[models.Component]
 
     def selectByComponentId(componentId: Int): Option[models.Component]
+
+    def selectByComponentSimulationId(componentId: Int, simulationId:Int): Option[models.Component]
+
+    def addComponentProcessingInfo(simId:Int,cmpId:Int,assemblyId:Int,sequence:Int,opId:Int):Boolean
   }
 
 }
@@ -81,6 +85,8 @@ trait AssemblyDaoRepo{
   def assembly:AssemblyDao
 
   trait AssemblyDao {
+
+    def updateAssemblyOperationStatus(assemblyId:Int, operationId:Int, status:String):Boolean
 
     def add(assembly: models.Assembly): Int
 

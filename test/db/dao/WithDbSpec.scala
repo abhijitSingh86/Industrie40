@@ -2,7 +2,7 @@ package db.dao
 
 import db.H2DBComponent
 import enums.PriorityEnum
-import models.{Component, Operation, ProcessingSequence}
+import models.{Component, EmptySchedulingInfo, Operation, ProcessingSequence}
 import org.specs2.mutable.Specification
 import org.specs2.specification.core.Fragments
 
@@ -42,7 +42,7 @@ trait WithDbSpec extends BeforeAllAfterAll with H2DBComponent {//with BeforeEach
     val seq1 = ProcessingSequence(List(ids("A").get,ids("B").get,ids("C").get,ids("D").get))
     val seq2 = ProcessingSequence(List(ids("B").get,ids("A").get,ids("C").get,ids("D").get))
 
-    val  component = new Component(0,"someName",PriorityEnum.NORMAL, List(seq1,seq2))
+    val  component = new Component(0,"someName", List(seq1,seq2),EmptySchedulingInfo)
     componentDao.component.add(component)
   }
 

@@ -1,7 +1,7 @@
 package factory
 
 import enums.PriorityEnum
-import models.{Assembly, Component, Operation, ProcessingSequence}
+import models._
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
 /**
@@ -25,23 +25,23 @@ object JsonImplicitFactory {
       (JsPath \ "id").read[Int] and
         (JsPath \ "name").read[String] and
         (JsPath \ "operationDetails").read[List[ProcessingSequence]]
-      ) (Component apply(_, _, PriorityEnum.NORMAL, _))
+      ) (Component apply(_, _, _ , EmptySchedulingInfo))
 
 
-    implicit val assemblyOpReads: Reads[(Operation, Int)] = {
+    implicit val assemblyOpReads: Reads[AssemblyOperation] = {
       for {
         a <- (__ \ "id").read[Int]
         b <- (__ \ "label").read[String]
         c <- (__ \ "time").read[Int]
-      } yield (Operation(a, b), c)
+      } yield AssemblyOperation(Operation(a, b), c,FreeOperationStatus)
     }
 
     implicit val assemblyReads: Reads[Assembly] = {
       for {
         id <- (__ \ "id").read[Int]
         name <- (__ \ "name").read[String]
-        od <- (__ \ "operationDetails").read[List[(Operation, Int)]]
-      } yield (Assembly apply(id = id, name = name, totalOperations = od))
+        od <- (__ \ "operationDetails").read[List[AssemblyOperation]]
+      } yield (Assembly apply(id = id, name = name, totalOperations = od,List[AssemblyOperation]()))
     }
 
 

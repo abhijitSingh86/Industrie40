@@ -34,5 +34,4 @@ class SchedulingController(schedulingThread:SchedulerThread)  extends Controller
         }
         Ok("Thread Stopped")
       }
-
 }

@@ -79,11 +79,11 @@ trait SlickSimulationDaoRepo extends SimulationDaoRepo{
       Await.result(db.run(simulationAssemblyMapping += SimulationassemblymapRow(simunlationId, assemblyId)), Duration.Inf))
   }
 
-  def assignAssemblytoComponentSimulationMapping(assemblyId: Int, ComponentId: Int, simulationId: Int) = {
-    val q = for {c <- simulationComponentMapping if c.simulationId === simulationId && c.componentId === ComponentId} yield (c.assignedassemblyid)
-    val query = q.update(Some(assemblyId))
-    Await.result(db.run(query), Duration.Inf) == 1
-  }
+//  def assignAssemblytoComponentSimulationMapping(assemblyId: Int, ComponentId: Int, simulationId: Int) = {
+//    val q = for {c <- simulationComponentMapping if c.simulationId === simulationId && c.componentId === ComponentId} yield (c.assignedassemblyid)
+//    val query = q.update(Some(assemblyId))
+//    Await.result(db.run(query), Duration.Inf) == 1
+//  }
 
   def getAllComponentUrlBySimulationId(simunlationId: Int): List[(Int, String)] = {
     Await.result(db.run(simulationComponentMapping.filter(_.simulationId === simunlationId).result), Duration.Inf).

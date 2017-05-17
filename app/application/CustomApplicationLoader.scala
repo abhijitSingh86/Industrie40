@@ -2,17 +2,13 @@ package application
 
 import db._
 import db.dao._
+import network.NetworkProxy
 import play.api.ApplicationLoader.Context
 import play.api._
-import network.NetworkProxy
 import play.api.libs.ws.ahc.AhcWSComponents
-import play.api.libs.ws.ning.NingWSComponents
-import play.modules.reactivemongo.{DefaultReactiveMongoApi, ReactiveMongoApi, ReactiveMongoComponents}
 import router.Routes
-import scheduler.{ComponentScheduler, SchedulerThread}
 import scheduler.commands.ScheduleCommand
-
-import scala.concurrent.Future
+import scheduler.{ComponentScheduler, ScheduleDbHandler, SchedulerThread}
 
 /**
   * Created by billa on 10.01.17.
@@ -26,7 +22,7 @@ class CustomApplicationLoader extends ApplicationLoader {
   }
 }
 
-class MyComponents(context:Context) extends BuiltInComponentsFromContext(context) with ReactiveMongoComponents with AhcWSComponents {
+class MyComponents(context:Context) extends BuiltInComponentsFromContext(context)  with AhcWSComponents {
   val logger = Logger(this.getClass())
 
   logger.info("Creating the instantiation graph for Compile time dependency injection")
@@ -35,7 +31,7 @@ class MyComponents(context:Context) extends BuiltInComponentsFromContext(context
   lazy val dbModule:DbModule = new SlickModuleImplementation() with SlickSimulationDaoRepo with SlickAssemblyDaoRepo
     with SlickComponentDaoRepo with SlickOperationDaoRepo with MySqlDBComponent
 
-  lazy val command = new ScheduleCommand(dbModule,new ComponentScheduler(),networkProxy)
+  lazy val command = new ScheduleCommand(dbModule,new ComponentScheduler(new ScheduleDbHandler(dbModule)),networkProxy)
 
 
   lazy val schedulerThread = new SchedulerThread(5000,command)
@@ -50,7 +46,7 @@ class MyComponents(context:Context) extends BuiltInComponentsFromContext(context
 
   lazy val assets = new controllers.Assets(httpErrorHandler)
 
-  def reactiveMongoApi: ReactiveMongoApi = new DefaultReactiveMongoApi(configuration, applicationLifecycle)
+//  def reactiveMongoApi: ReactiveMongoApi = new DefaultReactiveMongoApi(configuration, applicationLifecycle)
 
 
 //  lazy val ws = {
