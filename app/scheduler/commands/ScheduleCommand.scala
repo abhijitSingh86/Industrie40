@@ -27,26 +27,30 @@ class ScheduleCommand(dbModule : DbModule,scheduler:Scheduler,proxy: NetworkProx
 
 
       //call algorithm for scheduling
-      val unscheduledComponents = scheduler.scheduleComponents(components, assemblies)
+      val scheduledComponentIds = scheduler.scheduleComponents(components, assemblies)
       //get scheduled component and send them to network proxy for information sending
-      sendScheduleInformationToComponent(ComponentQueue.getSimulationId(), components.filter(!unscheduledComponents.contains(_)))
+      sendScheduleInformationToComponent(ComponentQueue.getSimulationId(), components.filter(x=> scheduledComponentIds.contains(x.id)))
 
 
-      logger.debug("command nearly finished, processed UnScheduled components are " + unscheduledComponents.mkString(","))
+      logger.debug("command nearly finished, processed UnScheduled components are " + scheduledComponentIds.mkString(","))
       //add pending if any to the component queue again
-      unscheduledComponents.map(ComponentQueue.push(_))
+      components.filter(x=> !scheduledComponentIds.contains(x.id)).map(ComponentQueue.push(_))
     }
     logger.info("Schedule command execute finished")
   }
 
   def sendScheduleInformationToComponent(simulationId: Int, components: List[Component]) = {
+    val updatedCmps = components.map(x=> dbModule.getComponentMappedToSimulationId(x.id,simulationId)).flatten
     val urls = dbModule.getAllComponentUrlBySimulationId(simulationId).toMap
     val assemblyUrls =dbModule.getAllAssemblyUrlBySimulationId(simulationId).toMap
-    components.map(x => {
-      // attach assembly in simulationAssemblyMapping
-      dbModule.assignAssemblytoComponentSimulationMapping(x.getCurrentAllocatedAssembly().get.id,x.id,simulationId)
+
+    val assemblies = dbModule.getAllAssembliesForSimulation(simulationId)
+    val assemMap = assemblies.map(x=>(x.id -> x)).toMap
+    updatedCmps.map(x => {
+      //TODO
       // send request at component attached urls for assembly assignments
-      proxy.sendAssemblyDetails(urls.get(x.id).get,x.getCurrentAllocatedAssembly().get,assemblyUrls,x.getCurrentOperation().get)
+      val ass = assemMap.get(x.componentSchedulingInfo.currentProcessing.get.assemblyId).get
+      proxy.sendAssemblyDetails(urls.get(x.id).get,ass,assemblyUrls,x.componentSchedulingInfo.currentProcessing.get.operationId)
     })
   }
 }

@@ -8,7 +8,8 @@ import scala.collection.mutable
 /**
   * Created by billa on 2016-12-16.
   */
-class ComponentScheduler extends Scheduler {
+class ComponentScheduler(scheduleDbHandler:ScheduleDbHandler) extends Scheduler {
+
   /**
     * Function will take the component and assemblies and schedule them with Interval timing greedy algorithm.
     * Return will be the list of components which are not scheduled by the algorithm this is possible in case of
@@ -18,37 +19,42 @@ class ComponentScheduler extends Scheduler {
     * @param assemblies
     * @return
     */
-  override def scheduleComponents(components: List[Component], assemblies: List[Assembly]): List[Component] = {
+  override def scheduleComponents(components: List[Component], assemblies: List[Assembly]): List[Int] = {
     //first get the available resource map
-    val availableResourceMap = getAvailableResourceMap(assemblies)
+    var availableResourceMap = getAvailableResourceMap(assemblies)
     val requiredOperationMap = ListMap(getRequiredOperationMap(components).toSeq.sortWith(_._2.size < _._2.size):_*)
-    val list = List[Option[Component]](None)
-    requiredOperationMap.map {
+//    val list = List[Option[Component]](None)
+    val scheduledComponent = mutable.ArrayBuffer[Int]()
+     requiredOperationMap.map {
       case (operation, componentList) => {
         componentList.map(component => {
           if (availableResourceMap.contains(operation) && availableResourceMap.get(operation).get.size > 0 ) {
 
             component.getCurrentOperation() match {
-              case None => {
+              case None if(!scheduledComponent.contains(component.id)) => {
                 val assembly = availableResourceMap.get(operation).get(0)
-                val o = availableResourceMap.keySet.filter(_ == operation).head
-                assembly.allocateOperation(o)
-                component.scheduleCurrentOperation(operation, assembly)
-                availableResourceMap + (operation -> (availableResourceMap.get(operation).drop(1)))
-
+                //This line is ambiguous seems o is fix for earlier version of Operation Hierarchy
+               // val o = availableResourceMap.keySet.filter(_ == operation).head
+                scheduleDbHandler.assign(component,operation,assembly)
+               // assembly.allocateOperation(o)
+               //TODO
+                // component.scheduleCurrentOperation(operation, assembly)
+                val updatedList:List[Assembly] = availableResourceMap.get(operation).get.drop(1)
+                availableResourceMap += (operation -> updatedList)
+                scheduledComponent += component.id
               }
-              case Some(_) =>{
+              case _ =>{
                 //Component Already scheduled, no action needed
               }
             }
-          }else{
-            Some(component) :: list
           }
         })
 
       }
+
       }
-    list.flatten
+//    components.filter(x=> !scheduledComponent.contains(x.id))
+    scheduledComponent.toList
   }
 
 
@@ -90,11 +96,11 @@ class ComponentScheduler extends Scheduler {
         val assembly = assemblies(count)
         assembly.totalOperations.map(x => {
           //if the operation is not in allocated operation, put it into a map for scheduling
-          assembly.allocatedOperations.contains(x._1) match {
+          assembly.allocatedOperations.contains(x) match {
             case false => {
-              opMap.contains(x._1) match {
-                case true => opMap += (x._1 -> (opMap.get(x._1).get :+ assembly))
-                case false => opMap += (x._1 -> List(assembly))
+              opMap.contains(x.operation) match {
+                case true => opMap += (x.operation -> (opMap.get(x.operation).get :+ assembly))
+                case false => opMap += (x.operation -> List(assembly))
               }
             }
             case true => None

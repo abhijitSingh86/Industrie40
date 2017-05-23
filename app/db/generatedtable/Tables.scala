@@ -1,5 +1,4 @@
 package dbgeneratedtable
-
 // AUTO-GENERATED Slick data model
 /** Stand-alone Slick data model for immediate use */
 object Tables extends {
@@ -15,7 +14,7 @@ trait Tables {
   import slick.jdbc.{GetResult => GR}
 
   /** DDL for all tables. Call .create to execute. */
-  lazy val schema: profile.SchemaDescription = Array(Assembly.schema, AssemblyOperationMapping.schema, AssemblyState.schema, Component.schema, ComponentOperationMapping.schema, ComponentState.schema, Operation.schema, Simulation.schema, Simulationassemblymap.schema, SimulationComponentMapping.schema).reduceLeft(_ ++ _)
+  lazy val schema: profile.SchemaDescription = Array(Assembly.schema, AssemblyOperationMapping.schema, AssemblyState.schema, Component.schema, ComponentOperationMapping.schema, ComponentProcessingState.schema, ComponentState.schema, Operation.schema, Simulation.schema, Simulationassemblymap.schema, SimulationComponentMapping.schema).reduceLeft(_ ++ _)
   @deprecated("Use .schema instead of .ddl", "3.0")
   def ddl = schema
 
@@ -45,18 +44,19 @@ trait Tables {
   /** Entity class storing rows of table AssemblyOperationMapping
     *  @param assemblyId Database column assembly_id SqlType(INT)
     *  @param operationId Database column operation_id SqlType(INT)
-    *  @param operationTime Database column operation_time SqlType(INT)*/
-  case class AssemblyOperationMappingRow(assemblyId: Int, operationId: Int, operationTime: Int)
+    *  @param operationTime Database column operation_time SqlType(INT) */
+  case class AssemblyOperationMappingRow(assemblyId: Int, operationId: Int, operationTime: Int,status:String)
   /** GetResult implicit for fetching AssemblyOperationMappingRow objects using plain SQL queries */
-  implicit def GetResultAssemblyOperationMappingRow(implicit e0: GR[Int], e1: GR[Option[String]]): GR[AssemblyOperationMappingRow] = GR{
+  implicit def GetResultAssemblyOperationMappingRow(implicit e0: GR[Int]): GR[AssemblyOperationMappingRow] = GR{
     prs => import prs._
-      AssemblyOperationMappingRow.tupled((<<[Int], <<[Int], <<[Int]))
+      AssemblyOperationMappingRow.tupled((<<[Int], <<[Int], <<[Int], <<[String]))
   }
   /** Table description of table assembly_operation_mapping. Objects of this class serve as prototypes for rows in queries. */
   class AssemblyOperationMapping(_tableTag: Tag) extends Table[AssemblyOperationMappingRow](_tableTag, "assembly_operation_mapping") {
-    def * = (assemblyId, operationId, operationTime) <> (AssemblyOperationMappingRow.tupled, AssemblyOperationMappingRow.unapply)
+    def * = (assemblyId, operationId, operationTime , status) <> (AssemblyOperationMappingRow.tupled, AssemblyOperationMappingRow.unapply)
     /** Maps whole row to an option. Useful for outer joins. */
-    def ? = (Rep.Some(assemblyId), Rep.Some(operationId), Rep.Some(operationTime)).shaped.<>({r=>import r._; _1.map(_=> AssemblyOperationMappingRow.tupled((_1.get, _2.get, _3.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+    def ? = (Rep.Some(assemblyId), Rep.Some(operationId), Rep.Some(operationTime) , Rep.Some(status)).shaped.<>({r=>import r._; _1.map(_=>
+      AssemblyOperationMappingRow.tupled((_1.get, _2.get, _3.get, _4.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
 
     /** Database column assembly_id SqlType(INT) */
     val assemblyId: Rep[Int] = column[Int]("assembly_id")
@@ -64,9 +64,11 @@ trait Tables {
     val operationId: Rep[Int] = column[Int]("operation_id")
     /** Database column operation_time SqlType(INT) */
     val operationTime: Rep[Int] = column[Int]("operation_time")
+
+    val status:Rep[String] = column[String]("status")
+
     /** Foreign key referencing Assembly (database name fk_assembly_operation_mapping_1) */
     lazy val assemblyFk = foreignKey("fk_assembly_operation_mapping_1", assemblyId, Assembly)(r => r.id, onUpdate=ForeignKeyAction.Cascade, onDelete=ForeignKeyAction.Cascade)
-    /** Foreign key referencing AssemblyState (database name fk_assembly_operation_mapping_4) */
     /** Foreign key referencing Operation (database name fk_assembly_operation_mapping_2) */
     lazy val operationFk = foreignKey("fk_assembly_operation_mapping_2", operationId, Operation)(r => r.id, onUpdate=ForeignKeyAction.NoAction, onDelete=ForeignKeyAction.NoAction)
   }
@@ -140,12 +142,53 @@ trait Tables {
     val sequence: Rep[Int] = column[Int]("sequence")
 
     /** Foreign key referencing Component (database name fk_component_operation_mapping_1) */
-    lazy val componentFk = foreignKey("fk_component_operation_mapping_1", componentId, Component)(r => r.id, onUpdate=ForeignKeyAction.NoAction, onDelete=ForeignKeyAction.Cascade)
+    lazy val componentFk = foreignKey("fk_component_operation_mapping_1", componentId, Component)(r => r.id, onUpdate=ForeignKeyAction.NoAction, onDelete=ForeignKeyAction.NoAction)
     /** Foreign key referencing Operation (database name fk_component_operation_mapping_2) */
-    lazy val operationFk = foreignKey("fk_component_operation_mapping_2", operationId, Operation)(r => r.id, onUpdate=ForeignKeyAction.NoAction, onDelete=ForeignKeyAction.Cascade)
+    lazy val operationFk = foreignKey("fk_component_operation_mapping_2", operationId, Operation)(r => r.id, onUpdate=ForeignKeyAction.NoAction, onDelete=ForeignKeyAction.NoAction)
   }
   /** Collection-like TableQuery object for table ComponentOperationMapping */
   lazy val ComponentOperationMapping = new TableQuery(tag => new ComponentOperationMapping(tag))
+
+  /** Entity class storing rows of table ComponentProcessingState
+    *  @param componentid Database column componentId SqlType(INT)
+    *  @param simulationid Database column simulationId SqlType(INT)
+    *  @param sequencenum Database column sequenceNum SqlType(INT)
+    *  @param operationid Database column operationId SqlType(INT)
+    *  @param startTime Database column start_time SqlType(DATETIME), Default(None)
+    *  @param endTime Database column end_time SqlType(DATETIME), Default(None)
+    *  @param assemblyid Database column assemblyId SqlType(INT) */
+  case class ComponentProcessingStateRow(componentid: Int, simulationid: Int, sequencenum: Int, operationid: Int, startTime: Option[java.sql.Timestamp] = None, endTime: Option[java.sql.Timestamp] = None, assemblyid: Int)
+  /** GetResult implicit for fetching ComponentProcessingStateRow objects using plain SQL queries */
+  implicit def GetResultComponentProcessingStateRow(implicit e0: GR[Int], e1: GR[Option[java.sql.Timestamp]]): GR[ComponentProcessingStateRow] = GR{
+    prs => import prs._
+      ComponentProcessingStateRow.tupled((<<[Int], <<[Int], <<[Int], <<[Int], <<?[java.sql.Timestamp], <<?[java.sql.Timestamp], <<[Int]))
+  }
+  /** Table description of table component_processing_state. Objects of this class serve as prototypes for rows in queries. */
+  class ComponentProcessingState(_tableTag: Tag) extends Table[ComponentProcessingStateRow](_tableTag, "component_processing_state") {
+    def * = (componentid, simulationid, sequencenum, operationid, startTime, endTime, assemblyid) <> (ComponentProcessingStateRow.tupled, ComponentProcessingStateRow.unapply)
+    /** Maps whole row to an option. Useful for outer joins. */
+    def ? = (Rep.Some(componentid), Rep.Some(simulationid), Rep.Some(sequencenum), Rep.Some(operationid), startTime, endTime, Rep.Some(assemblyid)).shaped.<>({r=>import r._; _1.map(_=> ComponentProcessingStateRow.tupled((_1.get, _2.get, _3.get, _4.get, _5, _6, _7.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+
+    /** Database column componentId SqlType(INT) */
+    val componentid: Rep[Int] = column[Int]("componentId")
+    /** Database column simulationId SqlType(INT) */
+    val simulationid: Rep[Int] = column[Int]("simulationId")
+    /** Database column sequenceNum SqlType(INT) */
+    val sequencenum: Rep[Int] = column[Int]("sequenceNum")
+    /** Database column operationId SqlType(INT) */
+    val operationid: Rep[Int] = column[Int]("operationId")
+    /** Database column start_time SqlType(DATETIME), Default(None) */
+    val startTime: Rep[Option[java.sql.Timestamp]] = column[Option[java.sql.Timestamp]]("start_time", O.Default(None))
+    /** Database column end_time SqlType(DATETIME), Default(None) */
+    val endTime: Rep[Option[java.sql.Timestamp]] = column[Option[java.sql.Timestamp]]("end_time", O.Default(None))
+    /** Database column assemblyId SqlType(INT) */
+    val assemblyid: Rep[Int] = column[Int]("assemblyId")
+
+    /** Primary key of ComponentProcessingState (database name component_processing_state_PK) */
+    val pk = primaryKey("component_processing_state_PK", (componentid, simulationid, assemblyid , operationid , sequencenum))
+  }
+  /** Collection-like TableQuery object for table ComponentProcessingState */
+  lazy val ComponentProcessingState = new TableQuery(tag => new ComponentProcessingState(tag))
 
   /** Entity class storing rows of table ComponentState
     *  @param name Database column name SqlType(VARCHAR), PrimaryKey, Length(255,true) */
@@ -217,25 +260,27 @@ trait Tables {
   lazy val Simulation = new TableQuery(tag => new Simulation(tag))
 
   /** Entity class storing rows of table Simulationassemblymap
-    *  @param simulationId Database column simulation_id SqlType(INT), PrimaryKey
-    *  @param assemblyId Database column assembly_id SqlType(INT) */
-  case class SimulationassemblymapRow(simulationId: Int, assemblyId: Int,url:Option[String] = None)
+    *  @param simulationId Database column simulation_id SqlType(INT)
+    *  @param assemblyId Database column assembly_id SqlType(INT)
+    *  @param url Database column url SqlType(VARCHAR), Length(255,true), Default(None) */
+  case class SimulationassemblymapRow(simulationId: Int, assemblyId: Int, url: Option[String] = None)
   /** GetResult implicit for fetching SimulationassemblymapRow objects using plain SQL queries */
-  implicit def GetResultSimulationassemblymapRow(implicit e0: GR[Int]): GR[SimulationassemblymapRow] = GR{
+  implicit def GetResultSimulationassemblymapRow(implicit e0: GR[Int], e1: GR[Option[String]]): GR[SimulationassemblymapRow] = GR{
     prs => import prs._
-      SimulationassemblymapRow.tupled((<<[Int], <<[Int] , <<[Option[String]]))
+      SimulationassemblymapRow.tupled((<<[Int], <<[Int], <<?[String]))
   }
   /** Table description of table SimulationAssemblyMap. Objects of this class serve as prototypes for rows in queries. */
   class Simulationassemblymap(_tableTag: Tag) extends Table[SimulationassemblymapRow](_tableTag, "SimulationAssemblyMap") {
-    def * = (simulationId, assemblyId ,url) <> (SimulationassemblymapRow.tupled, SimulationassemblymapRow.unapply)
+    def * = (simulationId, assemblyId, url) <> (SimulationassemblymapRow.tupled, SimulationassemblymapRow.unapply)
     /** Maps whole row to an option. Useful for outer joins. */
-    def ? = (Rep.Some(simulationId), Rep.Some(assemblyId),url).shaped.<>({r=>import r._; _1.map(_=> SimulationassemblymapRow.tupled((_1.get, _2.get,_3)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+    def ? = (Rep.Some(simulationId), Rep.Some(assemblyId), url).shaped.<>({r=>import r._; _1.map(_=> SimulationassemblymapRow.tupled((_1.get, _2.get, _3)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
 
-    /** Database column simulation_id SqlType(INT), PrimaryKey */
-    val simulationId: Rep[Int] = column[Int]("simulation_id", O.PrimaryKey)
+    /** Database column simulation_id SqlType(INT) */
+    val simulationId: Rep[Int] = column[Int]("simulation_id")
     /** Database column assembly_id SqlType(INT) */
     val assemblyId: Rep[Int] = column[Int]("assembly_id")
-    val url:Rep[Option[String]] = column[Option[String]]("url")
+    /** Database column url SqlType(VARCHAR), Length(255,true), Default(None) */
+    val url: Rep[Option[String]] = column[Option[String]]("url", O.Length(255,varying=true), O.Default(None))
 
     /** Foreign key referencing Assembly (database name fk_SimulationAssemblyMap_1) */
     lazy val assemblyFk = foreignKey("fk_SimulationAssemblyMap_1", assemblyId, Assembly)(r => r.id, onUpdate=ForeignKeyAction.NoAction, onDelete=ForeignKeyAction.NoAction)
@@ -248,40 +293,28 @@ trait Tables {
   /** Entity class storing rows of table SimulationComponentMapping
     *  @param simulationId Database column simulation_id SqlType(INT)
     *  @param componentId Database column component_id SqlType(INT)
-    *  @param status Database column status SqlType(VARCHAR), Length(255,true), Default(None)
-    *  @param assignedassemblyid Database column assignedAssemblyId SqlType(INT), Default(None)
-    *  @param completedoperationids Database column completedOperationIds SqlType(VARCHAR), Length(500,true), Default(None)
-    *  @param currentoperationid Database column currentOperationId SqlType(INT), Default(None) */
-  case class SimulationComponentMappingRow(simulationId: Int, componentId: Int, status: Option[String] = None,url: Option[String] = None, assignedassemblyid: Option[Int] = None, completedoperationids: Option[String] = None, currentoperationid: Option[Int] = None)
+    *  @param url Database column url SqlType(VARCHAR), Length(255,true), Default(None) */
+  case class SimulationComponentMappingRow(simulationId: Int, componentId: Int, url: Option[String] = None)
   /** GetResult implicit for fetching SimulationComponentMappingRow objects using plain SQL queries */
-  implicit def GetResultSimulationComponentMappingRow(implicit e0: GR[Int], e1: GR[Option[String]], e2: GR[Option[Int]]): GR[SimulationComponentMappingRow] = GR{
+  implicit def GetResultSimulationComponentMappingRow(implicit e0: GR[Int], e1: GR[Option[String]]): GR[SimulationComponentMappingRow] = GR{
     prs => import prs._
-      SimulationComponentMappingRow.tupled((<<[Int], <<[Int], <<?[String],<<?[String], <<?[Int], <<?[String], <<?[Int]))
+      SimulationComponentMappingRow.tupled((<<[Int], <<[Int], <<?[String]))
   }
   /** Table description of table simulation_component_mapping. Objects of this class serve as prototypes for rows in queries. */
   class SimulationComponentMapping(_tableTag: Tag) extends Table[SimulationComponentMappingRow](_tableTag, "simulation_component_mapping") {
-    def * = (simulationId, componentId, status,url, assignedassemblyid, completedoperationids, currentoperationid) <> (SimulationComponentMappingRow.tupled, SimulationComponentMappingRow.unapply)
+    def * = (simulationId, componentId, url) <> (SimulationComponentMappingRow.tupled, SimulationComponentMappingRow.unapply)
     /** Maps whole row to an option. Useful for outer joins. */
-    def ? = (Rep.Some(simulationId), Rep.Some(componentId), status,url, assignedassemblyid, completedoperationids, currentoperationid).shaped.<>({r=>import r._; _1.map(_=> SimulationComponentMappingRow.tupled((_1.get, _2.get, _3, _4, _5, _6,_7)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+    def ? = (Rep.Some(simulationId), Rep.Some(componentId), url).shaped.<>({r=>import r._; _1.map(_=> SimulationComponentMappingRow.tupled((_1.get, _2.get, _3)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
 
     /** Database column simulation_id SqlType(INT) */
     val simulationId: Rep[Int] = column[Int]("simulation_id")
     /** Database column component_id SqlType(INT) */
     val componentId: Rep[Int] = column[Int]("component_id")
-    /** Database column status SqlType(VARCHAR), Length(255,true), Default(None) */
-    val status: Rep[Option[String]] = column[Option[String]]("status", O.Length(255,varying=true), O.Default(None))
+    /** Database column url SqlType(VARCHAR), Length(255,true), Default(None) */
     val url: Rep[Option[String]] = column[Option[String]]("url", O.Length(255,varying=true), O.Default(None))
-    /** Database column assignedAssemblyId SqlType(INT), Default(None) */
-    val assignedassemblyid: Rep[Option[Int]] = column[Option[Int]]("assignedAssemblyId", O.Default(None))
-    /** Database column completedOperationIds SqlType(VARCHAR), Length(500,true), Default(None) */
-    val completedoperationids: Rep[Option[String]] = column[Option[String]]("completedOperationIds", O.Length(500,varying=true), O.Default(None))
-    /** Database column currentOperationId SqlType(INT), Default(None) */
-    val currentoperationid: Rep[Option[Int]] = column[Option[Int]]("currentOperationId", O.Default(None))
 
     /** Foreign key referencing Component (database name fk_simulation_component_mapping_1) */
     lazy val componentFk = foreignKey("fk_simulation_component_mapping_1", componentId, Component)(r => r.id, onUpdate=ForeignKeyAction.NoAction, onDelete=ForeignKeyAction.NoAction)
-    /** Foreign key referencing ComponentState (database name fk_simulation_component_mapping_3) */
-    lazy val componentStateFk = foreignKey("fk_simulation_component_mapping_3", status, ComponentState)(r => Rep.Some(r.name), onUpdate=ForeignKeyAction.NoAction, onDelete=ForeignKeyAction.NoAction)
     /** Foreign key referencing Simulation (database name fk_simulation_component_mapping_2) */
     lazy val simulationFk = foreignKey("fk_simulation_component_mapping_2", simulationId, Simulation)(r => r.id, onUpdate=ForeignKeyAction.NoAction, onDelete=ForeignKeyAction.NoAction)
   }

@@ -35,6 +35,9 @@ table {
   margin-top: 15%;
   border-collapse: collapse;
   width: 100%;
+  max-width: 100%;
+  max-height: 60%;
+  overflow:auto;
 }
 
 th {
@@ -64,6 +67,19 @@ body {
   margin: 20px auto;
   max-width: 400px;
   width: 100%;
+}
+
+.tablecontainer {
+  margin: 20px auto;
+  max-width: 100%;
+  max-height: 60%;
+  width: 100%;
+  overflow:auto;
+}
+
+.li{
+
+  overflow:auto
 }
 
 // Buttons

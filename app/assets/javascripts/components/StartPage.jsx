@@ -1,15 +1,24 @@
 var React = require('react')
 
+var fileJson={};
 class StartPage extends React.Component{
+
 
   constructor(props){
     super(props);
 
     this.handleFileChange = this.handleFileChange.bind(this);
     this.nextStep = this.nextStep.bind(this);
+
   }
 
   nextStep(){
+    this.props.saveValues(fileJson);
+    this.props.nextStep();
+    //TODO shortcut Remove all below
+    this.props.nextStep();
+    this.props.nextStep();
+    this.props.nextStep();
     this.props.nextStep();
   }
   handleFileChange(e){
@@ -17,6 +26,7 @@ class StartPage extends React.Component{
       var reader = new FileReader();
       reader.onload = function(){
         var dataURL = reader.result;
+          fileJson = JSON.parse(dataURL)
         console.log(dataURL)
       };
       console.log(file);
@@ -26,9 +36,14 @@ class StartPage extends React.Component{
   render(){
     return (
       <div>
-      <ul>
+      <ul className="form-fields">
         <li>
+          <label> Upload Json Data File</label>
         <input type="file" onChange={this.handleFileChange}/>
+        </li>
+        <li>
+          <label>Select Existing Simulation to run(WILL COME NEXT)</label>
+
         </li>
         <li className="form-footer">
           <button className="btn -primary pull-right" onClick={this.nextStep}>Save &amp; Continue</button>

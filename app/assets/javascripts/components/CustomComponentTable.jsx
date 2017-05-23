@@ -73,7 +73,7 @@ class CustomComponentTable extends React.Component {
       rows.push(<CustomComponentRow row={eachData} key={eachData.id+eachData.name} editrow={callback} />);
     });
     return (
-      <table class="container">
+      <table class="tablecontainer">
         <thead>
         <tr>
           <th>Name</th>

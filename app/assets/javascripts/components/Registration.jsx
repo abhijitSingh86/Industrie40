@@ -91,7 +91,7 @@ var Registration = React.createClass({
 
   render: function() {
     var style = {
-      width : (this.state.step / 4 * 100) + '%'
+      width : (this.state.step / 5 * 100) + '%'
     }
 
     return (

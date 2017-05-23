@@ -1,69 +1,94 @@
+import scala.collection.mutable
 
-import enums.PriorityEnum
-import models.{Assembly, Component, Operation, ProcessingSequence}
-import play.api.libs.json._
-import play.api.libs.functional.syntax._
+//http://localhost:9000/simulationStatus?body={%22simulationId%22:16,%22simulationName%22:%22abhi%22,%22simulationDesc%22:%22test%22,%22components%22:[{%22id%22:42,%22name%22:%22c1%22,%22opCount%22:3,%22operationDetails%22:[[{%22id%22:67,%22label%22:%22o1%22},{%22id%22:68,%22label%22:%22o2%22},{%22id%22:69,%22label%22:%22o3%22}],[{%22id%22:68,%22label%22:%22o2%22},{%22id%22:67,%22label%22:%22o1%22},{%22id%22:69,%22label%22:%22o3%22}]]},{%22id%22:43,%22name%22:%22c2%22,%22opCount%22:2,%22operationDetails%22:[[{%22id%22:66,%22label%22:%22fixed%20in%20Registration%20omdule%22},{%22id%22:67,%22label%22:%22o1%22}],[{%22id%22:67,%22label%22:%22o1%22},{%22id%22:66,%22label%22:%22fixed%20in%20Registration%20omdule%22}]]}],%22assemblies%22:[{%22id%22:26,%22name%22:%22a1%22,%22operationDetails%22:[{%22id%22:66,%22name%22:%22fixed%20in%20Registration%20omdule%22,%22time%22:20},{%22id%22:67,%22name%22:%22o1%22,%22time%22:30}]},{%22id%22:27,%22name%22:%22a2%22,%22operationDetails%22:[{%22id%22:67,%22name%22:%22o1%22,%22time%22:23},{%22id%22:68,%22name%22:%22o2%22,%22time%22:21},{%22id%22:69,%22name%22:%22o3%22,%22time%22:20}]}]}
 
+val m = mutable.Map("s" ->3,"a"-> 4)
 
-val str1 = """{"simulationName":"abhi","simulationDesc":"test","operations":[{"id":0,"label":"fixed in Registration omdule"},{"label":"o1","id":1},{"label":"o2","id":2},{"label":"o3","id":3}],"components":[{"id":0,"name":"c1","opCount":3,"operationDetails":[[{"label":"o1","id":1},{"label":"o2","id":2},{"label":"o3","id":3}],[{"label":"o2","id":2},{"label":"o1","id":1},{"label":"o3","id":3}]]},{"id":1,"name":"c2","opCount":2,"operationDetails":[[{"id":0,"label":"fixed in Registration omdule"},{"label":"o1","id":1}],[{"label":"o1","id":1},{"id":0,"label":"fixed in Registration omdule"}]]}],"assemblies":[{"id":0,"name":"a1","operationDetails":[{"time":20,"id":0,"label":"fixed in Registration omdule"},{"time":30,"id":1,"label":"o1"}]},{"id":1,"name":"a2","operationDetails":[{"time":23,"id":1,"label":"o1"},{"time":21,"id":2,"label":"o2"},{"time":20,"id":3,"label":"o3"}]}],"operationCounter":4,"componentCounter":2,"assemblyCounter":2}"""
+val q = m + ("q"->5)
 
-val jsonObj = Json.parse(str1)
+m += ("f"->5)
 
+q
 
-implicit val opRead: Format[Operation] = (
-  (JsPath \ "id").format[Int] and
-    (JsPath \ "label").format[String]
-  ) (models.Operation.apply _ , unlift(models.Operation.unapply))
+m
 
-val op = (jsonObj \ "operations").validate[List[Operation]]
+//val list = List()
+val list = List(5,4,3,4,5)
 
-op match {
-  case s:JsSuccess[Operation] =>
-    println("sdf"+s.get)
-  case f:JsError =>
-    println(f)
-}
+list.filter(_ == 4)
 
-implicit val processingSeqReads:Reads[List[ProcessingSequence]] =
-  (__.read[List[List[Operation]]].map(x=> x.map(ProcessingSequence apply _)))
+list.drop(1)
+list.takeRight(list.length-1)
 
-implicit val compReads:Reads[Component] = (
-  (JsPath \ "id").read[Int] and
-  (JsPath \ "name").read[String] and
-  (JsPath \ "operationDetails").read[List[ProcessingSequence]]
-  )(Component apply(_,_,PriorityEnum.NORMAL,_))
+//val v=None
+//v.map(_)
 
-val compo = (jsonObj \ "components").validate[List[Component]]
-
-compo match {
-  case s:JsSuccess[Component] =>
-    println(s)
-  case f:JsError =>
-    println("error"+f)
-
-}
-
-implicit val assemblyOpReads:Reads[(Operation,Int)] = {
-  for {
-    a <- (__ \ "id").read[Int]
-    b <- (__ \ "label").read[String]
-    c <- (__ \ "time").read[Int]
-  }yield (Operation(a,b),c)
-}
-
-implicit val assemblyReads:Reads[Assembly] ={
-  for {
-    id <- (__ \ "id").read[Int]
-    name <- (__ \ "name").read[String]
-    od <- (__ \ "operationDetails").read[List[(Operation, Int)]]
-  }yield (Assembly apply(id = id,name=name,totalOperations = od))
-}
-
-val assem = (jsonObj \ "assemblies").validate[List[Assembly]]
-
-assem match {
-  case s:JsSuccess[Assembly] =>
-    println(s.get)
-  case f:JsError =>
-    println(f.get)
-}
+//
+//import enums.PriorityEnum
+//import models.{Assembly, Component, Operation, ProcessingSequence}
+//import play.api.libs.json._
+//import play.api.libs.functional.syntax._
+//
+//
+//val str1 = """{"simulationName":"abhi","simulationDesc":"test","operations":[{"id":0,"label":"fixed in Registration omdule"},{"label":"o1","id":1},{"label":"o2","id":2},{"label":"o3","id":3}],"components":[{"id":0,"name":"c1","opCount":3,"operationDetails":[[{"label":"o1","id":1},{"label":"o2","id":2},{"label":"o3","id":3}],[{"label":"o2","id":2},{"label":"o1","id":1},{"label":"o3","id":3}]]},{"id":1,"name":"c2","opCount":2,"operationDetails":[[{"id":0,"label":"fixed in Registration omdule"},{"label":"o1","id":1}],[{"label":"o1","id":1},{"id":0,"label":"fixed in Registration omdule"}]]}],"assemblies":[{"id":0,"name":"a1","operationDetails":[{"time":20,"id":0,"label":"fixed in Registration omdule"},{"time":30,"id":1,"label":"o1"}]},{"id":1,"name":"a2","operationDetails":[{"time":23,"id":1,"label":"o1"},{"time":21,"id":2,"label":"o2"},{"time":20,"id":3,"label":"o3"}]}],"operationCounter":4,"componentCounter":2,"assemblyCounter":2}"""
+//
+//val jsonObj = Json.parse(str1)
+//
+//
+//implicit val opRead: Format[Operation] = (
+//  (JsPath \ "id").format[Int] and
+//    (JsPath \ "label").format[String]
+//  ) (models.Operation.apply _ , unlift(models.Operation.unapply))
+//
+//val op = (jsonObj \ "operations").validate[List[Operation]]
+//
+//op match {
+//  case s:JsSuccess[Operation] =>
+//    println("sdf"+s.get)
+//  case f:JsError =>
+//    println(f)
+//}
+//
+//implicit val processingSeqReads:Reads[List[ProcessingSequence]] =
+//  (__.read[List[List[Operation]]].map(x=> x.map(ProcessingSequence apply _)))
+//
+//implicit val compReads:Reads[Component] = (
+//  (JsPath \ "id").read[Int] and
+//  (JsPath \ "name").read[String] and
+//  (JsPath \ "operationDetails").read[List[ProcessingSequence]]
+//  )(Component apply(_,_,PriorityEnum.NORMAL,_))
+//
+//val compo = (jsonObj \ "components").validate[List[Component]]
+//
+//compo match {
+//  case s:JsSuccess[Component] =>
+//    println(s)
+//  case f:JsError =>
+//    println("error"+f)
+//
+//}
+//
+//implicit val assemblyOpReads:Reads[(Operation,Int)] = {
+//  for {
+//    a <- (__ \ "id").read[Int]
+//    b <- (__ \ "label").read[String]
+//    c <- (__ \ "time").read[Int]
+//  }yield (Operation(a,b),c)
+//}
+//
+//implicit val assemblyReads:Reads[Assembly] ={
+//  for {
+//    id <- (__ \ "id").read[Int]
+//    name <- (__ \ "name").read[String]
+//    od <- (__ \ "operationDetails").read[List[(Operation, Int)]]
+//  }yield (Assembly apply(id = id,name=name,totalOperations = od))
+//}
+//
+//val assem = (jsonObj \ "assemblies").validate[List[Assembly]]
+//
+//assem match {
+//  case s:JsSuccess[Assembly] =>
+//    println(s.get)
+//  case f:JsError =>
+//    println(f.get)
+//}

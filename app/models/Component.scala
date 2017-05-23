@@ -9,65 +9,31 @@ import scala.collection.mutable
 /**
   * Created by billa on 2016-12-15.
   */
-case class Component(id: Int, name: String, priority: PriorityEnum, processingSequences: List[ProcessingSequence]) {
-  private var currentStep: Int = 0
-  private var currentState: StateEnum = StateEnum.WAITING
-  private var currentAllocatedAssembly: Option[Assembly] = None
+case class Component(id: Int, name: String, processingSequences: List[ProcessingSequence] ,
+                      componentSchedulingInfo:SchedulingInfo) {
 
-  private val completedOperations: mutable.MutableList[Operation] = mutable.MutableList()
-  private var currentOperation: Option[Operation] = None
+  def getCurrentOperation() = componentSchedulingInfo.currentProcessing
 
-  private def updateCurrentOperation(operation: Option[Operation]): Unit = {
-    currentOperation = operation
-  }
 
   def totalReqdOperationCount = processingSequences.size match{
     case 0 => 0
     case _ => processingSequences(0).seq.size
   }
-  def getCurrentAllocatedAssembly(): Option[Assembly] = currentAllocatedAssembly
 
-  def getCurrentOperation(): Option[Operation] = currentOperation
+  /*iterate through the list of completed operation and extracts the list of matching seqeunce with completedoperation. This
+   way the next operation will be from the matching seq
+   completed = a,b
+   processingseq = s1-> a,b,c,d
+                  S2 -> b,a,c,d
+                  S3 -> a,b,d,c
 
-  def updateCurrentState(state: StateEnum) = {
-    currentState = state
-  }
+                  Function will return c from S1 and d from S3... S2 will be discarded because of the insufficient flow.
 
-
-  /**
-    * Function to allocate the assembly and current operation. This should be invoked by the scheduler after deciding
-    * upon the schedule.
-    */
-  def scheduleCurrentOperation(operation: Operation, assembly: Assembly): Unit = {
-    this.currentOperation = Some(operation)
-    this.currentAllocatedAssembly = Some(assembly)
-
-  }
-
-  /**
-    * Function to mark complete the current operation. This function should be called by assembly once it finishes the
-    * scheduling.
-    */
-  def completeCurrentStep() = {
-    currentOperation match {
-      case Some(x) => {
-        completedOperations += x
-        incrementCurrentStepCount()
-        updateCurrentOperation(None)
-      }
-      case None => None //throw new Exception("Nothing to complete, No Operation was assigned")
-    }
-    currentOperation
-  }
-
-  private def incrementCurrentStepCount() = {
-    currentStep += 1
-  }
-
+   */
   def getCurrentProcessingStepOptions(): Seq[Operation] = {
     processingSequences.map(x => {
-      completedOperations == x.seq.take(currentStep) match {
-        case true => Some(x.seq(currentStep))
+      componentSchedulingInfo.completedOperations == x.seq.take(componentSchedulingInfo.sequence) match {
+        case true => Some(x.seq(componentSchedulingInfo.sequence))
         case _ => None
       }
     }).flatten

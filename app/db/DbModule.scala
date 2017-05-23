@@ -1,13 +1,7 @@
 package db
 
 import db.dao._
-import models.{Assembly, Component, Operation, Simulation}
-import play.api.libs.json.Json
-import play.modules.reactivemongo.ReactiveMongoApi
-import reactivemongo.api.ReadPreference
-import reactivemongo.play.json.collection.JSONCollection
-
-import scala.concurrent.{ExecutionContext, Future}
+import models._
 
 /**
   * Created by billa on 25.04.17.
@@ -32,7 +26,7 @@ trait DbModule {
 
   def getAllAssemblyUrlBySimulationId(simunlationId:Int):List[(Int,String)]
 
-  def assignAssemblytoComponentSimulationMapping(assemblyId:Int,ComponentId:Int,simulationId:Int):Unit
+//  def assignAssemblytoComponentSimulationMapping(assemblyId:Int,ComponentId:Int,simulationId:Int):Unit
 
   def addSimulation(name:String,desc:String):Int
 
@@ -46,6 +40,11 @@ trait DbModule {
 
   def addAssembly(a:Assembly):Int
 
+  def addComponentProcessingInfo(simId:Int,cmpId:Int,assemblyId:Int,sequence:Int,opId:Int):Boolean
+
+  def updateAssemblyOperationStatus(assemblyId:Int, operationId:Int, status:String):Boolean
+
+  def updateComponentProcessingInfo(simId:Int,cmpId:Int,assemblyId:Int,sequence:Int,opId:Int):Boolean
 }
 
 class SlickModuleImplementation extends DbModule {
@@ -55,6 +54,18 @@ class SlickModuleImplementation extends DbModule {
     with ComponentDaoRepo
     with OperationDaoRepo
     with DBComponent =>
+
+  def updateAssemblyOperationStatus(assemblyId: Int, operationId: Int, status: String): Boolean= {
+    assembly.updateAssemblyOperationStatus(assemblyId, operationId, status)
+  }
+
+  def updateComponentProcessingInfo(simId:Int,cmpId:Int,assemblyId:Int,sequence:Int,opId:Int):Boolean ={
+    assembly.updateAssemblyOperationStatus(assemblyId,opId,FreeOperationStatus.text)
+    component.updateComponentProcessingInfo(simId,cmpId,assemblyId,sequence,opId)
+  }
+  def addComponentProcessingInfo(simId:Int,cmpId:Int,assemblyId:Int,sequence:Int,opId:Int):Boolean={
+    component.addComponentProcessingInfo(simId,cmpId,assemblyId,sequence,opId)
+  }
 
   def getAllSimulation():List[Simulation] = {
     simulation.selectAllSimulations().map(x=> getSimulation(x.id))
@@ -114,12 +125,9 @@ class SlickModuleImplementation extends DbModule {
   }
 
   override def getComponentMappedToSimulationId(componentId: Int, simulationId: Int): Option[Component] = {
-    component.selectByComponentId(componentId) match {
-      //check if this exist for simulation ID
-      case Some(x) if simulation.isComponentMappedToSimulation(simulationId, x.id) => {
-        Some(x)
-      }
-      case _ => None
+    simulation.isComponentMappedToSimulation(simulationId, componentId) match{
+      case true=> component.selectByComponentSimulationId(componentId,simulationId)
+      case false => None
     }
   }
 
@@ -134,6 +142,6 @@ class SlickModuleImplementation extends DbModule {
   def getAllAssemblyUrlBySimulationId(simunlationId:Int):List[(Int,String)] =
   simulation.getAllAssemblyUrlBySimulationId(simunlationId)
 
-  def assignAssemblytoComponentSimulationMapping(assemblyId:Int,ComponentId:Int,simulationId:Int):Unit =
-    simulation.assignAssemblytoComponentSimulationMapping(assemblyId,ComponentId,simulationId)
+//  def assignAssemblytoComponentSimulationMapping(assemblyId:Int,ComponentId:Int,simulationId:Int):Unit =
+//    simulation.assignAssemblytoComponentSimulationMapping(assemblyId,ComponentId,simulationId)
 }

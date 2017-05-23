@@ -16,7 +16,7 @@ class NetworkProxy(ws:WSClient) {
   val componentAssemblyHook = "/assignAssembly"
 
 
-  def sendAssemblyDetails(url: String, assembly: Assembly, assemblyUrls: Map[Int, String],operation:Operation) = {
+  def sendAssemblyDetails(url: String, assembly: Assembly, assemblyUrls: Map[Int, String],operationId:Int) = {
       //send http request using assemblies details
     import play.api.libs.json._
     val aurl = assemblyUrls.get(assembly.id).getOrElse("")
@@ -24,8 +24,9 @@ class NetworkProxy(ws:WSClient) {
     val port = if(aurl.split(":").size >2) aurl.split(":")(2).toInt else 0
 
     val data = Json.obj("assemblyId" -> assembly.id,"assemblyName"->assembly.name
-    ,"url" -> url,"transportationTime"->5 , "operationTime"->assembly.totalOperations.filter(_._1.equals(operation)).head._2 ,
-    "hostname" -> host, "port" -> port , "operationId" -> operation.id )
+    ,"url" -> url,"transportationTime"->5 , "operationTime"->assembly.totalOperations.filter(
+        _.operation.id.equals(operationId)).head.time ,
+    "hostname" -> host, "port" -> port , "operationId" -> operationId )
     var status=0
     do {
       logger.info(s"Posted Url ${url}${componentAssemblyHook}")

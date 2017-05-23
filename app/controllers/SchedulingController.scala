@@ -13,9 +13,9 @@ import scala.util.Try
 class SchedulingController(schedulingThread:SchedulerThread)  extends Controller{
 
 
-  def start()=Action{ implicit request =>
+  def start(id:Int)=Action{ implicit request =>
     val json =request.body.asJson
-    val simulationId = Try(2)//Try((json.get \ "simulationId").get.as[Int])
+    val simulationId = Try(id)//Try((json.get \ "simulationId").get.as[Int])
     simulationId.isSuccess match{
       case true =>
         ComponentQueue.updateSimulationId(simulationId.get)
@@ -26,7 +26,7 @@ class SchedulingController(schedulingThread:SchedulerThread)  extends Controller
     }
   }
 
-  def stop() = Action {
+  def stop(id:Int) = Action {
         Logger.info("Stop request recieved..")
         if(schedulingThread !=null){
           schedulingThread.endExecution()
@@ -34,5 +34,4 @@ class SchedulingController(schedulingThread:SchedulerThread)  extends Controller
         }
         Ok("Thread Stopped")
       }
-
 }

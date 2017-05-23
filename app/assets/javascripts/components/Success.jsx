@@ -1,9 +1,27 @@
 var React = require('react')
 var axios = require('axios')
+
+var Simulation = require('./Simulation')
+
+
 var Success = React.createClass({
+    getInitialState(){
+            return {
+                renderSuccess:false
+                ,body :""
+            }
+    },
   submit(){
-      axios.post('/simulation' , this.props.fieldValues).then(function(response){
-          console.log(response)
+      var _this = this;
+      axios.post('/simulation' , this.props.fieldValues).then( function(response){
+          console.log( "entered into success")
+          _this.setState({
+              body:JSON.stringify(response.data.body),
+              renderSuccess: true
+              });
+          console.log( "entered into after success"+_this.state.renderSuccess);
+
+          // window.location = "/simulationStatus?body="+JSON.stringify(response.data.body)
       }).catch(function(error){
           console.log(error)
       })
@@ -11,18 +29,63 @@ var Success = React.createClass({
   },
   render: function() {
     return (
-      <div>
-        <h2>Data Entered Successfully</h2>
-        <p>Please Check and Submit </p>
-
-        <div><pre>{JSON.stringify(this.props.fieldValues, null, 2) }</pre></div>
-        <button className="btn -default pull-left" onClick={this.props.previousStep}>Back</button>
-
-        <button className="btn -default pull-center" onClick={this.submit}>Submit</button>
-
-      </div>
+        <div>
+            <ToBeSubmittedValue render={!this.state.renderSuccess} fieldValues={this.props.fieldValues} previousStep = {this.props.previousStep} submit={this.submit} />
+            <SubmittedValue render={this.state.renderSuccess} content={this.state.body} />
+        </div>
     )
   }
 })
+
+class ToBeSubmittedValue extends React.Component{
+    render(){
+        if(this.props.render) return (
+            <div>
+                <h2>Data Entered Successfully</h2>
+                <p>Please Check and Submit </p>
+                <button className="btn -default pull-left" onClick={this.props.previousStep}>Back</button>
+                <button className="btn -default pull-center" onClick={this.props.submit}>Submit</button>
+                <div className="tablecontainer"><pre>{JSON.stringify(this.props.fieldValues, null, 2) }</pre></div>
+            </div>
+        );
+        else{
+            return (<div/>);
+        }
+    }
+}
+
+
+class SubmittedValue extends React.Component{
+
+
+    render(){
+         if(this.props.render) {
+             var content = JSON.parse(this.props.content);
+		var counter=0;
+             var arr = [];
+             for (var i = 0; i < content.c.length; i++) {
+                 arr.push( <div>xterm -hold -e  scala -classpath "*.jar" componentClient.jar -c {content.c[i]} -s {content.s} &</div> );
+		 arr.push( <div>sleep {counter}</div>);
+			counter =counter + .5;
+             }
+             for (var i = 0; i < content.a.length; i++) {
+                 arr.push( <div>xterm -hold -e scala -classpath "*.jar" assemblyClient.jar -a {content.a[i]} -s {content.s} &</div> );
+		arr.push( <div>sleep {counter}</div>);
+		counter =counter + .5;
+             }
+             return (
+
+                 <div>
+                     <p>Simulation Details stored Successfully</p>
+                     <p>Copy the content below in sh file.</p>
+                     {arr}
+                 </div>
+             );
+         }
+        else{
+            return  (<div/>);
+         }
+    }
+}
 
 module.exports = Success

@@ -8,7 +8,8 @@ var webpack = require('webpack'),
 var config = {
     target: 'web',
     entry: {
-        app: path.join(srcPath, 'app.jsx')
+        app: path.join(srcPath, 'app.jsx'),
+        app2: path.join(srcPath, 'app2.jsx')
         //, common: ['react-dom', 'react']
     },
     resolve: {

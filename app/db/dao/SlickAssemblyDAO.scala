@@ -3,6 +3,7 @@ package db.dao
 import db.DBComponent
 import dbgeneratedtable.Tables
 import dbgeneratedtable.Tables.AssemblyOperationMappingRow
+import models.{AssemblyOperation, AssemblyOperationStatus, BusyOperationStatus, FreeOperationStatus}
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
@@ -25,10 +26,19 @@ trait SlickAssemblyDaoRepo extends AssemblyDaoRepo {
     private lazy val assemblyOperationMapping = Tables.AssemblyOperationMapping
     private lazy val simulationAssemblyMapping = Tables.Simulationassemblymap
 
+    override def updateAssemblyOperationStatus(assemblyId:Int, operationId:Int, status:String):Boolean ={
 
-    def addAssemblyOperationMapping(assemblyId: Int, operations: List[(models.Operation, Int)]) = {
+      val dbStatus = for{x <- assemblyOperationMapping if((x.assemblyId === assemblyId) && (x.operationId === operationId))}yield x.status
+     Await.result(db.run(dbStatus.update(status)),Duration.Inf) match{
+       case 1=> true
+       case _ => false
+     }
+    }
+
+    private def addAssemblyOperationMapping(assemblyId: Int, operations: List[AssemblyOperation]) = {
       operations.map(obj =>
-        db.run(assemblyOperationMapping += AssemblyOperationMappingRow(assemblyId, obj._1.id, obj._2))
+        Await.result(db.run(assemblyOperationMapping += AssemblyOperationMappingRow(assemblyId, obj.operation.id,
+          obj.time , FreeOperationStatus.text)),Duration.Inf)
       )
     }
 
@@ -78,8 +88,9 @@ trait SlickAssemblyDaoRepo extends AssemblyDaoRepo {
         case Some(x) => {
           //transform into assembly object
           val operations = Await.result(db.run(assemblyOperationMapping.filter(_.assemblyId === x.id).result), Duration.Inf).map(y =>
-            (operation.selectByOperationId(y.operationId), y.operationTime))
-          Some(new models.Assembly(x.id, x.name, operations.toList))
+            AssemblyOperation(operation.selectByOperationId(y.operationId), y.operationTime,AssemblyOperationStatus(y.status)))
+          Some(new models.Assembly(x.id, x.name, operations.toList,
+            operations.filter(_.status == BusyOperationStatus).toList))
 
         }
         case None => {
