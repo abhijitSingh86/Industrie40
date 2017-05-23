@@ -15,5 +15,5 @@ trait Scheduler {
     * @param assemblies
     * @return
     */
-  def scheduleComponents(components:List[Component],assemblies:List[Assembly]): List[Component]
+  def scheduleComponents(components:List[Component],assemblies:List[Assembly]): List[Int]
 }

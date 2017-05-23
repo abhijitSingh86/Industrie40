@@ -185,7 +185,7 @@ trait Tables {
     val assemblyid: Rep[Int] = column[Int]("assemblyId")
 
     /** Primary key of ComponentProcessingState (database name component_processing_state_PK) */
-    val pk = primaryKey("component_processing_state_PK", (componentid, simulationid, assemblyid))
+    val pk = primaryKey("component_processing_state_PK", (componentid, simulationid, assemblyid , operationid , sequencenum))
   }
   /** Collection-like TableQuery object for table ComponentProcessingState */
   lazy val ComponentProcessingState = new TableQuery(tag => new ComponentProcessingState(tag))

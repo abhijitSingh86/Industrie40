@@ -13,7 +13,7 @@ import scala.concurrent.Future
 class SimulationControllerSpec2 extends PlaySpecification with Results {
 
 
-    "sim  controroror "  should {
+    "sim  controller "  should {
 
         "send simulation object " in {
 

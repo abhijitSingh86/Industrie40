@@ -21,10 +21,20 @@ trait SlickComponentDaoRepo extends ComponentDaoRepo {
 
     import driver.api._
 
-    val components = TableQuery[Tables.Component]
-    val componentsOperationMapping = TableQuery[Tables.ComponentOperationMapping]
-    val componentProcessingState = TableQuery[Tables.ComponentProcessingState]
+    private lazy val components = Tables.Component
+    private lazy val componentsOperationMapping = Tables.ComponentOperationMapping
+    private lazy val componentProcessingState = Tables.ComponentProcessingState
 
+
+    def updateComponentProcessingInfo(simId:Int,cmpId:Int,assemblyId:Int,sequence:Int,opId:Int):Boolean ={
+      val res = for{c <-  componentProcessingState if(c.assemblyid === assemblyId && c.componentid === cmpId &&
+        c.operationid === opId && c.simulationid === simId && c.sequencenum === sequence)}yield c.endTime
+
+      Await.result(db.run(res.update(Some(DateTimeUtils.getCurrentTimeStamp()))),Duration.Inf) match{
+        case 1 => true
+        case _ => false
+      }
+    }
 
     def addComponentProcessingInfo(simId:Int,cmpId:Int,assemblyId:Int,sequence:Int,opId:Int):Boolean={
       val result  = db.run(componentProcessingState += new ComponentProcessingStateRow(cmpId,simId,sequence,opId,
@@ -133,24 +143,31 @@ trait SlickComponentDaoRepo extends ComponentDaoRepo {
 
     def createComponentSchedulingInfo(componentId: Int, simulationId: Int):ComponentSchedulingInfo = {
       //TODO check for sort be descending after some values
-        val result = db.run(componentProcessingState.filter(x=> (x.componentid === componentId && x.simulationid === simulationId)).sortBy(_.sequencenum).result).map(y=>
+        val result = db.run(componentProcessingState.filter(x=> (x.componentid === componentId &&
+          x.simulationid === simulationId)).sortBy(_.sequencenum.desc).result).map(y=>
         {
-          //get each row and form the scheduling information Details
-            var oinfo:List[OperationProcessingInfo] = List()
-            val curr = if(y.take(1)(0).endTime.isDefined){
-              oinfo = y.map(x=>mapToOperationProcessingInfo(x)
+            val firstRow = if(y.take(1).size ==1) Some(y.take(1)(0)) else None
+            //get each row and form the scheduling information Details
+            var oinfo: List[OperationProcessingInfo] = List()
+            val curr = if (firstRow.isDefined && firstRow.get.endTime.isDefined) {
+              oinfo = y.map(x => mapToOperationProcessingInfo(x)
               ).toList
               None
-            } else{
-              oinfo = y.takeRight(y.length-1).map(x=>mapToOperationProcessingInfo(x)
+            } else if(firstRow.isDefined ) {
+              oinfo = y.takeRight(y.length - 1).map(x => mapToOperationProcessingInfo(x)
               ).toList
 
-              val c=y.take(1)(0)
-              Some(new OperationProcessingInfo(c.operationid,c.assemblyid,c.startTime.get.getTime,0l))
+              val c = firstRow.get
+              Some(new OperationProcessingInfo(c.operationid, c.assemblyid, c.startTime.get.getTime, 0l))
+            }else{
+              None
             }
 
-          val completedOPerationList = y.map(_.operationid).reverse.map(operation.selectByOperationId(_)).toList
-          new ComponentSchedulingInfo(oinfo,curr,y.take(1)(0).sequencenum,completedOPerationList)
+            val sequemce  = if(firstRow.isDefined) firstRow.get.sequencenum+1 else 0
+
+            val completedOPerationList = oinfo.map(_.operationId).reverse.map(operation.selectByOperationId(_)).toList
+
+            new ComponentSchedulingInfo(oinfo, curr, sequemce, completedOPerationList)
         })
       Await.result(result,Duration.Inf)
     }

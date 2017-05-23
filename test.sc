@@ -1,7 +1,23 @@
+import scala.collection.mutable
+
+//http://localhost:9000/simulationStatus?body={%22simulationId%22:16,%22simulationName%22:%22abhi%22,%22simulationDesc%22:%22test%22,%22components%22:[{%22id%22:42,%22name%22:%22c1%22,%22opCount%22:3,%22operationDetails%22:[[{%22id%22:67,%22label%22:%22o1%22},{%22id%22:68,%22label%22:%22o2%22},{%22id%22:69,%22label%22:%22o3%22}],[{%22id%22:68,%22label%22:%22o2%22},{%22id%22:67,%22label%22:%22o1%22},{%22id%22:69,%22label%22:%22o3%22}]]},{%22id%22:43,%22name%22:%22c2%22,%22opCount%22:2,%22operationDetails%22:[[{%22id%22:66,%22label%22:%22fixed%20in%20Registration%20omdule%22},{%22id%22:67,%22label%22:%22o1%22}],[{%22id%22:67,%22label%22:%22o1%22},{%22id%22:66,%22label%22:%22fixed%20in%20Registration%20omdule%22}]]}],%22assemblies%22:[{%22id%22:26,%22name%22:%22a1%22,%22operationDetails%22:[{%22id%22:66,%22name%22:%22fixed%20in%20Registration%20omdule%22,%22time%22:20},{%22id%22:67,%22name%22:%22o1%22,%22time%22:30}]},{%22id%22:27,%22name%22:%22a2%22,%22operationDetails%22:[{%22id%22:67,%22name%22:%22o1%22,%22time%22:23},{%22id%22:68,%22name%22:%22o2%22,%22time%22:21},{%22id%22:69,%22name%22:%22o3%22,%22time%22:20}]}]}
+
+val m = mutable.Map("s" ->3,"a"-> 4)
+
+val q = m + ("q"->5)
+
+m += ("f"->5)
+
+q
+
+m
 
 //val list = List()
-val list = List(1,2,3,4,5)
-list.take(1)
+val list = List(5,4,3,4,5)
+
+list.filter(_ == 4)
+
+list.drop(1)
 list.takeRight(list.length-1)
 
 //val v=None

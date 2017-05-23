@@ -3,10 +3,12 @@
 # ~~~~
 
 # Home page
-GET /start                          controllers.SchedulingController.start
-GET /stop                           controllers.SchedulingController.stop
+GET /start/:id                          controllers.SchedulingController.start(id:Int)
+GET /stop/:id                           controllers.SchedulingController.stop(id:Int)
 GET /                               controllers.Index.index
+GET /simulationStatus               controllers.Index.simulationStatus
 POST /initComponent                 controllers.ComponentController.initComponentRequest
+POST /componentComplete             controllers.ComponentController.updateComponentCompletionTime
 POST /initAssembly                  controllers.Index.initAssemblyRequest
 POST /assemblyOperationCompletion   controllers.Index.assemblyOperationCompletion
 

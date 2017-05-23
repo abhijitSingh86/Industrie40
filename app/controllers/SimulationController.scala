@@ -32,6 +32,14 @@ class SimulationController(database:DbModule) extends Controller {
     Ok(DefaultRequestFormat.getSuccessResponse(getJsonStructure(database.getSimulation(id))))
   }
 
+  def getShellScriptStructure(simualtion:Simulation):JsObject = {
+    val assem = simualtion.assemblies.map(x=> x.id)
+
+    val comps = simualtion.components.map(x=>x.id)
+
+    Json.obj("c"->comps,"a"->assem,"s"->simualtion.id)
+  }
+
   def getJsonStructure(simualtion:Simulation):JsObject = {
 //    println(simualtion)
     Json.obj("simulationId"->simualtion.id,
@@ -104,7 +112,7 @@ class SimulationController(database:DbModule) extends Controller {
         println(f)
     }
 
-    Ok(DefaultRequestFormat.getSuccessResponse(getJsonStructure(database.getSimulation(simulationId))))
+    Ok(DefaultRequestFormat.getSuccessResponse(getShellScriptStructure(database.getSimulation(simulationId))))
   }
 
 //  def updateSimulation() = Action.async{

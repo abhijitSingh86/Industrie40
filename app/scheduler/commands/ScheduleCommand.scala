@@ -27,14 +27,14 @@ class ScheduleCommand(dbModule : DbModule,scheduler:Scheduler,proxy: NetworkProx
 
 
       //call algorithm for scheduling
-      val unscheduledComponents = scheduler.scheduleComponents(components, assemblies)
+      val scheduledComponentIds = scheduler.scheduleComponents(components, assemblies)
       //get scheduled component and send them to network proxy for information sending
-      sendScheduleInformationToComponent(ComponentQueue.getSimulationId(), components.filter(!unscheduledComponents.contains(_)))
+      sendScheduleInformationToComponent(ComponentQueue.getSimulationId(), components.filter(x=> scheduledComponentIds.contains(x.id)))
 
 
-      logger.debug("command nearly finished, processed UnScheduled components are " + unscheduledComponents.mkString(","))
+      logger.debug("command nearly finished, processed UnScheduled components are " + scheduledComponentIds.mkString(","))
       //add pending if any to the component queue again
-      unscheduledComponents.map(ComponentQueue.push(_))
+      components.filter(x=> !scheduledComponentIds.contains(x.id)).map(ComponentQueue.push(_))
     }
     logger.info("Schedule command execute finished")
   }

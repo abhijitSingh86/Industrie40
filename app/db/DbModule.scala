@@ -1,7 +1,7 @@
 package db
 
 import db.dao._
-import models.{Assembly, Component, Operation, Simulation}
+import models._
 
 /**
   * Created by billa on 25.04.17.
@@ -44,7 +44,7 @@ trait DbModule {
 
   def updateAssemblyOperationStatus(assemblyId:Int, operationId:Int, status:String):Boolean
 
-
+  def updateComponentProcessingInfo(simId:Int,cmpId:Int,assemblyId:Int,sequence:Int,opId:Int):Boolean
 }
 
 class SlickModuleImplementation extends DbModule {
@@ -57,6 +57,11 @@ class SlickModuleImplementation extends DbModule {
 
   def updateAssemblyOperationStatus(assemblyId: Int, operationId: Int, status: String): Boolean= {
     assembly.updateAssemblyOperationStatus(assemblyId, operationId, status)
+  }
+
+  def updateComponentProcessingInfo(simId:Int,cmpId:Int,assemblyId:Int,sequence:Int,opId:Int):Boolean ={
+    assembly.updateAssemblyOperationStatus(assemblyId,opId,FreeOperationStatus.text)
+    component.updateComponentProcessingInfo(simId,cmpId,assemblyId,sequence,opId)
   }
   def addComponentProcessingInfo(simId:Int,cmpId:Int,assemblyId:Int,sequence:Int,opId:Int):Boolean={
     component.addComponentProcessingInfo(simId,cmpId,assemblyId,sequence,opId)

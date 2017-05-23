@@ -77,6 +77,8 @@ trait ComponentDaoRepo {
     def selectByComponentSimulationId(componentId: Int, simulationId:Int): Option[models.Component]
 
     def addComponentProcessingInfo(simId:Int,cmpId:Int,assemblyId:Int,sequence:Int,opId:Int):Boolean
+
+    def updateComponentProcessingInfo(simId:Int,cmpId:Int,assemblyId:Int,sequence:Int,opId:Int):Boolean
   }
 
 }

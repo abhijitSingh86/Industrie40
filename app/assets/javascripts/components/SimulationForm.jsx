@@ -14,7 +14,7 @@ var SimulationForm = React.createClass({
           </li>
           <li>
             <label>Description</label>
-            <textarea rows="5" cols="63" ref={(simulationDesc)=>{this.simulationDesc = simulationDesc}} defaultValue={this.props.fieldValues.simulationDesc} />
+            <textarea rows="5" cols="47" ref={(simulationDesc)=>{this.simulationDesc = simulationDesc}} defaultValue={this.props.fieldValues.simulationDesc} />
           </li>
           <li className="form-footer">
             <button className="btn -primary pull-right" onClick={this.nextStep}>Save &amp; Continue</button>

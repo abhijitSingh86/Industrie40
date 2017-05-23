@@ -86,7 +86,7 @@ var Assembly = React.createClass({
             <label>Operation Count</label>
             <input type="text" ref={(o)=> this.operationCount=o} onChange={this.handleOpCountInputChange}/>
           </li>
-          <li>{inputRow}</li>
+          <li className="li">{inputRow}</li>
           <li className="form-footer">
             <button className="btn -default pull-left" onClick={this.add}>Add</button>
             <button className="btn -default pull-center" onClick={this.props.previousStep}>Back</button>

@@ -11,6 +11,20 @@ import scheduler.ComponentQueue
   */
 class ComponentController(db:DbModule) extends Controller {
 
+  def updateComponentCompletionTime() = Action{ implicit request =>
+    val json = request.body.asJson
+    val componentId = (json.get \ "componentId").get.as[Int]
+    val simulationId = (json.get \ "simulationId").get.as[Int]
+    val assemblyId = (json.get \ "assemblyId").get.as[Int]
+    val operationId = (json.get \ "operationId").get.as[Int]
+    val sequence= (json.get \ "sequence").get.as[Int]
+    db.updateComponentProcessingInfo(simulationId,componentId,assemblyId,sequence , operationId) match {
+      case true => Ok(DefaultRequestFormat.getEmptySuccessResponse())
+      case false => Ok(DefaultRequestFormat.getValidationErrorResponse(
+        List(("ComponentProcessingInfo","Component Processing record not found"))))
+    }
+  }
+
   def initComponentRequest() = Action { implicit request =>
     val json =request.body.asJson
 
@@ -29,7 +43,8 @@ class ComponentController(db:DbModule) extends Controller {
         db.addComponentUrlToSimulationMapEntry(simulationId,x.id,url) match{
           case true =>
             //return OK response
-            Ok(DefaultRequestFormat.getSuccessResponse(Json.obj("id" -> x.id,"name" -> x.name , "totalOperationCount" -> x.totalReqdOperationCount)))
+            Ok(DefaultRequestFormat.getSuccessResponse(Json.obj("id" -> x.id,"name" -> x.name ,
+              "totalOperationCount" -> x.totalReqdOperationCount , "completedOperationCount"->x.componentSchedulingInfo.completedOperations.length)))
           case false=>
             Ok(DefaultRequestFormat.getValidationErrorResponse(List(("error","adding Url failed, try again"))))
         }

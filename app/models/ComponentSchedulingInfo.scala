@@ -23,7 +23,7 @@ case object EmptySchedulingInfo  extends SchedulingInfo{
 
   override def currentProcessing: Option[OperationProcessingInfo] = None
 
-  override def sequence: Int = 1
+  override def sequence: Int = 0
 
   override def completedOperations: List[Operation] = List[Operation]()
 }

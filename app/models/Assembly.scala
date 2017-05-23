@@ -22,6 +22,7 @@ object AssemblyOperationStatus{
     text match {
       case "busy" => BusyOperationStatus
       case "free" => FreeOperationStatus
+      case "q" => FreeOperationStatus
     }
   }
 }
