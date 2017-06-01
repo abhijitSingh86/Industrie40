@@ -2,6 +2,8 @@ package db.dao
 
 import models.{Component, Operation}
 
+import scala.concurrent.Future
+
 /**
   * Created by billa on 26.12.16.
   */
@@ -79,6 +81,8 @@ trait ComponentDaoRepo {
     def addComponentProcessingInfo(simId:Int,cmpId:Int,assemblyId:Int,sequence:Int,opId:Int):Boolean
 
     def updateComponentProcessingInfo(simId:Int,cmpId:Int,assemblyId:Int,sequence:Int,opId:Int):Boolean
+
+    def componentHeartBeatUpdateAsync(componentId:Int,simulationId:Int):Future[Boolean]
   }
 
 }

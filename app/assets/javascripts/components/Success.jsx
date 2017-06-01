@@ -1,7 +1,7 @@
 var React = require('react')
 var axios = require('axios')
 
-var Simulation = require('./Simulation')
+var Simulation = require('./monitoring/SimulationMonitor')
 
 
 var Success = React.createClass({
@@ -21,7 +21,6 @@ var Success = React.createClass({
               });
           console.log( "entered into after success"+_this.state.renderSuccess);
 
-          // window.location = "/simulationStatus?body="+JSON.stringify(response.data.body)
       }).catch(function(error){
           console.log(error)
       })
@@ -57,21 +56,28 @@ class ToBeSubmittedValue extends React.Component{
 
 class SubmittedValue extends React.Component{
 
+    constructor(props){
+        super(props)
+        this.startSimulationMonitor = this.startSimulationMonitor.bind(this);
+    }
+    startSimulationMonitor(){
+      window.location = "/simulationStatus?body="+this.props.content
+    }
 
     render(){
          if(this.props.render) {
              var content = JSON.parse(this.props.content);
-		var counter=0;
+		var counter=3;
              var arr = [];
              for (var i = 0; i < content.c.length; i++) {
                  arr.push( <div>xterm -hold -e  scala -classpath "*.jar" componentClient.jar -c {content.c[i]} -s {content.s} &</div> );
 		 arr.push( <div>sleep {counter}</div>);
-			counter =counter + .5;
+			// counter =counter + .5;
              }
              for (var i = 0; i < content.a.length; i++) {
                  arr.push( <div>xterm -hold -e scala -classpath "*.jar" assemblyClient.jar -a {content.a[i]} -s {content.s} &</div> );
 		arr.push( <div>sleep {counter}</div>);
-		counter =counter + .5;
+		// counter =counter + .5;
              }
              return (
 
@@ -79,6 +85,10 @@ class SubmittedValue extends React.Component{
                      <p>Simulation Details stored Successfully</p>
                      <p>Copy the content below in sh file.</p>
                      {arr}
+
+                     <p>
+                         <input type="button" onClick={this.startSimulationMonitor} />
+                     </p>
                  </div>
              );
          }

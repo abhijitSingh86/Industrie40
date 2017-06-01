@@ -1,7 +1,7 @@
 var React = require('react');
 
 
-class Simulation extends React.Component{
+class SimulationMonitor extends React.Component{
 
     render(){
 
@@ -19,4 +19,4 @@ class Simulation extends React.Component{
     }
 }
 
-module.exports = Simulation
+module.exports = SimulationMonitor

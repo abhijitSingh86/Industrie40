@@ -1,9 +1,9 @@
 import React from 'react';
 import ReactDom from 'react-dom';
-import Simulation from './components/Simulation';
+import SimulationMonitor from './components/monitoring/SimulationMonitor';
 
 
 import '../stylesheets/style.scss';
 import '../stylesheets/app.scss';
 
-ReactDom.render((<Simulation/>),document.getElementById("app2"));
+ReactDom.render((<SimulationMonitor/>),document.getElementById("app2"));

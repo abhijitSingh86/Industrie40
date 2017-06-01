@@ -1,4 +1,6 @@
 package dbgeneratedtable
+
+import java.sql.Timestamp
 // AUTO-GENERATED Slick data model
 /** Stand-alone Slick data model for immediate use */
 object Tables extends {
@@ -98,22 +100,23 @@ trait Tables {
   /** Entity class storing rows of table Component
     *  @param id Database column id SqlType(INT), AutoInc, PrimaryKey
     *  @param name Database column name SqlType(VARCHAR), Length(255,true) */
-  case class ComponentRow(id: Int, name: String)
+  case class ComponentRow(id: Int, name: String,last_active: Option[java.sql.Timestamp] = None)
   /** GetResult implicit for fetching ComponentRow objects using plain SQL queries */
-  implicit def GetResultComponentRow(implicit e0: GR[Int], e1: GR[String]): GR[ComponentRow] = GR{
+  implicit def GetResultComponentRow(implicit e0: GR[Int], e1: GR[String], e2:GR[Option[Timestamp]]): GR[ComponentRow] = GR{
     prs => import prs._
-      ComponentRow.tupled((<<[Int], <<[String]))
+      ComponentRow.tupled((<<[Int], <<[String], <<[Option[Timestamp]]))
   }
   /** Table description of table Component. Objects of this class serve as prototypes for rows in queries. */
   class Component(_tableTag: Tag) extends Table[ComponentRow](_tableTag, "Component") {
-    def * = (id, name) <> (ComponentRow.tupled, ComponentRow.unapply)
+    def * = (id, name , last_active) <> (ComponentRow.tupled, ComponentRow.unapply)
     /** Maps whole row to an option. Useful for outer joins. */
-    def ? = (Rep.Some(id), Rep.Some(name)).shaped.<>({r=>import r._; _1.map(_=> ComponentRow.tupled((_1.get, _2.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+    def ? = (Rep.Some(id), Rep.Some(name) , Rep.Some(last_active)).shaped.<>({r=>import r._; _1.map(_=> ComponentRow.tupled((_1.get, _2.get,_3.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
 
     /** Database column id SqlType(INT), AutoInc, PrimaryKey */
     val id: Rep[Int] = column[Int]("id", O.AutoInc, O.PrimaryKey)
     /** Database column name SqlType(VARCHAR), Length(255,true) */
     val name: Rep[String] = column[String]("name", O.Length(255,varying=true))
+    val last_active: Rep[Option[Timestamp]] = column[Option[Timestamp]]("last_active",O.Default(None))
   }
   /** Collection-like TableQuery object for table Component */
   lazy val Component = new TableQuery(tag => new Component(tag))

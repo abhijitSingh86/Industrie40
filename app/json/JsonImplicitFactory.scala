@@ -10,12 +10,25 @@ import play.api.libs.functional.syntax._
 object JsonImplicitFactory {
 
 
+  implicit val opRead: Format[Operation] = (
+    (JsPath \ "id").format[Int] and
+      (JsPath \ "label").format[String]
+    ) (models.Operation.apply _ , unlift(models.Operation.unapply))
 
 
-    implicit val opRead: Format[Operation] = (
-      (JsPath \ "id").format[Int] and
-        (JsPath \ "label").format[String]
-      ) (models.Operation.apply _ , unlift(models.Operation.unapply))
+  implicit val operationProcessingInfoFormat:Format[OperationProcessingInfo]= Json.format[OperationProcessingInfo]
+
+//  implicit val schedulingInfoFormat:Format[ComponentSchedulingInfo]=
+//    for {
+//      l <- (__ \ "pastProcessings").format[List[OperationProcessingInfo]]
+//      op <- (__ \ "currentProcessing").format[OperationProcessingInfo]
+//      s <- (__ \ "sequence").format[Int]
+//      o <- (__ \ "completedOperations").format[List[Operation]]
+//    } yield(models.ComponentSchedulingInfo _ , unlift(models.ComponentSchedulingInfo.unapply))
+
+
+
+
 
 
     implicit val processingSeqReads: Reads[List[ProcessingSequence]] =
