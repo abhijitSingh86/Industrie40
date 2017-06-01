@@ -11,4 +11,11 @@ object DateTimeUtils {
   def getCurrentTimeStamp():Timestamp ={
     new Timestamp(Calendar.getInstance().getTimeInMillis)
   }
+
+  def getOldBySecondsTS(seconds:Int):Timestamp ={
+    val c  = Calendar.getInstance()
+    c.add(Calendar.SECOND,-seconds)
+    val s= new Timestamp(c.getTimeInMillis)
+    s
+  }
 }

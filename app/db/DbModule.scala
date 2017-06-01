@@ -3,10 +3,14 @@ package db
 import db.dao._
 import models._
 
+import scala.concurrent.Future
+
 /**
   * Created by billa on 25.04.17.
   */
 trait DbModule {
+
+  def componentHeartBeatUpdateAsync(componentId:Int,simulationId:Int):Future[Boolean]
 
   def getSimulation(simulationId:Int):Simulation
 
@@ -34,6 +38,8 @@ trait DbModule {
 
   def addComponent(c:Component):Int
 
+  def getComponentWithProcessingInfo(componentId:Int,simulationId:Int):Option[Component]
+
   def addComponentsToSimulation(simulationId:Int,componentsId:List[Int])
 
   def addAssembliesToSimulation(simulationId:Int,assemblyIds:List[Int])
@@ -54,6 +60,14 @@ class SlickModuleImplementation extends DbModule {
     with ComponentDaoRepo
     with OperationDaoRepo
     with DBComponent =>
+
+  def componentHeartBeatUpdateAsync(componentId:Int,simulationId:Int):Future[Boolean] = {
+    component.componentHeartBeatUpdateAsync(componentId,simulationId)
+  }
+
+  def getComponentWithProcessingInfo(componentId:Int,simulationId:Int):Option[Component] = {
+    component.selectByComponentSimulationId(componentId,simulationId)
+  }
 
   def updateAssemblyOperationStatus(assemblyId: Int, operationId: Int, status: String): Boolean= {
     assembly.updateAssemblyOperationStatus(assemblyId, operationId, status)
@@ -126,7 +140,7 @@ class SlickModuleImplementation extends DbModule {
 
   override def getComponentMappedToSimulationId(componentId: Int, simulationId: Int): Option[Component] = {
     simulation.isComponentMappedToSimulation(simulationId, componentId) match{
-      case true=> component.selectByComponentSimulationId(componentId,simulationId)
+      case true=> component.selectByComponentId(componentId)
       case false => None
     }
   }

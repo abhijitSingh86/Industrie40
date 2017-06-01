@@ -5,10 +5,16 @@
 # Home page
 GET /start/:id                          controllers.SchedulingController.start(id:Int)
 GET /stop/:id                           controllers.SchedulingController.stop(id:Int)
+
 GET /                               controllers.Index.index
 GET /simulationStatus               controllers.Index.simulationStatus
+
 POST /initComponent                 controllers.ComponentController.initComponentRequest
 POST /componentComplete             controllers.ComponentController.updateComponentCompletionTime
+GET /componentStatus/:simId/:cmpId  controllers.ComponentController.componentRunningStatus(cmpId:Int,simId:Int)
+POST /startComponentScheduling      controllers.ComponentController.startComponentScheduling
+POST /componentHeartBeat            controllers.ComponentController.componentHeartBeat
+
 POST /initAssembly                  controllers.Index.initAssemblyRequest
 POST /assemblyOperationCompletion   controllers.Index.assemblyOperationCompletion
 
@@ -19,7 +25,6 @@ GET     /simulation/:id             controllers.SimulationController.getSimulati
 DELETE  /simulation/:id             controllers.SimulationController.deleteSimulation(id:Int)
 
 
-POST /startComponentScheduling      controllers.ComponentController.startComponentScheduling
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file:Asset)

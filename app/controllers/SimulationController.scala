@@ -3,7 +3,7 @@ package controllers
 import db.{DBComponent, DbModule}
 import db.dao.SimulationDaoRepo
 import enums.PriorityEnum
-import json.DefaultRequestFormat
+import json.{DefaultRequestFormat, ResponseFactory, SimulationJson}
 import models._
 import play.api.libs.iteratee.Enumeratee
 import play.api.mvc.{Action, AnyContent, Controller, Request}
@@ -25,11 +25,11 @@ class SimulationController(database:DbModule) extends Controller {
 
 
   def getAllSimulations() = Action {
-    Ok(DefaultRequestFormat.getSuccessResponse(Json.arr(database.getAllSimulation().map(getJsonStructure(_)))))
+    Ok(Json.arr(database.getAllSimulation().map(x=> ResponseFactory.make(SimulationJson(x)))))
   }
 
   def getSimulation(id:Int) = Action{
-    Ok(DefaultRequestFormat.getSuccessResponse(getJsonStructure(database.getSimulation(id))))
+    Ok(ResponseFactory.make(SimulationJson(database.getSimulation(id))))
   }
 
   def getShellScriptStructure(simualtion:Simulation):JsObject = {
@@ -38,32 +38,6 @@ class SimulationController(database:DbModule) extends Controller {
     val comps = simualtion.components.map(x=>x.id)
 
     Json.obj("c"->comps,"a"->assem,"s"->simualtion.id)
-  }
-
-  def getJsonStructure(simualtion:Simulation):JsObject = {
-//    println(simualtion)
-    Json.obj("simulationId"->simualtion.id,
-      "simulationName" -> simualtion.name,
-      "simulationDesc" -> simualtion.desc,
-      "components" -> simualtion.components.map(x=> {
-        Json.obj("id"-> x.id,
-        "name"-> x.name,
-        "opCount"->x.processingSequences(0).seq.size,
-          "operationDetails" -> x.processingSequences.map(y=>{
-            y.seq.map(Json.toJson(_))
-          }))
-      }),
-      "assemblies" -> simualtion.assemblies.map(x=>{
-        Json.obj("id"->x.id,
-        "name" -> x.name,
-        "operationDetails" -> x.totalOperations.map(y=>{
-          Json.obj("id"-> y.operation.id,
-          "name"-> y.operation.name,
-            "time"->y.time
-          )
-        }))
-      })
-    )
   }
 
   def deleteSimulation(id:Int) = TODO

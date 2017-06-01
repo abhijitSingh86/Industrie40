@@ -7,7 +7,7 @@ import models._
 import utils.DateTimeUtils
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Await
+import scala.concurrent.{Await, Future}
 import scala.concurrent.duration.Duration
 /**
   * Created by billa on 2016-12-24.
@@ -25,6 +25,13 @@ trait SlickComponentDaoRepo extends ComponentDaoRepo {
     private lazy val componentsOperationMapping = Tables.ComponentOperationMapping
     private lazy val componentProcessingState = Tables.ComponentProcessingState
 
+    def componentHeartBeatUpdateAsync(componentId:Int,simulationId:Int):Future[Boolean] = {
+        val query = for(c<- components if((c.id === componentId))) yield c.last_active
+      db.run(query.update(Some(DateTimeUtils.getCurrentTimeStamp()))).map{
+        case 1 => true
+        case _ => false
+      }
+    }
 
     def updateComponentProcessingInfo(simId:Int,cmpId:Int,assemblyId:Int,sequence:Int,opId:Int):Boolean ={
       val res = for{c <-  componentProcessingState if(c.assemblyid === assemblyId && c.componentid === cmpId &&
@@ -144,7 +151,7 @@ trait SlickComponentDaoRepo extends ComponentDaoRepo {
     def createComponentSchedulingInfo(componentId: Int, simulationId: Int):ComponentSchedulingInfo = {
       //TODO check for sort be descending after some values
         val result = db.run(componentProcessingState.filter(x=> (x.componentid === componentId &&
-          x.simulationid === simulationId)).sortBy(_.sequencenum.desc).result).map(y=>
+          x.simulationid === simulationId)).sortBy(_.sequencenum.asc).result).map(y=>
         {
             val firstRow = if(y.take(1).size ==1) Some(y.take(1)(0)) else None
             //get each row and form the scheduling information Details
@@ -183,7 +190,8 @@ trait SlickComponentDaoRepo extends ComponentDaoRepo {
               val componentSchedulingInfo:ComponentSchedulingInfo=
                 createComponentSchedulingInfo(componentId,simulationId)
 
-              Some(Component(x.id, x.name, processingSequenceList , componentSchedulingInfo))
+              val isOnline = if(x.last_active.isDefined) x.last_active.get.after(DateTimeUtils.getOldBySecondsTS(6)) else false
+              Some(Component(x.id, x.name, processingSequenceList , componentSchedulingInfo , isOnline))
             }
             case _ => None
           }

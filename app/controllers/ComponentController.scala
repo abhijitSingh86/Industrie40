@@ -1,10 +1,14 @@
 package controllers
 
 import db.DbModule
-import json.DefaultRequestFormat
+import json.{ComponentWithSchedulingInfo, DefaultRequestFormat, ResponseFactory}
+import models.Component
 import play.api.libs.json.Json
 import play.api.mvc.{Action, Controller}
 import scheduler.ComponentQueue
+import scala.concurrent.ExecutionContext.Implicits.global
+
+import scala.concurrent.Future
 
 /**
   * Created by billa on 09.01.17.
@@ -56,6 +60,20 @@ class ComponentController(db:DbModule) extends Controller {
     }
   }
 
+
+  def componentRunningStatus(cmpId:Int,simId:Int)
+  = Action {
+    // get all the details from server
+    //make json response
+      val response  = db.getComponentWithProcessingInfo(cmpId,simId) match {
+        case Some(x:Component) => ResponseFactory.make(ComponentWithSchedulingInfo(x))
+        case None => DefaultRequestFormat.getValidationErrorResponse(List(("Data Error","Component Id doesn't Exist")))
+      }
+
+
+    Ok(response)
+  }
+
   def startComponentScheduling() = Action { implicit request =>
     val json =request.body.asJson
 
@@ -72,6 +90,26 @@ class ComponentController(db:DbModule) extends Controller {
       }
       case None =>
         Ok(DefaultRequestFormat.getValidationErrorResponse(List(("componentId","provided component Id is invalid"))))
+    }
+  }
+
+  def componentHeartBeat() = Action.async { implicit request =>
+    val json =request.body.asJson
+
+    //get Component DAO
+    val componentId = (json.get \ "componentId").get.as[Int]
+    val simulationId = (json.get \ "simulationId").get.as[Int]
+    //check for init id and url params
+    db.componentHeartBeatUpdateAsync(componentId,simulationId ) map{
+      case x:Boolean  =>
+      {
+        println(s"*************************HeartBeat for cmpId:${componentId} simId:${simulationId}")
+        //return OK response
+        Ok(DefaultRequestFormat.getEmptySuccessResponse())
+      }
+      case _ =>
+        Ok(DefaultRequestFormat.getValidationErrorResponse(List(("Heart Beat update",s"Heart beat update failed for " +
+          s"cmpId:${componentId} simId:${simulationId}"))))
     }
   }
 }

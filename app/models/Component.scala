@@ -10,7 +10,7 @@ import scala.collection.mutable
   * Created by billa on 2016-12-15.
   */
 case class Component(id: Int, name: String, processingSequences: List[ProcessingSequence] ,
-                      componentSchedulingInfo:SchedulingInfo) {
+                      componentSchedulingInfo:SchedulingInfo,isOnline:Boolean =false) {
 
   def getCurrentOperation() = componentSchedulingInfo.currentProcessing
 

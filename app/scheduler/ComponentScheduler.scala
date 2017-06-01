@@ -22,6 +22,7 @@ class ComponentScheduler(scheduleDbHandler:ScheduleDbHandler) extends Scheduler 
   override def scheduleComponents(components: List[Component], assemblies: List[Assembly]): List[Int] = {
     //first get the available resource map
     var availableResourceMap = getAvailableResourceMap(assemblies)
+
     val requiredOperationMap = ListMap(getRequiredOperationMap(components).toSeq.sortWith(_._2.size < _._2.size):_*)
 //    val list = List[Option[Component]](None)
     val scheduledComponent = mutable.ArrayBuffer[Int]()
