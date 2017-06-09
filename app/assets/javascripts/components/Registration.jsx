@@ -85,7 +85,8 @@ var Registration = React.createClass({
                          nextStep={this.nextStep}/>
       case 5:
         return <Success fieldValues={fieldValues}
-                        previousStep={this.previousStep}/>
+                        previousStep={this.previousStep}
+                        changeHandler={this.props.changeHandler}/>
     }
   },
 
@@ -95,11 +96,11 @@ var Registration = React.createClass({
     }
 
     return (
-      <main>
+      <div>
         <span className="progress-step">Step {this.state.step}</span>
         <progress className="progress" style={style}></progress>
         {this.showStep()}
-      </main>
+      </div>
     )
   }
 })

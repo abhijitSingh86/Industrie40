@@ -1,14 +1,14 @@
 {
-  "name": "play-react-webpack",
+  "name": "dikSchedulingApp",
   "version": "1.0.0",
-  "description": "Playframework + React Js + webpack",
-  "main": "index.js",
-  "author": "Nouhoum Traoré",
-  "license": "ISC",
+  "description": "React js Compilation Module",
+  "main": "app.js",
+  "author": "Abhijit Singh",
+  "license": "MIT",
   "directories": {
     "test": "test"
   },
-  "homepage": "https://github.com/nouhoum/play-react-webpack#readme",
+  "homepage": "not defined yet",
   "dependencies": {
     "axios": "^0.16.1",
     "react": "^0.14.5",
@@ -29,7 +29,7 @@
     "sass-loader": "^3.2.3",
     "style-loader": "^0.13.2",
     "webpack": "^1.12.10",
-    "react-data-grid": "2.0.1",
+    "react-bootstrap": "0.31.0",
     "jquery": "3.2.1",
     "immutable": "^3.4.1",
     "object-assign": "^4.1.1",

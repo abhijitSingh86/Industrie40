@@ -1,7 +1,6 @@
 var React = require('react')
 var axios = require('axios')
 
-var Simulation = require('./monitoring/SimulationMonitor')
 
 
 var Success = React.createClass({
@@ -30,7 +29,7 @@ var Success = React.createClass({
     return (
         <div>
             <ToBeSubmittedValue render={!this.state.renderSuccess} fieldValues={this.props.fieldValues} previousStep = {this.props.previousStep} submit={this.submit} />
-            <SubmittedValue render={this.state.renderSuccess} content={this.state.body} />
+            <SubmittedValue render={this.state.renderSuccess} content={this.state.body} changeHandler={this.props.changeHandler}/>
         </div>
     )
   }
@@ -61,7 +60,9 @@ class SubmittedValue extends React.Component{
         this.startSimulationMonitor = this.startSimulationMonitor.bind(this);
     }
     startSimulationMonitor(){
-      window.location = "/simulationStatus?body="+this.props.content
+        var content = JSON.parse(this.props.content);
+        console.log("calling change handler to display monintor mode"+content.s)
+        this.props.changeHandler(content.s)
     }
 
     render(){
@@ -87,7 +88,7 @@ class SubmittedValue extends React.Component{
                      {arr}
 
                      <p>
-                         <input type="button" onClick={this.startSimulationMonitor} />
+                         <input type="button" onClick={this.startSimulationMonitor} value="Go to Monitor Mode"/>
                      </p>
                  </div>
              );

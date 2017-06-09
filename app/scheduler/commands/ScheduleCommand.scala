@@ -26,10 +26,14 @@ class ScheduleCommand(dbModule : DbModule,scheduler:Scheduler,proxy: NetworkProx
       logger.debug("Retrieved Assemblies" + assemblies.mkString(","))
 
 
+      val alreadyScheduledList = components.filter(_.getCurrentOperation().isDefined).map(_.id)
       //call algorithm for scheduling
-      val scheduledComponentIds = scheduler.scheduleComponents(components, assemblies)
+      val scheduledComponentIds = scheduler.scheduleComponents(components.filterNot(x=> alreadyScheduledList.contains(x.id))
+        , assemblies)
       //get scheduled component and send them to network proxy for information sending
-      sendScheduleInformationToComponent(ComponentQueue.getSimulationId(), components.filter(x=> scheduledComponentIds.contains(x.id)))
+
+      val finalListToSendSchedulingInfo = alreadyScheduledList ::: scheduledComponentIds
+      sendScheduleInformationToComponent(ComponentQueue.getSimulationId(), components.filter(x=> finalListToSendSchedulingInfo.contains(x.id)))
 
 
       logger.debug("command nearly finished, processed UnScheduled components are " + scheduledComponentIds.mkString(","))
@@ -40,7 +44,7 @@ class ScheduleCommand(dbModule : DbModule,scheduler:Scheduler,proxy: NetworkProx
   }
 
   def sendScheduleInformationToComponent(simulationId: Int, components: List[Component]) = {
-    val updatedCmps = components.map(x=> dbModule.getComponentMappedToSimulationId(x.id,simulationId)).flatten
+    val updatedCmps = components.map(x=> dbModule.getComponentWithProcessingInfo(x.id,simulationId)).flatten
     val urls = dbModule.getAllComponentUrlBySimulationId(simulationId).toMap
     val assemblyUrls =dbModule.getAllAssemblyUrlBySimulationId(simulationId).toMap
 

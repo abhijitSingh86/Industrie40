@@ -1,9 +1,9 @@
 import React from 'react';
 import ReactDom from 'react-dom';
-import Registration from './components/Registration';
+import MainComponent from './components/MainComponent';
 
 
 import '../stylesheets/style.scss';
 import '../stylesheets/app.scss';
 
-ReactDom.render((<Registration/>),document.getElementById("app"));
+ReactDom.render((<MainComponent/>),document.getElementById("app"));
