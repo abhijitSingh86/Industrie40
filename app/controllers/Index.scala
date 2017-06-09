@@ -3,7 +3,7 @@ package controllers
 import javax.inject.Inject
 
 import db.DbModule
-import json.DefaultRequestFormat
+import json.{DefaultRequestFormat, ResponseFactory, SimulationJson}
 import models.{Assembly, Component, Operation, Simulation}
 import play.api.Logger
 import play.api.libs.json._
@@ -20,38 +20,17 @@ class Index @Inject()(ws:WSClient,db:DbModule)  extends Controller{
 
   var schedulerThread:SchedulerThread = null
 
-  def getShellScriptStructure(simualtion:Simulation):String = {
-    val assem = simualtion.assemblies.map(x=>{
-      s"""xterm -hold -e sbt "run -a ${x.id} -s ${simualtion.id}" &  """
-    })
 
-    val comps = simualtion.components.map(x=>{
-      s"""xterm -hold -e sbt "run -c ${x.id} -s ${simualtion.id}" &  """
-    })
-    (assem ++ comps).mkString("\n")
-  }
 
-  def simulationStatus() = Action{ implicit request =>
-    if(request.queryString.get("body").isDefined) {
+  def simulationStatus(id:Int) = Action{ implicit request =>
 
-      val body = request.queryString.get("body").get.head
-      println(body)
-      val json = Json.parse(body)
-      import factory.JsonImplicitFactory._
-      val name = (json \ "simulationName").as[String]
-      val desc = (json \ "simulationDesc").as[String]
+    //get the ID and fetch simulation details
 
-      val simulationId = (json \ "simulationId").as[Int]
-
-      val compo = (json \ "components").validate[List[Component]].get
-
-      val assem = (json \ "assemblies").validate[List[Assembly]].get
-
-      val simulation = new Simulation(simulationId,name,desc,compo,assem)
-      val result = getShellScriptStructure(simulation)
-
-      Ok(views.html.index2(result))
-    }else{
+    try{
+      //Json.stringify(ResponseFactory.make(SimulationJson(db.getSimulation(id))))
+      Ok(views.html.index2(id.toString))
+    }catch{
+      case _:Throwable =>
       BadRequest("body with valid Simulation Details is Missing")
     }
   }

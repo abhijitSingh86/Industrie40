@@ -5,9 +5,9 @@ import dbgeneratedtable.Tables
 import dbgeneratedtable.Tables.AssemblyOperationMappingRow
 import models.{AssemblyOperation, AssemblyOperationStatus, BusyOperationStatus, FreeOperationStatus}
 
-import scala.concurrent.Await
+import scala.concurrent.{Await, Future}
 import scala.concurrent.duration.Duration
-
+import scala.concurrent.ExecutionContext.Implicits.global
 /**
   * Created by billa on 26.12.16.
   */
@@ -76,6 +76,19 @@ trait SlickAssemblyDaoRepo extends AssemblyDaoRepo {
     //    }
     //    case _ => List.empty[models.Assembly]
     //  }
+
+    def clearBusyOperationAsync(simulationId:Int):Future[Boolean] = {
+    val query = assemblyOperationMapping.filter{ aom =>
+      aom.assemblyId in (
+      simulationAssemblyMapping.filter(_.simulationId === simulationId) map (_.assemblyId)
+        )
+    }.map(_.status)
+
+      db.run(query.update("free")).map{
+        case a if a>0 => true
+        case _ => false
+      }
+    }
 
     override def selectBySimulationId(simulationId: Int): List[models.Assembly] = {
       Await.result(db.run(simulationAssemblyMapping.filter(_.simulationId === simulationId).result), Duration.Inf).map(x =>

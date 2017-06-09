@@ -62,11 +62,13 @@
     <logger name="file" level="INFO" additivity="false">
         <appender-ref ref="SEP_FILE" />
     </logger>
+    <logger name="slick.jdbc" level="INFO" />
 
-    <logger name="reactivemongo" level="WARN" />
 
     <root level="DEBUG">
         <appender-ref ref="FILE"/>
+    </root>
+    <root level="INFO">
         <appender-ref ref="ASYNCSTDOUT" />
     </root>
 

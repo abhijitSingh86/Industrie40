@@ -32,7 +32,7 @@ html, body {
 }
 
 table {
-  margin-top: 15%;
+  margin-top:2%;
   border-collapse: collapse;
   width: 100%;
   max-width: 100%;
@@ -45,12 +45,17 @@ th {
   color: white;
 }
 
+.rightAlign{
+  text-align: right;
+  padding: 8px;
+}
+
 th, td {
   text-align: left;
   padding: 8px;
 }
 
-tr:nth-child(even){background-color: #f2f2f2}
+//tr:nth-child(even){background-color: #f2f2f2}
 
 
 
@@ -65,7 +70,7 @@ body {
 
 .container {
   margin: 20px auto;
-  max-width: 400px;
+  max-width: 60%;
   width: 100%;
 }
 
@@ -83,35 +88,35 @@ body {
 }
 
 // Buttons
-
-.btn {
-  border-radius: 3px;
-  border: none;
-  color: #fff;
-  cursor: pointer;
-  font-size: 16px;
-  padding: 10px 12px;
-  text-align: center;
-
-  &.-default {
-    background-color: #fff;
-    border: 1px solid #ddd;
-    color: $grey;
-
-    &:hover {
-      background-color: #eee;
-    }
-  }
-
-  &.-primary {
-    background-color: $blue;
-    border: 1px solid $blue;
-
-    &:hover {
-      background-color: darken($blue, 5%);
-    }
-  }
-}
+//
+//.btn {
+//  border-radius: 3px;
+//  border: none;
+//  color: #fff;
+//  cursor: pointer;
+//  font-size: 16px;
+//  padding: 10px 12px;
+//  text-align: center;
+//
+//  &.-default {
+//    background-color: #fff;
+//    border: 1px solid #ddd;
+//    color: $grey;
+//
+//    &:hover {
+//      background-color: #eee;
+//    }
+//  }
+//
+//  &.-primary {
+//    background-color: $blue;
+//    border: 1px solid $blue;
+//
+//    &:hover {
+//      background-color: darken($blue, 5%);
+//    }
+//  }
+//}
 
 // Progress
 .progress {
@@ -196,7 +201,6 @@ label {
 input {
   font-size: 16px;
   padding: 8px;
-  width: 100%;
 }
 
 select {

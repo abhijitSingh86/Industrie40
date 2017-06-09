@@ -25,6 +25,14 @@ trait SlickComponentDaoRepo extends ComponentDaoRepo {
     private lazy val componentsOperationMapping = Tables.ComponentOperationMapping
     private lazy val componentProcessingState = Tables.ComponentProcessingState
 
+
+    def clearComponentProcessingDetailsAsync(simulationId:Int):Future[Boolean] = {
+      db.run(componentProcessingState.filter(_.simulationid === simulationId).delete).map{
+        case a:Int if a>0 => true
+        case _ =>false
+      }
+    }
+
     def componentHeartBeatUpdateAsync(componentId:Int,simulationId:Int):Future[Boolean] = {
         val query = for(c<- components if((c.id === componentId))) yield c.last_active
       db.run(query.update(Some(DateTimeUtils.getCurrentTimeStamp()))).map{
@@ -151,7 +159,7 @@ trait SlickComponentDaoRepo extends ComponentDaoRepo {
     def createComponentSchedulingInfo(componentId: Int, simulationId: Int):ComponentSchedulingInfo = {
       //TODO check for sort be descending after some values
         val result = db.run(componentProcessingState.filter(x=> (x.componentid === componentId &&
-          x.simulationid === simulationId)).sortBy(_.sequencenum.asc).result).map(y=>
+          x.simulationid === simulationId)).sortBy(_.sequencenum.desc).result).map(y=>
         {
             val firstRow = if(y.take(1).size ==1) Some(y.take(1)(0)) else None
             //get each row and form the scheduling information Details

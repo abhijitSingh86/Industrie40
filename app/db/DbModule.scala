@@ -4,7 +4,7 @@ import db.dao._
 import models._
 
 import scala.concurrent.Future
-
+import scala.concurrent.ExecutionContext.Implicits.global
 /**
   * Created by billa on 25.04.17.
   */
@@ -51,6 +51,8 @@ trait DbModule {
   def updateAssemblyOperationStatus(assemblyId:Int, operationId:Int, status:String):Boolean
 
   def updateComponentProcessingInfo(simId:Int,cmpId:Int,assemblyId:Int,sequence:Int,opId:Int):Boolean
+
+  def clearPreviousSimulationProcessingDetails(simulationId:Int):Future[Boolean]
 }
 
 class SlickModuleImplementation extends DbModule {
@@ -60,6 +62,19 @@ class SlickModuleImplementation extends DbModule {
     with ComponentDaoRepo
     with OperationDaoRepo
     with DBComponent =>
+
+
+  def clearPreviousSimulationProcessingDetails(simulationId:Int):Future[Boolean]={
+    val flags = for{
+      c <- component.clearComponentProcessingDetailsAsync(simulationId)
+      a <- assembly.clearBusyOperationAsync(simulationId)
+    }yield (c,a)
+    flags map{
+      case (true,_) => true
+      case (_,true) => true
+      case _ => false
+    }
+  }
 
   def componentHeartBeatUpdateAsync(componentId:Int,simulationId:Int):Future[Boolean] = {
     component.componentHeartBeatUpdateAsync(componentId,simulationId)

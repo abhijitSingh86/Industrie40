@@ -68,13 +68,15 @@ class ComponentScheduler(scheduleDbHandler:ScheduleDbHandler) extends Scheduler 
       if (count < components.size) {
         //retrieve the assembly's total operation
         val component = components(count)
-        component.getCurrentProcessingStepOptions().map(x => {
-          //if the operation is not in allocated operation, put it into a map for scheduling
-              opMap.contains(x) match {
-                case true => opMap += (x -> (opMap.get(x).get :+ component))
-                case false => opMap += (x -> List(component))
-              }
-        })
+        if (!component.isComplete()) {
+          component.getCurrentProcessingStepOptions().map(x => {
+            //if the operation is not in allocated operation, put it into a map for scheduling
+            opMap.contains(x) match {
+              case true => opMap += (x -> (opMap.get(x).get :+ component))
+              case false => opMap += (x -> List(component))
+            }
+          })
+        }
         processComponents(opMap, count + 1)
       }
     }

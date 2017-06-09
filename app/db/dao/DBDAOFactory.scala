@@ -3,7 +3,7 @@ package db.dao
 import models.{Component, Operation}
 
 import scala.concurrent.Future
-
+import scala.concurrent.ExecutionContext.Implicits.global
 /**
   * Created by billa on 26.12.16.
   */
@@ -56,6 +56,8 @@ trait SimulationDaoRepo{
 
     def add(simulation:models.Simulation):Int
 
+
+
   }
 }
 trait ComponentDaoRepo {
@@ -83,6 +85,8 @@ trait ComponentDaoRepo {
     def updateComponentProcessingInfo(simId:Int,cmpId:Int,assemblyId:Int,sequence:Int,opId:Int):Boolean
 
     def componentHeartBeatUpdateAsync(componentId:Int,simulationId:Int):Future[Boolean]
+
+    def clearComponentProcessingDetailsAsync(simulationId:Int):Future[Boolean]
   }
 
 }
@@ -91,6 +95,8 @@ trait AssemblyDaoRepo{
   def assembly:AssemblyDao
 
   trait AssemblyDao {
+
+    def clearBusyOperationAsync(simulationId:Int):Future[Boolean]
 
     def updateAssemblyOperationStatus(assemblyId:Int, operationId:Int, status:String):Boolean
 

@@ -15,6 +15,13 @@ case class Component(id: Int, name: String, processingSequences: List[Processing
   def getCurrentOperation() = componentSchedulingInfo.currentProcessing
 
 
+  def isComplete(): Boolean={
+    if(componentSchedulingInfo.sequence >= totalReqdOperationCount) {
+      true
+    }else{
+      false
+    }
+  }
   def totalReqdOperationCount = processingSequences.size match{
     case 0 => 0
     case _ => processingSequences(0).seq.size
@@ -31,12 +38,12 @@ case class Component(id: Int, name: String, processingSequences: List[Processing
 
    */
   def getCurrentProcessingStepOptions(): Seq[Operation] = {
-    processingSequences.map(x => {
-      componentSchedulingInfo.completedOperations == x.seq.take(componentSchedulingInfo.sequence) match {
-        case true => Some(x.seq(componentSchedulingInfo.sequence))
-        case _ => None
-      }
-    }).flatten
-  }
+      processingSequences.map(x => {
+        componentSchedulingInfo.completedOperations == x.seq.take(componentSchedulingInfo.sequence) match {
+          case true => Some(x.seq(componentSchedulingInfo.sequence))
+          case _ => None
+        }
+      }).flatten
+    }
 
 }

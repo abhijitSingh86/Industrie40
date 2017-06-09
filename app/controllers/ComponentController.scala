@@ -38,7 +38,7 @@ class ComponentController(db:DbModule) extends Controller {
 
     val url =(json.get \ "url").get.as[String]
     //check for init id and url params
-    db.getComponentMappedToSimulationId(componentId ,simulationId) match{
+    db.getComponentWithProcessingInfo(componentId ,simulationId) match{
       //check if this exist for simulation ID
       case Some(x) =>
       {
@@ -69,8 +69,6 @@ class ComponentController(db:DbModule) extends Controller {
         case Some(x:Component) => ResponseFactory.make(ComponentWithSchedulingInfo(x))
         case None => DefaultRequestFormat.getValidationErrorResponse(List(("Data Error","Component Id doesn't Exist")))
       }
-
-
     Ok(response)
   }
 
@@ -81,7 +79,7 @@ class ComponentController(db:DbModule) extends Controller {
     val componentId = (json.get \ "componentId").get.as[Int]
     val simulationId = (json.get \ "simulationId").get.as[Int]
     //check for init id and url params
-    db.getComponentMappedToSimulationId(componentId,simulationId ) match{
+    db.getComponentWithProcessingInfo(componentId,simulationId ) match{
       case Some(x)  =>
       {
         ComponentQueue.push(x)
@@ -103,7 +101,7 @@ class ComponentController(db:DbModule) extends Controller {
     db.componentHeartBeatUpdateAsync(componentId,simulationId ) map{
       case x:Boolean  =>
       {
-        println(s"*************************HeartBeat for cmpId:${componentId} simId:${simulationId}")
+//        println(s"*************************HeartBeat for cmpId:${componentId} simId:${simulationId}")
         //return OK response
         Ok(DefaultRequestFormat.getEmptySuccessResponse())
       }

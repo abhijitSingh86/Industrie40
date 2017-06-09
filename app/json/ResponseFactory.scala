@@ -9,8 +9,8 @@ import factory.JsonImplicitFactory._
 object ResponseFactory {
 
 
-  def make(key:Response): JsValue ={
-    DefaultRequestFormat.getSuccessResponse(key.generate())
+  def make(responseType:Response): JsValue ={
+    DefaultRequestFormat.getSuccessResponse(responseType.generate())
   }
 }
 
