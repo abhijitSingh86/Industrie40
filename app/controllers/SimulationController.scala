@@ -1,31 +1,28 @@
 package controllers
 
-import db.{DBComponent, DbModule}
-import db.dao.SimulationDaoRepo
-import enums.PriorityEnum
-import json.{DefaultRequestFormat, ResponseFactory, SimulationJson}
+import db.DbModule
+import json.{DefaultRequestFormat, ResponseFactory, SimulationJson, SimulationsJson}
 import models._
-import play.api.libs.iteratee.Enumeratee
+import play.api.Logger
 import play.api.mvc.{Action, AnyContent, Controller, Request}
+import scheduler.ComponentQueue
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import scala.util.parsing.json.JSONObject
-
+import scala.util.Try
 /**
   * Created by billa on 16.04.17.
   */
 
 import play.api.libs.json._
-import play.api.libs.functional.syntax._
-
-import factory.JsonImplicitFactory._
 
 class SimulationController(database:DbModule) extends Controller {
 
 
   def getAllSimulations() = Action {
-    Ok(Json.arr(database.getAllSimulation().map(x=> ResponseFactory.make(SimulationJson(x)))))
+    Ok(ResponseFactory.make(SimulationsJson(database.getAllSimulation())))
+//    Ok(Json.arr(.map(x=> ResponseFactory.make(SimulationJson(x)))))
+//    Ok(Json.arr(database.getAllSimulation().map(x=> ResponseFactory.make(SimulationJson(x)))))
   }
 
   def getSimulation(id:Int) = Action{
@@ -38,6 +35,20 @@ class SimulationController(database:DbModule) extends Controller {
     val comps = simualtion.components.map(x=>x.id)
 
     Json.obj("c"->comps,"a"->assem,"s"->simualtion.id)
+  }
+
+  def startAgain(id:Int)=Action.async { implicit request =>
+    val simulationId = Try(id)//Try((json.get \ "simulationId").get.as[Int])
+    simulationId.isSuccess match{
+      case true =>
+        ComponentQueue.updateSimulationId(simulationId.get)
+        database.clearPreviousSimulationProcessingDetails(simulationId.get) map{
+          case _ =>
+            Ok(DefaultRequestFormat.getEmptySuccessResponse())
+        }
+
+      case _=> Future.successful(Ok("simulation Id is not found in Json"))
+    }
   }
 
   def deleteSimulation(id:Int) = TODO

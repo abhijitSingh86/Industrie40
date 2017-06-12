@@ -96,6 +96,8 @@ trait AssemblyDaoRepo{
 
   trait AssemblyDao {
 
+    def assemblyHeartBeatUpdateAsync(assemblyId: Int, simulationId: Int):Future[Boolean]
+
     def clearBusyOperationAsync(simulationId:Int):Future[Boolean]
 
     def updateAssemblyOperationStatus(assemblyId:Int, operationId:Int, status:String):Boolean

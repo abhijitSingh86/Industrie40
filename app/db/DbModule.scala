@@ -53,6 +53,8 @@ trait DbModule {
   def updateComponentProcessingInfo(simId:Int,cmpId:Int,assemblyId:Int,sequence:Int,opId:Int):Boolean
 
   def clearPreviousSimulationProcessingDetails(simulationId:Int):Future[Boolean]
+
+  def assemblyHeartBeatUpdateAsync(assemblyId:Int, simulationId:Int):Future[Boolean]
 }
 
 class SlickModuleImplementation extends DbModule {
@@ -80,6 +82,10 @@ class SlickModuleImplementation extends DbModule {
     component.componentHeartBeatUpdateAsync(componentId,simulationId)
   }
 
+  def assemblyHeartBeatUpdateAsync(assemblyId:Int, simulationId:Int):Future[Boolean] = {
+    assembly.assemblyHeartBeatUpdateAsync(assemblyId,simulationId)
+  }
+
   def getComponentWithProcessingInfo(componentId:Int,simulationId:Int):Option[Component] = {
     component.selectByComponentSimulationId(componentId,simulationId)
   }
@@ -97,7 +103,7 @@ class SlickModuleImplementation extends DbModule {
   }
 
   def getAllSimulation():List[Simulation] = {
-    simulation.selectAllSimulations().map(x=> getSimulation(x.id))
+    simulation.selectAllSimulations()
   }
 
 

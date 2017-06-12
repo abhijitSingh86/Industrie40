@@ -10,22 +10,17 @@ import play.api.libs.json._
 import play.api.libs.ws.WSClient
 import play.api.mvc.{Action, Controller}
 import scheduler.SchedulerThread
+import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
   * Created by billa on 03.01.17.
   */
 class Index @Inject()(ws:WSClient,db:DbModule)  extends Controller{
-//this : AssemblyDaoRepo with SimulationDaoRepo=>
-
 
   var schedulerThread:SchedulerThread = null
 
-
-
   def simulationStatus(id:Int) = Action{ implicit request =>
-
     //get the ID and fetch simulation details
-
     try{
       //Json.stringify(ResponseFactory.make(SimulationJson(db.getSimulation(id))))
       Ok(views.html.index2(id.toString))
@@ -46,6 +41,26 @@ class Index @Inject()(ws:WSClient,db:DbModule)  extends Controller{
     val assemblyId = (json.get \ "assemblyId").get.as[Int]
     Logger.info("Assemble operation completion request recieved "+json)
     Ok(DefaultRequestFormat.getEmptySuccessResponse())
+  }
+
+  def assemblyHeartBeat() = Action.async { implicit request =>
+    val json =request.body.asJson
+
+    //get Component DAO
+    val assemblyId = (json.get \ "assemblyId").get.as[Int]
+    val simulationId = (json.get \ "simulationId").get.as[Int]
+    //check for init id and url params
+    db.assemblyHeartBeatUpdateAsync(assemblyId,simulationId ) map{
+      case x:Boolean  =>
+      {
+        //        println(s"*************************HeartBeat for cmpId:${componentId} simId:${simulationId}")
+        //return OK response
+        Ok(DefaultRequestFormat.getEmptySuccessResponse())
+      }
+      case _ =>
+        Ok(DefaultRequestFormat.getValidationErrorResponse(List(("Heart Beat update",s"Heart beat update failed for " +
+          s"assemblyId:${assemblyId} simId:${simulationId}"))))
+    }
   }
 
   def initAssemblyRequest() = Action { implicit request =>

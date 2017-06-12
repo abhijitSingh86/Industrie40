@@ -4,7 +4,6 @@
 
 # Home page
 POST           /start/:id                            controllers.SchedulingController.start(id:Int)
-POST           /start/:id/again                      controllers.SchedulingController.startAgain(id:Int)
 POST           /stop/:id                             controllers.SchedulingController.stop(id:Int)
 
 GET           /                                     controllers.Index.index
@@ -16,6 +15,7 @@ GET           /componentStatus/:simId/:cmpId        controllers.ComponentControl
 POST          /startComponentScheduling             controllers.ComponentController.startComponentScheduling
 POST          /componentHeartBeat                   controllers.ComponentController.componentHeartBeat
 
+POST          /assemblyHeartBeat                    controllers.Index.assemblyHeartBeat
 POST          /initAssembly                         controllers.Index.initAssemblyRequest
 POST          /assemblyOperationCompletion          controllers.Index.assemblyOperationCompletion
 
@@ -24,7 +24,7 @@ POST          /simulation                           controllers.SimulationContro
 GET           /simulation                           controllers.SimulationController.getAllSimulations
 GET           /simulation/:id                       controllers.SimulationController.getSimulation(id:Int)
 DELETE        /simulation/:id                       controllers.SimulationController.deleteSimulation(id:Int)
-
+POST          /simualtion/:id/clear                controllers.SimulationController.startAgain(id:Int)
 
 
 # Map static resources from the /public folder to the /assets URL path
