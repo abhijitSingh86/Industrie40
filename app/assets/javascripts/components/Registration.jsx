@@ -61,7 +61,8 @@ var Registration = React.createClass({
       case 0: return <StartPage
         fieldValues={fieldValues}
         nextStep={this.nextStep}
-        saveValues={this.saveValues} />
+        saveValues={this.saveValues}
+        changeHandler={this.props.changeHandler}/>
 
       case 1:
         return <SimulationForm fieldValues={fieldValues}

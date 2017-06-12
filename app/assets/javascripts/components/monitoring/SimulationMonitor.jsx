@@ -1,22 +1,27 @@
 var React = require('react');
-var axios = require('axios')
+var axios = require('axios');
+import {DropdownButton,MenuItem} from 'react-bootstrap';
+
 import {Tabs, Tab, Table , Button} from 'react-bootstrap'
 
 import ComponentState from "./ComponentState"
 
 class SimulationMonitor extends React.Component {
     constructor(props) {
+        console.log("Simulation MOnitor constructor");
+        console.log(props);
         super(props);
         this.state = {
             response: undefined,
             body: {
                 components: []
-            }
+            },
+            completedComponentCount:0
         }
 
         this.start_simulation = this.start_simulation.bind(this);
         this.stop_simulation = this.stop_simulation.bind(this);
-
+        this.completedComponentCount = this.completedComponentCount.bind(this);
     }
 
     componentDidMount() {
@@ -33,10 +38,12 @@ class SimulationMonitor extends React.Component {
             });
         })
     }
+    //
+    // componentWillUnmount() {
+    //     this.serverRequest.abort();
+    // }
 
-    componentWillUnmount() {
-        this.serverRequest.abort();
-    }
+
 
     start_simulation() {
         var _this = this;
@@ -54,6 +61,7 @@ class SimulationMonitor extends React.Component {
 
     stop_simulation() {
         var _this = this;
+
         axios.post('/stop/' + this.props.simulationId).then(function (response) {
             _this.setState({
                 response: "Simulation stopped successfully"
@@ -66,6 +74,13 @@ class SimulationMonitor extends React.Component {
         })
     }
 
+    completedComponentCount(count){
+        this.setState({
+            completedComponentCount : count
+        });
+    }
+
+
     render() {
 
         var ele = ""
@@ -73,8 +88,11 @@ class SimulationMonitor extends React.Component {
             ele = <div>{this.state.response}</div>
         }
         var data = [];
-        if (this.state.body != undefined)
+        var componentCount=0;
+        if (this.state.body != undefined) {
             data = this.state.body.components
+            componentCount = this.state.body.components.length
+        }
 
         return (
             <Tabs>
@@ -89,10 +107,27 @@ class SimulationMonitor extends React.Component {
                                 </td>
                             </tr>
                             <tr>
+                                <td>
+                                    Total Components
+                                </td>
+                                <td>
+                                    {componentCount}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    Total Completed Components
+                                </td>
+                                <td>
+                                    {this.state.completedComponentCount}
+                                </td>
+                            </tr>
+                            <tr>
                                 <td className="rightAlign pull-right">
                                     <Button  bsStyle="primary" onClick={this.start_simulation}>
                                         Start
                                     </Button>
+
                                 </td>
                             <td >
                                 <Button  bsStyle="primary" onClick={this.stop_simulation}>
@@ -108,7 +143,7 @@ class SimulationMonitor extends React.Component {
                     </div>
                 </Tab>
                 <Tab eventKey="2" title="Components">
-                    Components
+
                     <ComponentState data={data} simulationId={this.props.simulationId}/>
                 </Tab>
                 <Tab eventKey="3" title="Assemblies">Assemblies</Tab>

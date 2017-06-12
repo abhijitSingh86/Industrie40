@@ -9,7 +9,7 @@ class CustomComponentDisplayTable extends React.Component {
 
   constructor(props){
     super(props)
-    console.log(this.props.row)
+    // console.log(this.props.row)
     this.ed = this.ed.bind(this)
     this.colFun = this.colFun.bind(this)
   }
@@ -19,7 +19,7 @@ class CustomComponentDisplayTable extends React.Component {
     for(var i=0;i<arr.length;i++){
       out.push(<td>{arr[i].label}</td>)
     }
-    console.log(out);
+    // console.log(out);
     return out;
   };
   render() {

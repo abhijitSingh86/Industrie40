@@ -1,7 +1,7 @@
 package json
 
 import models.{Component, Simulation}
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.{JsArray, JsValue, Json}
 import factory.JsonImplicitFactory._
 /**
   * Created by billa on 31.05.17.
@@ -34,13 +34,19 @@ case class ComponentWithSchedulingInfo(x:Component) extends Response{
     ))
   }
 }
+case class SimulationsJson(sims:List[Simulation]) extends Response{
+  def generate() = {
+//    sims.foldRight(sims,ar:JsArray)((a,b) => b.SimulationJson(a).generate())
+    Json.obj("simulations" -> sims.map(x => SimulationJson(x).generate()))
+  }
+}
 
-case class SimulationJson(simualtion:Simulation) extends Response{
+case class SimulationJson(simulation:Simulation) extends Response{
   def generate()={
-    Json.obj("simulationId"->simualtion.id,
-      "simulationName" -> simualtion.name,
-      "simulationDesc" -> simualtion.desc,
-      "components" -> simualtion.components.map(x=> {
+    Json.obj("simulationId"->simulation.id,
+      "simulationName" -> simulation.name,
+      "simulationDesc" -> simulation.desc,
+      "components" -> simulation.components.map(x=> {
         Json.obj("id"-> x.id,
           "name"-> x.name,
           "opCount"->x.processingSequences(0).seq.size,
@@ -48,9 +54,10 @@ case class SimulationJson(simualtion:Simulation) extends Response{
             y.seq.map(Json.toJson(_))
           }))
       }),
-      "assemblies" -> simualtion.assemblies.map(x=>{
+      "assemblies" -> simulation.assemblies.map(x=>{
         Json.obj("id"->x.id,
           "name" -> x.name,
+          "online"->x.isOnline,
           "operationDetails" -> x.totalOperations.map(y=>{
             Json.obj("id"-> y.operation.id,
               "name"-> y.operation.name,

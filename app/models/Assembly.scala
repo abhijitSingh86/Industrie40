@@ -30,7 +30,7 @@ object AssemblyOperationStatus{
 case class AssemblyOperation(operation:Operation,time:Int,status:AssemblyOperationStatus)
 
 case class Assembly(id:Int,name:String,totalOperations:List[AssemblyOperation] =List[AssemblyOperation](),
-                    allocatedOperations:List[AssemblyOperation]) {
+                    allocatedOperations:List[AssemblyOperation] , isOnline:Boolean =false) {
 
 //  def freeOperation(maybeOperation: Option[Operation]):Unit ={
 //    maybeOperation match{

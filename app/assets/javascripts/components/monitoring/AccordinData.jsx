@@ -77,20 +77,20 @@ class AccordinData extends React.Component {
     }
 
     getDateTimeDisplayPanel() {
-        if (this.state.component != undefined) {
+        if (this.state.component != undefined && this.state.component.schedulinginfo.pastOperations.length !=0) {
             var past = this.state.component.schedulinginfo.pastOperations
             var rows = [];
             for (var i = 0; i < past.length; i++) {
                 var std = new Date(past[i].startTime)
                 var etd = new Date(past[i].endTime)
                 var secondsSpent = (etd - std) / 1000
-                console.log(secondsSpent);
+                // console.log(secondsSpent);
                 rows.push(<tr>
                     <td>{this.getOperationLabel(past[i].operationId)}</td>
                     <td>{secondsSpent}</td>
                 </tr>)
             }
-            console.log(rows);
+            // console.log(rows);
             return rows;
         } else {
             return <tr>
@@ -112,7 +112,6 @@ class AccordinData extends React.Component {
                         break;
                     }
                 }
-
                 if (flag === true) {
                     for (var i = 0; i < past.length; i++) {
                         color.push("#00EE00")
@@ -123,7 +122,6 @@ class AccordinData extends React.Component {
                     // console.log(color)
                     return color;
                 }
-
             }
         }
         for (var i = 0; i < arr.length; i++) {
@@ -131,7 +129,6 @@ class AccordinData extends React.Component {
         }
         // console.log(color)
         return color;
-
     }
 
     callCompletionEvent() {
@@ -148,7 +145,12 @@ class AccordinData extends React.Component {
             }
         }
         else if(this.state.component != undefined){
-            return <td>In Progress : Current Operation {this.state.schedulinginfo.currentOperation}</td>;
+            var op="In Progress "
+            if(this.state.component.schedulinginfo.currentOperation != null){
+                var curr= this.state.component.schedulinginfo.currentOperation;
+                op = op +": Current Operation"+this.getOperationLabel(curr.operationId)
+            }
+            return <td>{op}</td>;
         }
         else{
             return <td/>;
@@ -180,7 +182,6 @@ class AccordinData extends React.Component {
                 </tr>
             )
         }
-        console.log(otable)
         return (
             <Table  bordered condensed hover>
                 <tbody>

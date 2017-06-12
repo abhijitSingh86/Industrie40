@@ -4,6 +4,7 @@ import db.DBComponent
 import dbgeneratedtable.Tables
 import dbgeneratedtable.Tables.AssemblyOperationMappingRow
 import models.{AssemblyOperation, AssemblyOperationStatus, BusyOperationStatus, FreeOperationStatus}
+import utils.DateTimeUtils
 
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration.Duration
@@ -90,6 +91,13 @@ trait SlickAssemblyDaoRepo extends AssemblyDaoRepo {
       }
     }
 
+    def assemblyHeartBeatUpdateAsync(assemblyId:Int, simulationId:Int):Future[Boolean] = {
+      val query = for(c<- assemblies if((c.id === assemblyId))) yield c.lastActive
+      db.run(query.update(Some(DateTimeUtils.getCurrentTimeStamp()))).map{
+        case 1 => true
+        case _ => false
+      }
+    }
     override def selectBySimulationId(simulationId: Int): List[models.Assembly] = {
       Await.result(db.run(simulationAssemblyMapping.filter(_.simulationId === simulationId).result), Duration.Inf).map(x =>
         selectByAssemblyId(x.assemblyId)).flatten.toList
@@ -102,8 +110,11 @@ trait SlickAssemblyDaoRepo extends AssemblyDaoRepo {
           //transform into assembly object
           val operations = Await.result(db.run(assemblyOperationMapping.filter(_.assemblyId === x.id).result), Duration.Inf).map(y =>
             AssemblyOperation(operation.selectByOperationId(y.operationId), y.operationTime,AssemblyOperationStatus(y.status)))
+
+          val isOnline = if(x.lastActive.isDefined) x.lastActive.get.after(DateTimeUtils.getOldBySecondsTS(6)) else false
+
           Some(new models.Assembly(x.id, x.name, operations.toList,
-            operations.filter(_.status == BusyOperationStatus).toList))
+            operations.filter(_.status == BusyOperationStatus).toList,isOnline))
 
         }
         case None => {

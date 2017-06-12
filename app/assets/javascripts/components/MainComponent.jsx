@@ -6,15 +6,16 @@ class MainComponent extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            monitor: true,
-            simulationId:44
+            monitor: false
         };
         this.changeMainMode = this.changeMainMode.bind(this);
         this.getPanelForDisplay = this.getPanelForDisplay.bind(this);
+
     }
 
 
     changeMainMode(simulationId) {
+        console.log("change Recieved with "+simulationId);
         this.setState({
             monitor: true,
             simulationId: simulationId

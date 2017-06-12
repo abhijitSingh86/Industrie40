@@ -23,22 +23,23 @@ trait Tables {
   /** Entity class storing rows of table Assembly
     *  @param id Database column id SqlType(INT), AutoInc, PrimaryKey
     *  @param name Database column name SqlType(VARCHAR), Length(255,true) */
-  case class AssemblyRow(id: Int, name: String)
+  case class AssemblyRow(id: Int, name: String,lastActive:Option[java.sql.Timestamp] = None)
   /** GetResult implicit for fetching AssemblyRow objects using plain SQL queries */
-  implicit def GetResultAssemblyRow(implicit e0: GR[Int], e1: GR[String]): GR[AssemblyRow] = GR{
+  implicit def GetResultAssemblyRow(implicit e0: GR[Int], e1: GR[String] , e2:GR[Option[Timestamp]]): GR[AssemblyRow] = GR{
     prs => import prs._
-      AssemblyRow.tupled((<<[Int], <<[String]))
+      AssemblyRow.tupled((<<[Int], <<[String], <<[Option[Timestamp]]))
   }
   /** Table description of table Assembly. Objects of this class serve as prototypes for rows in queries. */
   class Assembly(_tableTag: Tag) extends Table[AssemblyRow](_tableTag, "Assembly") {
-    def * = (id, name) <> (AssemblyRow.tupled, AssemblyRow.unapply)
+    def * = (id, name,lastActive) <> (AssemblyRow.tupled, AssemblyRow.unapply)
     /** Maps whole row to an option. Useful for outer joins. */
-    def ? = (Rep.Some(id), Rep.Some(name)).shaped.<>({r=>import r._; _1.map(_=> AssemblyRow.tupled((_1.get, _2.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+    def ? = (Rep.Some(id), Rep.Some(name),Rep.Some(lastActive)).shaped.<>({r=>import r._; _1.map(_=> AssemblyRow.tupled((_1.get, _2.get , _3.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
 
     /** Database column id SqlType(INT), AutoInc, PrimaryKey */
     val id: Rep[Int] = column[Int]("id", O.AutoInc, O.PrimaryKey)
     /** Database column name SqlType(VARCHAR), Length(255,true) */
     val name: Rep[String] = column[String]("name", O.Length(255,varying=true))
+    val lastActive: Rep[Option[Timestamp]] = column[Option[Timestamp]]("lastActive",O.Default(None))
   }
   /** Collection-like TableQuery object for table Assembly */
   lazy val Assembly = new TableQuery(tag => new Assembly(tag))
