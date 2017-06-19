@@ -1,77 +1,65 @@
 var React = require('react');
-var axios = require('axios');
-import {DropdownButton,MenuItem} from 'react-bootstrap';
-
 import {Tabs, Tab, Table , Button} from 'react-bootstrap'
-
-import ComponentState from "./ComponentState"
+import ComponentState from "./ComponentState";
+import AssemblyState from "./AssemblyState";
+import {connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import * as Actions from '../redux/actions';
 
 class SimulationMonitor extends React.Component {
     constructor(props) {
-        console.log("Simulation MOnitor constructor");
-        console.log(props);
         super(props);
         this.state = {
-            response: undefined,
-            body: {
-                components: []
-            },
-            completedComponentCount:0
+            keyTab2:-1,
+            keyTab3:-1
         }
-
         this.start_simulation = this.start_simulation.bind(this);
         this.stop_simulation = this.stop_simulation.bind(this);
         this.completedComponentCount = this.completedComponentCount.bind(this);
     }
 
-    componentDidMount() {
-        var _this = this;
-        this.serverRequest = axios.get('/simulation/' + this.props.simulationId).then(function (response) {
-            _this.setState({
-                body: response.data.body
-            });
-
-        }).catch(function (error) {
-            _this.setState({
-                response: "Error while retrieving Simulation details. \n " + error,
-                body: null
-            });
-        })
+    doSomething(key){
+        // if(key === 2){
+        //     this.setState({
+        //         keyTab3:-1
+        //     });
+        // }
+        // if(key === 3){
+        //     this.setState({
+        //         keyTab2:-1
+        //     });
+        // }
+        console.log('Selected'+key);
     }
+    // startTimer() {
+    //     clearInterval(this.timer);
+    //
+    //     this.timer = setInterval(this.doSomething.bind(this), 7000)
+    // }
+    //
+    // stopTimer() {
+    //     clearInterval(this.timer)
+    // }
+    //
+    // componentDidMount() {
+    //     this.startTimer()
+    // }
     //
     // componentWillUnmount() {
-    //     this.serverRequest.abort();
+    //     this.stopTimer()
     // }
 
-
+    componentWillReceiveProps(nextProps) {
+    // console.log("Getting new Props");
+    // console.log(nextProps);
+    }
 
     start_simulation() {
-        var _this = this;
-        axios.post('/start/' + this.props.simulationId).then(function (response) {
-            _this.setState({
-                response: "Simulation started successfully"
-            });
-
-        }).catch(function (error) {
-            _this.setState({
-                response: "Error while Starting Simulation. \n " + error
-            });
-        })
+        this.props.actions.startSimulation(this.props.simulation.simulationId);
     }
 
     stop_simulation() {
-        var _this = this;
-
-        axios.post('/stop/' + this.props.simulationId).then(function (response) {
-            _this.setState({
-                response: "Simulation stopped successfully"
-            });
-
-        }).catch(function (error) {
-            _this.setState({
-                response: "Error while Stopping Simulation. \n " + error
-            });
-        })
+        this.props.actions.stopSimulation(this.props.simulation.simulationId);
     }
 
     completedComponentCount(count){
@@ -82,20 +70,9 @@ class SimulationMonitor extends React.Component {
 
 
     render() {
-
-        var ele = ""
-        if (this.state.response != undefined) {
-            ele = <div>{this.state.response}</div>
-        }
-        var data = [];
-        var componentCount=0;
-        if (this.state.body != undefined) {
-            data = this.state.body.components
-            componentCount = this.state.body.components.length
-        }
-
+        // console.log(this.props.completedComponents);
         return (
-            <Tabs>
+            <Tabs onSelect = {this.doSomething}>
                 <Tab eventKey="1" title="Simulation">
                     <div>
                         <Table >
@@ -103,7 +80,15 @@ class SimulationMonitor extends React.Component {
                             <tr>
                                 <td colSpan={2}>
                                     <p>Simulation Monitoring Panel</p>
-                                    {ele}
+                                    {this.props.response}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    Total Assemblies
+                                </td>
+                                <td>
+                                    {this.props.simulation.assemblies.length}
                                 </td>
                             </tr>
                             <tr>
@@ -111,7 +96,7 @@ class SimulationMonitor extends React.Component {
                                     Total Components
                                 </td>
                                 <td>
-                                    {componentCount}
+                                    {this.props.simulation.components.length}
                                 </td>
                             </tr>
                             <tr>
@@ -119,7 +104,7 @@ class SimulationMonitor extends React.Component {
                                     Total Completed Components
                                 </td>
                                 <td>
-                                    {this.state.completedComponentCount}
+                                    {this.props.completedComponents.length}
                                 </td>
                             </tr>
                             <tr>
@@ -127,7 +112,6 @@ class SimulationMonitor extends React.Component {
                                     <Button  bsStyle="primary" onClick={this.start_simulation}>
                                         Start
                                     </Button>
-
                                 </td>
                             <td >
                                 <Button  bsStyle="primary" onClick={this.stop_simulation}>
@@ -137,20 +121,39 @@ class SimulationMonitor extends React.Component {
                             </tr>
                             </tbody>
                         </Table>
-
-
-
                     </div>
                 </Tab>
                 <Tab eventKey="2" title="Components">
-
-                    <ComponentState data={data} simulationId={this.props.simulationId}/>
+                    <ComponentState data={this.props.simulation.components}
+                                    simulationId={this.props.simulation.simulationId}
+                                    completedComponents = {this.props.completedComponents}
+                    />
                 </Tab>
-                <Tab eventKey="3" title="Assemblies">Assemblies</Tab>
+                <Tab eventKey="3" title="Assemblies">
+                    <AssemblyState data={this.props.simulation.assemblies}
+                                   simulationId={this.props.simulation.simulationId}
+                                   />
+                </Tab>
             </Tabs>
-
         );
     }
 }
 
-module.exports = SimulationMonitor
+function mapStateToProps(state) {
+    // console.log("into map state to prop in simulation monitor");
+    // console.log(state);
+    return {
+        simulation: state.mainMode.simulationObj
+        ,completedComponents:state.simulation.completedComponents
+        ,response:state.simulation.response
+    };
+}
+
+function mapDispatchToProps(dispatch) {
+    return {
+        actions: bindActionCreators(Actions, dispatch)
+    };
+}
+
+
+export default connect(mapStateToProps,mapDispatchToProps)(SimulationMonitor);

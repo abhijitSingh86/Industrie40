@@ -18,7 +18,7 @@ POST          /componentHeartBeat                   controllers.ComponentControl
 POST          /assemblyHeartBeat                    controllers.Index.assemblyHeartBeat
 POST          /initAssembly                         controllers.Index.initAssemblyRequest
 POST          /assemblyOperationCompletion          controllers.Index.assemblyOperationCompletion
-
+GET           /assemblyStatus/:simId/:asmId         controllers.Index.assemblyRunningStatus(asmId:Int,simId:Int)
 
 POST          /simulation                           controllers.SimulationController.addSimulation
 GET           /simulation                           controllers.SimulationController.getAllSimulations

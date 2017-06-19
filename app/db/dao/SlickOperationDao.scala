@@ -3,6 +3,7 @@ package db.dao
 import db.DBComponent
 import dbgeneratedtable.Tables
 import models.Operation
+import play.api.cache.CacheApi
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
@@ -10,7 +11,7 @@ import scala.concurrent.duration.Duration
   * Created by billa on 27.12.16.
   */
 trait SlickOperationDaoRepo extends OperationDaoRepo {
-  this: DBComponent =>
+  this: DBComponent  =>
 
   override def operation: OperationDao = new SlickOperationDao()
 
@@ -21,7 +22,7 @@ trait SlickOperationDaoRepo extends OperationDaoRepo {
 
     private val operations = Tables.Operation
 
-    def selectByOperationId(operationId: Int): models.Operation = {
+    def selectByOperationId(operationId: Int,cache:CacheApi): models.Operation = {
       Await.result(db.run(operations.filter(_.id === operationId).result.headOption), Duration.Inf) match {
         case Some(x: Tables.OperationRow) => new Operation(x.id, x.name)
 

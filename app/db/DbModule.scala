@@ -1,7 +1,9 @@
 package db
 
 import db.dao._
+import dbgeneratedtable.Tables
 import models._
+import play.api.cache.CacheApi
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -55,9 +57,13 @@ trait DbModule {
   def clearPreviousSimulationProcessingDetails(simulationId:Int):Future[Boolean]
 
   def assemblyHeartBeatUpdateAsync(assemblyId:Int, simulationId:Int):Future[Boolean]
+
+  def getAssemblyRunningStatus(assemblyId:Int,simulationId:Int):Future[Seq[Tables.ComponentProcessingStateRow]]
+
+  def getComponentNameMapBySimulationId(simulationId:Int):Map[Int,String]
 }
 
-class SlickModuleImplementation extends DbModule {
+class SlickModuleImplementation(cache:CacheApi) extends DbModule {
 
   this: SimulationDaoRepo
     with AssemblyDaoRepo
@@ -65,6 +71,14 @@ class SlickModuleImplementation extends DbModule {
     with OperationDaoRepo
     with DBComponent =>
 
+
+  def getComponentNameMapBySimulationId(simulationId:Int):Map[Int,String] ={
+    component.selectComponentNameMapBySimulationId(simulationId,cache)
+  }
+
+  def getAssemblyRunningStatus(assemblyId:Int,simulationId:Int):Future[Seq[Tables.ComponentProcessingStateRow]] ={
+    assembly.getProcessingInfo(assemblyId,simulationId)
+  }
 
   def clearPreviousSimulationProcessingDetails(simulationId:Int):Future[Boolean]={
     val flags = for{
@@ -87,15 +101,16 @@ class SlickModuleImplementation extends DbModule {
   }
 
   def getComponentWithProcessingInfo(componentId:Int,simulationId:Int):Option[Component] = {
-    component.selectByComponentSimulationId(componentId,simulationId)
+    val assemblyNameMap = assembly.selectAssemblyNameMapBySimulationId(simulationId,cache)
+    component.selectByComponentSimulationId(componentId,simulationId,cache , assemblyNameMap)
   }
 
   def updateAssemblyOperationStatus(assemblyId: Int, operationId: Int, status: String): Boolean= {
-    assembly.updateAssemblyOperationStatus(assemblyId, operationId, status)
+    assembly.updateAssemblyOperationStatus(assemblyId, operationId, status,cache)
   }
 
   def updateComponentProcessingInfo(simId:Int,cmpId:Int,assemblyId:Int,sequence:Int,opId:Int):Boolean ={
-    assembly.updateAssemblyOperationStatus(assemblyId,opId,FreeOperationStatus.text)
+    assembly.updateAssemblyOperationStatus(assemblyId,opId,FreeOperationStatus.text,cache)
     component.updateComponentProcessingInfo(simId,cmpId,assemblyId,sequence,opId)
   }
   def addComponentProcessingInfo(simId:Int,cmpId:Int,assemblyId:Int,sequence:Int,opId:Int):Boolean={
@@ -110,8 +125,8 @@ class SlickModuleImplementation extends DbModule {
   def getSimulation(simulationId:Int):Simulation = {
 
     val sim = simulation.getSimulationById(simulationId)
-    val comps = simulation.getAllComponentIdsBySimulationId(simulationId).map(component.selectByComponentId(_)).flatten
-    val assemblies = simulation.getAllAssemblyIdsBySimulationId(simulationId).map(assembly.selectByAssemblyId(_)).flatten
+    val comps = simulation.getAllComponentIdsBySimulationId(simulationId).map(component.selectByComponentId(_,cache)).flatten
+    val assemblies = simulation.getAllAssemblyIdsBySimulationId(simulationId).map(assembly.selectByAssemblyId(_,cache)).flatten
     sim.copy(components = comps,assemblies=assemblies)
   }
 
@@ -144,7 +159,7 @@ class SlickModuleImplementation extends DbModule {
   }
 
   def getAssemblyMappedToSimulationId(assemblyId:Int, simulationId:Int):Option[Assembly]={
-    assembly.selectByAssemblyId(assemblyId) match {
+    assembly.selectByAssemblyId(assemblyId,cache) match {
       case Some(x) if simulation.isAssemblyMappedToSimulation(simulationId,x.id)=>{
         Some(x)
       }
@@ -161,13 +176,13 @@ class SlickModuleImplementation extends DbModule {
 
   override def getComponentMappedToSimulationId(componentId: Int, simulationId: Int): Option[Component] = {
     simulation.isComponentMappedToSimulation(simulationId, componentId) match{
-      case true=> component.selectByComponentId(componentId)
+      case true=> component.selectByComponentId(componentId,cache)
       case false => None
     }
   }
 
   def getAllAssembliesForSimulation(simulationId:Int):List[Assembly]={
-    assembly.selectBySimulationId(simulationId)
+    assembly.selectBySimulationId(simulationId,cache)
   }
 
   def getAllComponentUrlBySimulationId(simulationId:Int):List[(Int,String)] ={

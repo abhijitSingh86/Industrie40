@@ -1,9 +1,11 @@
 package controllers
 
 import db.DbModule
+import json.DefaultRequestFormat
 import play.api.Logger
 import play.api.mvc.{Action, Controller}
 import scheduler.{ComponentQueue, SchedulerThread}
+
 import scala.util.Try
 
 /**
@@ -20,8 +22,8 @@ class SchedulingController(schedulingThread:SchedulerThread,db:DbModule)  extend
         ComponentQueue.updateSimulationId(simulationId.get)
         schedulingThread.startExecution()
         Logger.info("Schedule thread created")
-        Ok("Starting the scheduler")
-      case _=> Ok("simulation Id is not found in Json")
+        Ok(DefaultRequestFormat.getEmptySuccessResponse())
+      case _=> Ok(DefaultRequestFormat.getValidationErrorResponse(List(("error","simulation Id is not found in Json"))) )
     }
   }
 
@@ -33,6 +35,6 @@ class SchedulingController(schedulingThread:SchedulerThread,db:DbModule)  extend
           schedulingThread.endExecution()
           Logger.info("Stop request processed.. ")
         }
-        Ok("Thread Stopped")
+        Ok(DefaultRequestFormat.getEmptySuccessResponse())
       }
 }

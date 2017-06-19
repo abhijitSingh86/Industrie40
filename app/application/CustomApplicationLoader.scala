@@ -5,6 +5,7 @@ import db.dao._
 import network.NetworkProxy
 import play.api.ApplicationLoader.Context
 import play.api._
+import play.api.cache.{EhCacheComponents, EhCacheModule}
 import play.api.libs.ws.ahc.AhcWSComponents
 import router.Routes
 import scheduler.commands.ScheduleCommand
@@ -22,13 +23,13 @@ class CustomApplicationLoader extends ApplicationLoader {
   }
 }
 
-class MyComponents(context:Context) extends BuiltInComponentsFromContext(context)  with AhcWSComponents {
+class MyComponents(context:Context) extends BuiltInComponentsFromContext(context)  with AhcWSComponents with EhCacheComponents   {
   val logger = Logger(this.getClass())
 
   logger.info("Creating the instantiation graph for Compile time dependency injection")
 //  lazy val slickSimulationDao = new SlickSimulationDao with SlickOperationDao with MySqlDBComponent
   lazy val networkProxy = new NetworkProxy(wsClient)
-  lazy val dbModule:DbModule = new SlickModuleImplementation() with SlickSimulationDaoRepo with SlickAssemblyDaoRepo
+  lazy val dbModule:DbModule = new SlickModuleImplementation(defaultCacheApi) with SlickSimulationDaoRepo with SlickAssemblyDaoRepo
     with SlickComponentDaoRepo with SlickOperationDaoRepo with MySqlDBComponent
 
   lazy val command = new ScheduleCommand(dbModule,new ComponentScheduler(new ScheduleDbHandler(dbModule)),networkProxy)

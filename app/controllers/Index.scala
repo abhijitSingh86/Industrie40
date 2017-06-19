@@ -3,14 +3,18 @@ package controllers
 import javax.inject.Inject
 
 import db.DbModule
-import json.{DefaultRequestFormat, ResponseFactory, SimulationJson}
+import dbgeneratedtable.Tables
+import json.{ComponentWithSchedulingInfo, DefaultRequestFormat, ResponseFactory, SimulationJson}
 import models.{Assembly, Component, Operation, Simulation}
 import play.api.Logger
 import play.api.libs.json._
 import play.api.libs.ws.WSClient
 import play.api.mvc.{Action, Controller}
 import scheduler.SchedulerThread
+
+import scala.collection.mutable
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 /**
   * Created by billa on 03.01.17.
@@ -31,6 +35,43 @@ class Index @Inject()(ws:WSClient,db:DbModule)  extends Controller{
   }
   def index() =Action {
     Ok(views.html.index("Your new application is ready."))
+  }
+
+
+  def assemblyRunningStatus(asmId:Int,simId:Int) = Action.async {
+    //get Assembly processing record
+    val assembly = db.getAssemblyMappedToSimulationId(assemblyId = asmId,simulationId = simId)
+    val componentNameMap = db.getComponentNameMapBySimulationId(simId)
+    def makeAssemblyResponse(list:Seq[Tables.ComponentProcessingStateRow],map:Map[Int,String]) = {
+
+      Json.obj("id"->asmId,"operations"->
+      assembly.get.totalOperations.map(f => {
+        var past:mutable.ListBuffer[(Int,String)] = mutable.ListBuffer()
+        var current:Option[(Int,String)]=None
+        //get current and past processing for the operation details
+        list.filter(_.operationid == f.operation.id).map(o => if(o.endTime.isDefined){
+           past = past :+ (o.componentid,map.get(o.componentid).getOrElse(""))
+        }else{
+          current = Some((o.componentid,map.get(o.componentid).getOrElse("")))
+        })
+        //make json object and append
+        Json.obj("op_id" -> f.operation.id , "currentOpDetails" -> Json.obj(
+          "past" -> past.map(temp => Json.obj("cmp_id"->temp._1,"cmp_name"->temp._2)),
+          "current" -> Json.obj("cmp_id"->current.getOrElse((0,""))._1,"cmp_name"->current.getOrElse((0,""))._2)
+        ))
+      })
+      )
+    }
+
+    assembly match{
+      case Some(obj) => {
+        db.getAssemblyRunningStatus(asmId,simId).map(x=>
+          Ok(makeAssemblyResponse(x , componentNameMap))
+        )
+      }
+      case None => Future.successful(Ok(DefaultRequestFormat.getValidationErrorResponse(
+        List(("Data Error","Assembly Id doesn't Exist")))))
+    }
   }
 
   def assemblyOperationCompletion() = Action { implicit request =>
