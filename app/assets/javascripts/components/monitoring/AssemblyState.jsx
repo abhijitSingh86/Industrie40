@@ -1,14 +1,15 @@
 import React from "react"
-import AccordinData from './AccordinData'
+import AssemblyAccordinPanel from './AssemblyAccordinPanel'
 import {Panel, PanelGroup, Accordion, Tab, Row, Col, Nav, NavItem} from 'react-bootstrap'
 
-
-class ComponentState extends React.Component {
+class AssemblyState extends React.Component {
     constructor(props) {
-        super(props)
+        super(props);
         this.state = {
             openAccordinIndex: -1,
-            activeKey: '1'
+            data: this.props.data,
+            activeKey: '1',
+            completed: []
         };
 
         this.getActiveKey = this.getActiveKey.bind(this);
@@ -24,7 +25,6 @@ class ComponentState extends React.Component {
     }
 
     removeEnterId(id) {
-        // console.log("remomving" + id);
         this.setState({
             activeKey: -1
         });
@@ -35,31 +35,22 @@ class ComponentState extends React.Component {
     }
 
 
-    getPanelTitle(ele) {
-        var st = this.props.completedComponents;
-        for (var i = 0; i < st.length; i++) {
-            if (st[i].cmpId === ele.id) {
-                return ele.name + "  :COMPLETED:  Time Taken" + st[i].time;
-            }
-        }
-        return ele.name;
-    }
+
 
     createTabPanes(ele, index) {
         let bindedFunction = this.setEnterId.bind(this, index);
         let removeFun = this.removeEnterId.bind(this, index);
         return (
             <Tab.Pane eventKey={index + 1} onEnter={bindedFunction} onExit={removeFun}>
-                <AccordinData data={ele} simulationId={this.props.simulationId} index={index + 1}
-                              activeKey={this.state.activeKey}
-                              />
+                                <pre> {JSON.stringify(ele)}</pre>
+                <AssemblyAccordinPanel data={ele}/>
             </Tab.Pane>
         );
     }
 
     createNavs(ele, index) {
         return (<NavItem eventKey={index + 1}>
-            {this.getPanelTitle(ele)}
+            {ele.name}
         </NavItem>);
     }
 
@@ -99,5 +90,4 @@ class ComponentState extends React.Component {
 
 }
 
-
-export default ComponentState;
+module.exports = AssemblyState

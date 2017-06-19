@@ -1,6 +1,11 @@
 import React from "react"
+
 var axios = require('axios')
 import {Table, Grid, Row, Col} from 'react-bootstrap'
+import {connect} from 'react-redux';
+import {bindActionCreators} from 'redux';
+import * as Actions from '../redux/actions';
+
 class AccordinData extends React.Component {
 
     constructor(props) {
@@ -10,28 +15,30 @@ class AccordinData extends React.Component {
         this.startTimer = this.startTimer.bind(this);
         this.stopTimer = this.stopTimer.bind(this);
         this.getComponentOperationColor = this.getComponentOperationColor.bind(this);
-        this.state = {component: undefined, completed: false}
+
+        var updatedState = this.getComponentUpdatedStateIfExist(props)
+        var flag = false;
+        if(!(updatedState === undefined)){
+            console.log(updatedState);
+            flag = updatedState.isComplete;
+        }
+        this.state = {component: updatedState, completed: flag}
+    }
+
+    getComponentUpdatedStateIfExist(props) {
+        var cmps = props.components;
+        var temp = undefined
+        cmps.map(x => {
+            if (x.id === props.data.id) {
+                temp = x;
+            }
+        })
+        return temp
     }
 
     updateComponentState() {
         if (this.props.activeKey === this.props.index && this.state.completed === false) {
-            var _this = this;
-            axios.get('/componentStatus/' + this.props.simulationId + '/' + this.props.data.id).then(function (response) {
-
-                var flag = false;
-                if (response.data.body.opCount === response.data.body.schedulinginfo.pastOperations.length) {
-                    flag = true;
-                }
-                _this.setState({
-                    component: response.data.body,
-                    completed: flag
-                });
-
-            }).catch(function (error) {
-                _this.setState({
-                    error: "Error while Starting Simulation. \n " + error
-                });
-            })
+            this.props.actions.getComponentRunningStatus(this.props.data.id, this.props.simulationId);
         }
     }
 
@@ -46,10 +53,12 @@ class AccordinData extends React.Component {
     }
 
     componentDidMount() {
+        console.log("starting"+this.props.completedComponents.length);
         this.startTimer()
     }
 
     componentWillUnmount() {
+        console.log("STopping "+this.props.completedComponents.length);
         this.stopTimer()
     }
 
@@ -77,7 +86,7 @@ class AccordinData extends React.Component {
     }
 
     getDateTimeDisplayPanel() {
-        if (this.state.component != undefined && this.state.component.schedulinginfo.pastOperations.length !=0) {
+        if (this.state.component != undefined && this.state.component.schedulinginfo.pastOperations.length != 0) {
             var past = this.state.component.schedulinginfo.pastOperations
             var rows = [];
             for (var i = 0; i < past.length; i++) {
@@ -103,35 +112,30 @@ class AccordinData extends React.Component {
         var color = []
         if (this.state != null && this.state.component != undefined) {
             // console.log("Into state component")
-            var past = this.state.component.schedulinginfo.pastOperations
-            if (past.length > 0) {
-                var flag = true
+            var past = this.state.component.schedulinginfo.pastOperations;
+            var subarr = arr.slice(0, past.length);
+            // console.log(subarr);
+            // console.log(past);
+            if (past.length != 0 && subarr.length == past.length &&
+                subarr.every((v, i) => v.id === past[i].operationId)) {
+
                 for (var i = 0; i < past.length; i++) {
-                    if (past[i].operationId != arr[i].id) {
-                        flag = false;
-                        break;
-                    }
+                    color.push("#00EE00")
                 }
-                if (flag === true) {
-                    for (var i = 0; i < past.length; i++) {
-                        color.push("#00EE00")
-                    }
-                    for (var i = past.length; i < arr.length; i++) {
-                        color.push("#000000")
-                    }
-                    // console.log(color)
-                    return color;
+                for (var i = past.length; i < arr.length; i++) {
+                    color.push("#000000")
                 }
+                // console.log(color);
+                return color;
             }
         }
         for (var i = 0; i < arr.length; i++) {
             color.push("#000000")
         }
-        // console.log(color)
         return color;
     }
 
-    callCompletionEvent() {
+    getProgressDetailsContent() {
         if (this.state.completed === true) {
             try {
                 var time = 0;
@@ -144,32 +148,39 @@ class AccordinData extends React.Component {
                 console.log(e);
             }
         }
-        else if(this.state.component != undefined){
-            var op="In Progress "
-            if(this.state.component.schedulinginfo.currentOperation != null){
-                var curr= this.state.component.schedulinginfo.currentOperation;
-                op = op +": Current Operation"+this.getOperationLabel(curr.operationId)
+        else if (!(this.state.component === undefined)) {
+            var op = "In Progress "
+            if (this.state.component.schedulinginfo.currentOperation != null) {
+                var curr = this.state.component.schedulinginfo.currentOperation;
+                op = op + ": Current Operation" + this.getOperationLabel(curr.operationId)
             }
             return <td>{op}</td>;
         }
-        else{
+        else {
             return <td/>;
         }
     }
 
+    componentWillReceiveProps(nextProps) {
+        var updatedState = this.getComponentUpdatedStateIfExist(nextProps)
+       // console.log("Got new props in Accordin updating compoent" + updatedState);
+        var flag = false;
+        if(updatedState != undefined){
+        flag = updatedState.isComplete;
+        }
+        this.setState({
+            component: updatedState,
+            completed :flag
+        })
+    }
+
     render() {
-
-
-        var data = this.callCompletionEvent()
+        var progressDetailsContent = this.getProgressDetailsContent()
         var opd = this.props.data.operationDetails;
         var prorows = this.getDateTimeDisplayPanel()
         var otable = []
 
-        var onlineStyle = {color: '#00EE00'}
-        if (this.state != null && this.state.component != undefined) {
-            if (this.state.component.online == false)
-                onlineStyle = {color: '#EE0000'}
-        }
+        //populating operation Details
         for (var i = 0; i < opd.length; i++) {
             var label = "S" + i
             var st = {color: '#000000'}
@@ -183,16 +194,16 @@ class AccordinData extends React.Component {
             )
         }
         return (
-            <Table  bordered condensed hover>
+            <Table bordered condensed hover>
                 <tbody>
                 <tr>
-                    {data}
+                    {progressDetailsContent}
                 </tr>
                 <tr>
                     <td>
                         <Table bordered condensed hover>
                             <tbody>
-                            {  prorows}
+                            {prorows}
                             </tbody>
                         </Table>
                     </td>
@@ -209,7 +220,7 @@ class AccordinData extends React.Component {
                             <tbody>
                             <tr cellPadding={0}>
                                 <td>
-                                    <Table >
+                                    <Table>
                                         <tbody>
                                         {otable}
                                         </tbody>
@@ -227,4 +238,20 @@ class AccordinData extends React.Component {
     }
 }
 
-module.exports = AccordinData
+
+function mapStateToProps(state) {
+    return {
+        completedComponents: state.simulation.completedComponents
+        , components: state.simulation.components
+    };
+}
+
+function mapDispatchToProps(dispatch) {
+    return {
+        actions: bindActionCreators(Actions, dispatch)
+    };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(AccordinData);
+
+// module.exports = AccordinData

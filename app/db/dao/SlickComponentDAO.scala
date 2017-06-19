@@ -161,9 +161,10 @@ trait SlickComponentDaoRepo extends ComponentDaoRepo {
         val result = db.run(componentProcessingState.filter(x=> (x.componentid === componentId &&
           x.simulationid === simulationId)).sortBy(_.sequencenum.desc).result).map(y=>
         {
-            val firstRow = if(y.take(1).size ==1) Some(y.take(1)(0)) else None
+            val firstRow = if(y.takeRight(1).size ==1) Some(y.take(1)(0)) else None
             //get each row and form the scheduling information Details
             var oinfo: List[OperationProcessingInfo] = List()
+
             val curr = if (firstRow.isDefined && firstRow.get.endTime.isDefined) {
               oinfo = y.map(x => mapToOperationProcessingInfo(x)
               ).toList
@@ -182,7 +183,7 @@ trait SlickComponentDaoRepo extends ComponentDaoRepo {
 
             val completedOPerationList = oinfo.map(_.operationId).reverse.map(operation.selectByOperationId(_)).toList
 
-            new ComponentSchedulingInfo(oinfo, curr, sequemce, completedOPerationList)
+            new ComponentSchedulingInfo(oinfo.reverse, curr, sequemce, completedOPerationList)
         })
       Await.result(result,Duration.Inf)
     }

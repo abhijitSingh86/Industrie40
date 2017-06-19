@@ -3,6 +3,7 @@ package json
 import models.{Component, Simulation}
 import play.api.libs.json.{JsArray, JsValue, Json}
 import factory.JsonImplicitFactory._
+import utils.ComponentUtils
 /**
   * Created by billa on 31.05.17.
   */
@@ -24,6 +25,7 @@ case class ComponentWithSchedulingInfo(x:Component) extends Response{
     Json.obj("id"-> x.id,
       "name"-> x.name,
       "online"->x.isOnline,
+      "isComplete" -> ComponentUtils.isCompleted(x),
       "opCount"->x.processingSequences(0).seq.size,
       "operationDetails" -> x.processingSequences.map(y=>{
         y.seq.map(Json.toJson(_))

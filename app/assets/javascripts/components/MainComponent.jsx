@@ -1,13 +1,13 @@
 import React from "react"
 import Registration from "./Registration"
 import SimulationMonitor from "./monitoring/SimulationMonitor"
+import {connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import * as Actions from './redux/actions';
 
 class MainComponent extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {
-            monitor: false
-        };
         this.changeMainMode = this.changeMainMode.bind(this);
         this.getPanelForDisplay = this.getPanelForDisplay.bind(this);
 
@@ -16,18 +16,16 @@ class MainComponent extends React.Component {
 
     changeMainMode(simulationId) {
         console.log("change Recieved with "+simulationId);
-        this.setState({
-            monitor: true,
-            simulationId: simulationId
-        });
-
+       this.props.actions.changeMainMode(simulationId);
     }
 
     getPanelForDisplay() {
-        if (this.state.monitor === false) {
+        if (this.props.monitor === false) {
             return <Registration changeHandler={this.changeMainMode}/>
         } else {
-            return <SimulationMonitor simulationId={this.state.simulationId}/>
+            return (
+                    <SimulationMonitor/>
+               )
         }
     }
 
@@ -41,5 +39,18 @@ class MainComponent extends React.Component {
     }
 
 }
+function mapStateToProps(state) {
+    return {
+        simulationId: state.mainMode.simulationId,
+        monitor:state.mainMode.monitor
+    };
+}
 
-module.exports = MainComponent
+function mapDispatchToProps(dispatch) {
+    return {
+        actions: bindActionCreators(Actions, dispatch)
+    };
+}
+
+
+export default connect(mapStateToProps,mapDispatchToProps)(MainComponent);

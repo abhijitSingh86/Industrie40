@@ -1,4 +1,4 @@
-import java.sql.Timestamp
+//import java.sql.Timestamp
 import java.time.{Duration, LocalDate, LocalDateTime, Period}
 import java.util.{Calendar, Date}
 import java.util.concurrent.TimeUnit
@@ -8,20 +8,20 @@ import utils.DateTimeUtils
 
 import scala.collection.mutable
 
-val st:Long = 1495580454000l
-val et:Long = 1495580479000l
-val diff = et-st
-val c  = Calendar.getInstance()
-c.add(Calendar.SECOND,-7)
-val s= new Timestamp(c.getTimeInMillis)
-val c1 =new Timestamp(Calendar.getInstance().getTimeInMillis)
-
-s.before(c1)
-
+//val st:Long = 1495580454000l
+//val et:Long = 1495580479000l
+//val diff = et-st
+//val c  = Calendar.getInstance()
+//c.add(Calendar.SECOND,-7)
+//val s= new Timestamp(c.getTimeInMillis)
+//val c1 =new Timestamp(Calendar.getInstance().getTimeInMillis)
+//
+//s.before(c1)
+//
 //c1.s
-
-
-TimeUnit.SECONDS.convert(et-st , TimeUnit.MILLISECONDS)
+//
+//
+//TimeUnit.SECONDS.convert(et-st , TimeUnit.MILLISECONDS)
 
 //Duration.between(new Date(et),new Date(st))
 
