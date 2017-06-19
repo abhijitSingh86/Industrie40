@@ -1,11 +1,12 @@
 import {GET_SIMULATIONS,GET_SIMULATION_WITH_ID,START_SIMULATION,STOP_SIMULATION ,
-    CHANGE_COMPLETION_COUNT,GET_COMPONENT_RUNNING_STATUS} from '../actions'
+    CHANGE_COMPLETION_COUNT,GET_COMPONENT_RUNNING_STATUS,GET_ASSEMBLY_RUNNING_STATUS} from '../actions'
 
 
 const initialState = {
     response:""
     ,completedComponents:[]
     ,components:[]
+    ,assemblies:[]
 }
 
 export default function simulationReducer(state = initialState,action){
@@ -43,6 +44,20 @@ export default function simulationReducer(state = initialState,action){
             }
 
             return Object.assign({},state,{components:t,completedComponents:list})
+        }
+
+        case GET_ASSEMBLY_RUNNING_STATUS : {
+            var asm = action.payload;
+            var t = [];
+            state.assemblies.map(x => {
+                if(x.id != asm.id){
+                    t.push(x);
+                }
+            });
+            t.push(asm);
+
+
+            return Object.assign({},state,{assemblies:t})
         }
         case GET_SIMULATIONS: return Object.assign({},state,{body:action.payload.data.body});
 

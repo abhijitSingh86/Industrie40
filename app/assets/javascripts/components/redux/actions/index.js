@@ -6,6 +6,7 @@ export const CHANGE_MAIN_MODE='CHANGE_MAIN_MODE';
 export const START_SIMULATION = 'START_SIMULATION';
 export const STOP_SIMULATION = 'STOP_SIMULATION';
 export const CHANGE_COMPLETION_COUNT='CHANGE_COMPLETION_COUNT';
+export const GET_ASSEMBLY_RUNNING_STATUS = 'GET_ASSEMBLY_RUNNING_STATUS'
 
 export const GET_COMPONENT_RUNNING_STATUS = 'GET_COMPONENT_RUNNING_STATUS';
 
@@ -26,6 +27,24 @@ export function getComponentRunningStatus(componentId,simulationId){
             // });
         // })
     }
+}
+
+export function getAssemblyRunningStatus(assemblyId,simulationId){
+    return function(dispatch){
+        axios.get('/assemblyStatus/'+simulationId+'/'+assemblyId).then(function(response){
+            console.log(response.data);
+            var action = {
+                type:GET_ASSEMBLY_RUNNING_STATUS,
+                payload:response.data
+            };
+
+            dispatch(action);
+        });
+    };
+    // return ({
+    //     type: GET_ASSEMBLY_RUNNING_STATUS,
+    //     payload: obj
+    // });
 }
 
 export function updateComponentCompletionCount(obj){

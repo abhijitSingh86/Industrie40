@@ -1,6 +1,8 @@
 package db.dao
 
+import dbgeneratedtable.Tables
 import models.{Component, Operation}
+import play.api.cache.CacheApi
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -15,7 +17,7 @@ trait OperationDaoRepo {
     def add(operation: Operation): Int
     def deleteOperation(id:Int):Boolean
     def selectAllOperations():List[Operation]
-    def selectByOperationId(operationId:Int):Operation
+    def selectByOperationId(operationId:Int,cache:CacheApi):Operation
     }
 
 }
@@ -74,11 +76,11 @@ trait ComponentDaoRepo {
 
     def selectAll(): List[models.Component]
 
-    def selectBySimulationId1(simulationId: Int): List[models.Component]
+    def selectComponentNameMapBySimulationId(simulationId: Int , cache: CacheApi): Map[Int,String]
 
-    def selectByComponentId(componentId: Int): Option[models.Component]
+    def selectByComponentId(componentId: Int,cache:CacheApi): Option[models.Component]
 
-    def selectByComponentSimulationId(componentId: Int, simulationId:Int): Option[models.Component]
+    def selectByComponentSimulationId(componentId: Int, simulationId:Int,cache:CacheApi,assemblyNameMap:Map[Int,String]): Option[models.Component]
 
     def addComponentProcessingInfo(simId:Int,cmpId:Int,assemblyId:Int,sequence:Int,opId:Int):Boolean
 
@@ -96,11 +98,15 @@ trait AssemblyDaoRepo{
 
   trait AssemblyDao {
 
+    def selectAssemblyNameMapBySimulationId(simulationId: Int , cache: CacheApi): Map[Int,String]
+
+    def getProcessingInfo(assemblyId:Int,simulationId:Int):Future[Seq[Tables.ComponentProcessingStateRow]]
+
     def assemblyHeartBeatUpdateAsync(assemblyId: Int, simulationId: Int):Future[Boolean]
 
     def clearBusyOperationAsync(simulationId:Int):Future[Boolean]
 
-    def updateAssemblyOperationStatus(assemblyId:Int, operationId:Int, status:String):Boolean
+    def updateAssemblyOperationStatus(assemblyId:Int, operationId:Int, status:String,cache:CacheApi):Boolean
 
     def add(assembly: models.Assembly): Int
 
@@ -110,9 +116,9 @@ trait AssemblyDaoRepo{
 
     def selectAllAssembly(): List[models.Assembly]
 
-    def selectBySimulationId(simulationId: Int): List[models.Assembly]
+    def selectBySimulationId(simulationId: Int,cache:CacheApi): List[models.Assembly]
 
-    def selectByAssemblyId(assemblyId: Int): Option[models.Assembly]
+    def selectByAssemblyId(assemblyId: Int ,cache:CacheApi): Option[models.Assembly]
   }
 }
 

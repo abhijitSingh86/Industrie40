@@ -8,6 +8,9 @@ import utils.DateTimeUtils
 
 import scala.collection.mutable
 
+val li:mutable.ListBuffer[Int] = mutable.ListBuffer(1,2)
+li :+ 3
+
 //val st:Long = 1495580454000l
 //val et:Long = 1495580479000l
 //val diff = et-st

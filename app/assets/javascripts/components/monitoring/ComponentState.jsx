@@ -34,6 +34,11 @@ class ComponentState extends React.Component {
         return this.state.activeKey;
     }
 
+    // componentWillReceiveProps(nextProps) {
+    //     this.setState({
+    //         activeKey:nextProps.activeKey
+    //     })
+    // }
 
     getPanelTitle(ele) {
         var st = this.props.completedComponents;

@@ -1,5 +1,6 @@
 package json
 
+import dbgeneratedtable.Tables
 import models.{Component, Simulation}
 import play.api.libs.json.{JsArray, JsValue, Json}
 import factory.JsonImplicitFactory._
@@ -18,6 +19,25 @@ object ResponseFactory {
 sealed trait Response{
   def generate():JsValue
 }
+
+
+//case class AssemblyProcessingInfo(x:Tables.ComponentProcessingStateRow) extends Response{
+//
+//  def generate()= {
+//    Json.obj("id"-> x.id,
+//      "name"-> x.name,
+//      "online"->x.isOnline,
+//      "isComplete" -> ComponentUtils.isCompleted(x),
+//      "opCount"->x.processingSequences(0).seq.size,
+//      "operationDetails" -> x.processingSequences.map(y=>{
+//        y.seq.map(Json.toJson(_))
+//      }),
+//      "schedulinginfo" -> Json.obj(
+//        "pastOperations" -> Json.toJson(x.componentSchedulingInfo.pastProcessings),
+//        "currentOperation" -> Json.toJson(x.componentSchedulingInfo.currentProcessing)
+//      ))
+//  }
+//}
 
 case class ComponentWithSchedulingInfo(x:Component) extends Response{
 

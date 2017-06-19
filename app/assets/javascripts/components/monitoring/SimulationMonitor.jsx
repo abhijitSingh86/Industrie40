@@ -9,12 +9,26 @@ import * as Actions from '../redux/actions';
 class SimulationMonitor extends React.Component {
     constructor(props) {
         super(props);
+        this.state = {
+            keyTab2:-1,
+            keyTab3:-1
+        }
         this.start_simulation = this.start_simulation.bind(this);
         this.stop_simulation = this.stop_simulation.bind(this);
         this.completedComponentCount = this.completedComponentCount.bind(this);
     }
 
     doSomething(key){
+        // if(key === 2){
+        //     this.setState({
+        //         keyTab3:-1
+        //     });
+        // }
+        // if(key === 3){
+        //     this.setState({
+        //         keyTab2:-1
+        //     });
+        // }
         console.log('Selected'+key);
     }
     // startTimer() {
@@ -36,8 +50,8 @@ class SimulationMonitor extends React.Component {
     // }
 
     componentWillReceiveProps(nextProps) {
-    console.log("Getting new Props");
-    console.log(nextProps);
+    // console.log("Getting new Props");
+    // console.log(nextProps);
     }
 
     start_simulation() {
@@ -112,10 +126,13 @@ class SimulationMonitor extends React.Component {
                 <Tab eventKey="2" title="Components">
                     <ComponentState data={this.props.simulation.components}
                                     simulationId={this.props.simulation.simulationId}
-                                    completedComponents = {this.props.completedComponents}/>
+                                    completedComponents = {this.props.completedComponents}
+                    />
                 </Tab>
                 <Tab eventKey="3" title="Assemblies">
-                    <AssemblyState data={this.props.simulation.assemblies} simulationId={this.props.simulation.simulationId}/>
+                    <AssemblyState data={this.props.simulation.assemblies}
+                                   simulationId={this.props.simulation.simulationId}
+                                   />
                 </Tab>
             </Tabs>
         );

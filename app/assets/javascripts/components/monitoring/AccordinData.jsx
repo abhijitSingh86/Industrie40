@@ -95,7 +95,7 @@ class AccordinData extends React.Component {
                 var secondsSpent = (etd - std) / 1000
                 // console.log(secondsSpent);
                 rows.push(<tr>
-                    <td>{this.getOperationLabel(past[i].operationId)}</td>
+                    <td>{this.getOperationLabel(past[i].operationId)} on Assembly {past[i].assemblyName}</td>
                     <td>{secondsSpent}</td>
                 </tr>)
             }
@@ -152,7 +152,7 @@ class AccordinData extends React.Component {
             var op = "In Progress "
             if (this.state.component.schedulinginfo.currentOperation != null) {
                 var curr = this.state.component.schedulinginfo.currentOperation;
-                op = op + ": Current Operation" + this.getOperationLabel(curr.operationId)
+                op = op + ": Current Operation" + this.getOperationLabel(curr.operationId)  + " ON Assembly "+curr.assemblyName;
             }
             return <td>{op}</td>;
         }
