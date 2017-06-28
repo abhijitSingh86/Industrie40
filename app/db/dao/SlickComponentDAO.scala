@@ -119,6 +119,15 @@ trait SlickComponentDaoRepo extends ComponentDaoRepo {
       }
     }
 
+    def getAllComponentsByIds(ids:List[Int]):Future[Component] = {
+      val query = for{
+        c <- components
+        if c.id inSetBind ids
+      }yield c
+
+      db.run()
+    }
+
     override def selectAll(): List[Component] = ???
 
     //    {
@@ -139,14 +148,7 @@ trait SlickComponentDaoRepo extends ComponentDaoRepo {
     override def selectByComponentId(componentId: Int, cache: CacheApi): Option[Component] = {
       Await.result(db.run(components.filter(_.id === componentId).result.headOption), Duration.Inf) match {
         case Some(x) => {
-          val processingSequenceList = cache.getOrElse[List[ProcessingSequence]](s"c${componentId}") {
-            Await.result(db.run(componentsOperationMapping.filter(_.componentId === x.id).result), Duration.Inf) match {
-              case row => { //:List[ComponentOperationMappingRow]
-                createProcessingSequenceList(row.toList, cache)
-              }
-              case _ => List[ProcessingSequence]()
-            }
-          }
+          val processingSequenceList = getProcessingInfo(componentId,cache)
           Some(Component(x.id, x.name, processingSequenceList, EmptySchedulingInfo))
         }
         case _ => None
@@ -188,22 +190,28 @@ trait SlickComponentDaoRepo extends ComponentDaoRepo {
       Await.result(result, Duration.Inf)
     }
 
+    private def isOnline(x:Tables.ComponentRow):Boolean ={
+      if (x.last_active.isDefined) x.last_active.get.after(DateTimeUtils.getOldBySecondsTS(6)) else false
+    }
+
+    private def getProcessingInfo(cid:Int , cache:CacheApi) = {
+      cache.getOrElse[List[ProcessingSequence]](s"c${cid}") {
+        Await.result(db.run(componentsOperationMapping.filter(_.componentId === cid).result), Duration.Inf) match {
+          case row => { //:List[ComponentOperationMappingRow]
+            createProcessingSequenceList(row.toList, cache)
+          }
+          case _ => List[ProcessingSequence]()
+        }
+      }
+    }
+
+
     def selectByComponentSimulationId(componentId: Int, simulationId: Int, cache: CacheApi,assemblyNameMap:Map[Int,String]): Option[Component] = {
-
-
       Await.result(db.run(components.filter(_.id === componentId).result.headOption), Duration.Inf) match {
         case Some(x) => {
-          val processingSequenceList = cache.getOrElse[List[ProcessingSequence]](s"c${componentId}") {
-            Await.result(db.run(componentsOperationMapping.filter(_.componentId === x.id).result), Duration.Inf) match {
-              case row => { //:List[ComponentOperationMappingRow]
-                createProcessingSequenceList(row.toList, cache)
-              }
-              case _ => List[ProcessingSequence]()
-            }
-          }
+          val processingSequenceList = getProcessingInfo(componentId,cache)
           val componentSchedulingInfo: ComponentSchedulingInfo = createComponentSchedulingInfo(componentId, simulationId, cache , assemblyNameMap)
-          val isOnline = if (x.last_active.isDefined) x.last_active.get.after(DateTimeUtils.getOldBySecondsTS(6)) else false
-          Some(Component(x.id, x.name, processingSequenceList, componentSchedulingInfo, isOnline))
+          Some(Component(x.id, x.name, processingSequenceList, componentSchedulingInfo, isOnline(x)))
         }
         case _ => None
       }

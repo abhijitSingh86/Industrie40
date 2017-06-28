@@ -24,7 +24,8 @@ POST          /simulation                           controllers.SimulationContro
 GET           /simulation                           controllers.SimulationController.getAllSimulations
 GET           /simulation/:id                       controllers.SimulationController.getSimulation(id:Int)
 DELETE        /simulation/:id                       controllers.SimulationController.deleteSimulation(id:Int)
-POST          /simualtion/:id/clear                controllers.SimulationController.startAgain(id:Int)
+POST          /simualtion/:id/clear                 controllers.SimulationController.startAgain(id:Int)
+POST          /simualtion/:id/runningstatus         controllers.SimulationController.simulationRunningStatus(id:Int)
 
 
 # Map static resources from the /public folder to the /assets URL path

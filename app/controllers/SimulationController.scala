@@ -25,6 +25,9 @@ class SimulationController(database:DbModule) extends Controller {
 //    Ok(Json.arr(database.getAllSimulation().map(x=> ResponseFactory.make(SimulationJson(x)))))
   }
 
+  def simulationRunningStatus(simulationId:Int) = {
+
+  }
   def getSimulation(id:Int) = Action{
     Ok(ResponseFactory.make(SimulationJson(database.getSimulation(id))))
   }

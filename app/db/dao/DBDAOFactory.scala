@@ -89,6 +89,8 @@ trait ComponentDaoRepo {
     def componentHeartBeatUpdateAsync(componentId:Int,simulationId:Int):Future[Boolean]
 
     def clearComponentProcessingDetailsAsync(simulationId:Int):Future[Boolean]
+
+    def getAllComponentsByIds(ids:List[Int]):Future[Component]
   }
 
 }
