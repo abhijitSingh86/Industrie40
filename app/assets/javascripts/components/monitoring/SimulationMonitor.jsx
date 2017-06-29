@@ -18,36 +18,26 @@ class SimulationMonitor extends React.Component {
         this.completedComponentCount = this.completedComponentCount.bind(this);
     }
 
-    doSomething(key){
-        // if(key === 2){
-        //     this.setState({
-        //         keyTab3:-1
-        //     });
-        // }
-        // if(key === 3){
-        //     this.setState({
-        //         keyTab2:-1
-        //     });
-        // }
-        console.log('Selected'+key);
+    doSomething(){
+        console.log('Triggered');
+        this.props.actions.getSimulationRunningStatus(this.props.simulation.simulationId);
     }
-    // startTimer() {
-    //     clearInterval(this.timer);
-    //
-    //     this.timer = setInterval(this.doSomething.bind(this), 7000)
-    // }
-    //
-    // stopTimer() {
-    //     clearInterval(this.timer)
-    // }
-    //
-    // componentDidMount() {
-    //     this.startTimer()
-    // }
-    //
-    // componentWillUnmount() {
-    //     this.stopTimer()
-    // }
+    startTimer() {
+        clearInterval(this.timer);
+        this.timer = setInterval(this.doSomething.bind(this), 7000)
+    }
+
+    stopTimer() {
+        clearInterval(this.timer)
+    }
+
+    componentDidMount() {
+        this.startTimer()
+    }
+
+    componentWillUnmount() {
+        this.stopTimer()
+    }
 
     componentWillReceiveProps(nextProps) {
     // console.log("Getting new Props");
@@ -72,7 +62,7 @@ class SimulationMonitor extends React.Component {
     render() {
         // console.log(this.props.completedComponents);
         return (
-            <Tabs onSelect = {this.doSomething}>
+            <Tabs >
                 <Tab eventKey="1" title="Simulation">
                     <div>
                         <Table >

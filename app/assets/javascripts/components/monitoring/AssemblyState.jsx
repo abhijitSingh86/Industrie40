@@ -17,9 +17,9 @@ class AssemblyState extends React.Component {
             completed: []
         };
 
-        this.updateComponentState = this.updateComponentState.bind(this);
-        this.startTimer = this.startTimer.bind(this);
-        this.stopTimer = this.stopTimer.bind(this);
+        // this.updateComponentState = this.updateComponentState.bind(this);
+        // this.startTimer = this.startTimer.bind(this);
+        // this.stopTimer = this.stopTimer.bind(this);
         this.getActiveKey = this.getActiveKey.bind(this);
         this.buildCustomTabPanels = this.buildCustomTabPanels.bind(this);
         this.createTabPanes = this.createTabPanes.bind(this);
@@ -46,26 +46,26 @@ class AssemblyState extends React.Component {
         return this.state.activeKey;
     }
 
-    updateComponentState() {
-        if(-1 != this.state.activeKey)
-            this.props.actions.getAssemblyRunningStatus(this.state.activeKey, this.props.simulationId);
-    }
-
-    componentDidMount(){
-        this.startTimer();
-    }
-    componentWillUnmount(){
-        this.stopTimer();
-    }
-    startTimer() {
-        clearInterval(this.timer);
-        this.updateComponentState();
-        this.timer = setInterval(this.updateComponentState.bind(this), 7000)
-    }
-
-    stopTimer() {
-        clearInterval(this.timer)
-    }
+    // updateComponentState() {
+    //     if(-1 != this.state.activeKey)
+    //         this.props.actions.getAssemblyRunningStatus(this.state.activeKey, this.props.simulationId);
+    // }
+    //
+    // componentDidMount(){
+    //     this.startTimer();
+    // }
+    // componentWillUnmount(){
+    //     this.stopTimer();
+    // }
+    // startTimer() {
+    //     clearInterval(this.timer);
+    //     this.updateComponentState();
+    //     this.timer = setInterval(this.updateComponentState.bind(this), 7000)
+    // }
+    //
+    // stopTimer() {
+    //     clearInterval(this.timer)
+    // }
 
 
     createTabPanes(ele, index) {

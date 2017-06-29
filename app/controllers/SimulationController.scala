@@ -1,7 +1,8 @@
 package controllers
 
 import db.DbModule
-import json.{DefaultRequestFormat, ResponseFactory, SimulationJson, SimulationsJson}
+import dbgeneratedtable.Tables
+import json._
 import models._
 import play.api.Logger
 import play.api.mvc.{Action, AnyContent, Controller, Request}
@@ -25,7 +26,21 @@ class SimulationController(database:DbModule) extends Controller {
 //    Ok(Json.arr(database.getAllSimulation().map(x=> ResponseFactory.make(SimulationJson(x)))))
   }
 
-  def simulationRunningStatus(simulationId:Int) = {
+  def simulationRunningStatus(simulationId:Int) = Action.async {
+    val componentProcessingRows = database.getComponentProcessingInfoForSimulation(simulationId)
+
+    componentProcessingRows.map(rows => {
+        val asmIds = rows.map(_.assemblyid).distinct
+        val assemblyMap:Map[Int,(Assembly , Seq[Tables.ComponentProcessingStateRow])] = asmIds.map(id => (id ->
+          (database.getAssemblyMappedToSimulationId(id,simulationId).get , rows.filter(_.assemblyid==id)))).toMap
+
+      val compIds = rows.map(_.componentid).distinct
+      val componentMap: Map[Int, Component] = compIds.map(id => (id ->
+                database.getComponentById(id,simulationId, rows.filter(_.componentid == id)))).toMap
+
+      Ok(ResponseFactory.make(ProcessingStatus(componentMap,assemblyMap)))
+      }
+      )
 
   }
   def getSimulation(id:Int) = Action{

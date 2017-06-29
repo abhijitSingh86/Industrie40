@@ -6,10 +6,15 @@ import java.util.concurrent.TimeUnit
 import sun.util.resources.LocaleData
 import utils.DateTimeUtils
 
-import scala.collection.mutable
+//import scala.collection.mutable
+//
+//val li:mutable.ListBuffer[Int] = mutable.ListBuffer(1,2)
+//li :+ 3
 
-val li:mutable.ListBuffer[Int] = mutable.ListBuffer(1,2)
-li :+ 3
+val l = List(1,2,4,2,3,4,5,6)
+l.distinct
+l.sortWith(_ > _)
+
 
 //val st:Long = 1495580454000l
 //val et:Long = 1495580479000l

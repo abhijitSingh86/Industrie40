@@ -1,7 +1,7 @@
 package db.dao
 
 import dbgeneratedtable.Tables
-import models.{Component, Operation}
+import models.{Component, ComponentSchedulingInfo, Operation}
 import play.api.cache.CacheApi
 
 import scala.concurrent.Future
@@ -80,7 +80,11 @@ trait ComponentDaoRepo {
 
     def selectByComponentId(componentId: Int,cache:CacheApi): Option[models.Component]
 
-    def selectByComponentSimulationId(componentId: Int, simulationId:Int,cache:CacheApi,assemblyNameMap:Map[Int,String]): Option[models.Component]
+    def selectByComponentId(componentId: Int,cache:CacheApi,assemblyNameMap:Map[Int,String],
+                            processingRecords:Seq[Tables.ComponentProcessingStateRow]): models.Component
+
+    def selectByComponentSimulationId(componentId: Int, simulationId:Int,cache:CacheApi,assemblyNameMap:Map[Int,String])
+    :Option[models.Component]
 
     def addComponentProcessingInfo(simId:Int,cmpId:Int,assemblyId:Int,sequence:Int,opId:Int):Boolean
 
@@ -90,7 +94,9 @@ trait ComponentDaoRepo {
 
     def clearComponentProcessingDetailsAsync(simulationId:Int):Future[Boolean]
 
-    def getAllComponentsByIds(ids:List[Int]):Future[Component]
+
+    def getComponentProcessingInfoForSimulation(simulationId: Int, cache: CacheApi, assemblyNameMap:Map[Int,String]):
+    Future[Seq[Tables.ComponentProcessingStateRow]]
   }
 
 }

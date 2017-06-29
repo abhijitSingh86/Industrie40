@@ -7,6 +7,7 @@ import models._
 import play.api.cache.CacheApi
 import utils.DateTimeUtils
 
+import scala.collection.mutable
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration.Duration
@@ -119,14 +120,15 @@ trait SlickComponentDaoRepo extends ComponentDaoRepo {
       }
     }
 
-    def getAllComponentsByIds(ids:List[Int]):Future[Component] = {
-      val query = for{
-        c <- components
-        if c.id inSetBind ids
-      }yield c
-
-      db.run()
-    }
+//    def getAllComponentsByIds(ids:List[Int],cache:CacheApi):Future[Component] = {
+//      val query = for{
+//        c <- components
+//        if c.id inSetBind ids
+//        p <- getProcessingInfo(ids, cache)
+//      }yield c
+//
+////      db.run()
+//    }
 
     override def selectAll(): List[Component] = ???
 
@@ -145,6 +147,20 @@ trait SlickComponentDaoRepo extends ComponentDaoRepo {
     //      }
     //    }
 
+    def selectByComponentId(componentId: Int,cache:CacheApi,assemblyNameMap:Map[Int,String],processingRecords  :Seq[Tables.ComponentProcessingStateRow]): models.Component={
+     cache.getOrElse(s"component${componentId}"){Await.result(
+       db.run(components.filter(_.id === componentId).result.head), Duration.Inf)
+     } match {
+       case x => {
+         val processingSequenceList = getProcessingInfo(componentId, cache)
+         val schedulingInfo = if (processingRecords.size > 0)
+           convertComponentProcessing(cache, assemblyNameMap, processingRecords.sortWith(_.sequencenum > _.sequencenum))
+         else
+           EmptySchedulingInfo
+         Component(x.id, x.name, processingSequenceList, schedulingInfo , isOnline(x))
+       }
+      }
+    }
     override def selectByComponentId(componentId: Int, cache: CacheApi): Option[Component] = {
       Await.result(db.run(components.filter(_.id === componentId).result.headOption), Duration.Inf) match {
         case Some(x) => {
@@ -159,42 +175,73 @@ trait SlickComponentDaoRepo extends ComponentDaoRepo {
       new OperationProcessingInfo(x.operationid, x.assemblyid, assmeblyName ,x.startTime.get.getTime, x.endTime.get.getTime)
     }
 
-    def createComponentSchedulingInfo(componentId: Int, simulationId: Int, cache: CacheApi , assemblyNameMap:Map[Int,String]): ComponentSchedulingInfo = {
+
+    def getComponentProcessingInfoForSimulation(simulationId: Int, cache: CacheApi ,assemblyNameMap:Map[Int,String])
+    :Future[Seq[Tables.ComponentProcessingStateRow]] ={
+      val q = for{
+        cps <- componentProcessingState
+        if cps.simulationid === simulationId.bind
+      }yield cps
+
+      db.run(q.sortBy(_.componentid).result)
+//        .map(rows => {
+//        val compIds = rows.map(_.componentid).distinct
+//        val componentMap: Map[Int, ComponentSchedulingInfo] = compIds.map(id => (id ->
+//          convertComponentProcessing(cache, assemblyNameMap, rows.filter(_.componentid == id)))).toMap
+//
+//      })
+    }
+
+    def createComponentSchedulingInfo(componentId: Int, simulationId: Int, cache: CacheApi ,
+                                      assemblyNameMap:Map[Int,String]): ComponentSchedulingInfo = {
       //TODO check for sort be descending after some values
       val result = db.run(componentProcessingState.filter(x => (x.componentid === componentId &&
-        x.simulationid === simulationId)).sortBy(_.sequencenum.desc).result).map(y => {
-        val firstRow = if (y.takeRight(1).size == 1) Some(y.take(1)(0)) else None
-        //get each row and form the scheduling information Details
-        var oinfo: List[OperationProcessingInfo] = List()
-
-        val curr = if (firstRow.isDefined && firstRow.get.endTime.isDefined) {
-          oinfo = y.map(x => mapToOperationProcessingInfo(x ,  assemblyNameMap.get(x.assemblyid).getOrElse(""))
-          ).toList
-          None
-        } else if (firstRow.isDefined) {
-          oinfo = y.takeRight(y.length - 1).map(x => mapToOperationProcessingInfo(x ,  assemblyNameMap.get(x.assemblyid).getOrElse(""))
-          ).toList
-
-          val c = firstRow.get
-          Some(new OperationProcessingInfo(c.operationid, c.assemblyid, assemblyNameMap.get(c.assemblyid).getOrElse("") , c.startTime.get.getTime, 0l))
-        } else {
-          None
-        }
-
-        val sequemce = if (firstRow.isDefined) firstRow.get.sequencenum + 1 else 0
-
-        val completedOPerationList = oinfo.map(_.operationId).reverse.map(operation.selectByOperationId(_, cache)).toList
-
-        new ComponentSchedulingInfo(oinfo.reverse, curr, sequemce, completedOPerationList)
-      })
+        x.simulationid === simulationId)).sortBy(_.sequencenum.desc).result).map(y => convertComponentProcessing(cache, assemblyNameMap, y))
       Await.result(result, Duration.Inf)
+    }
+
+    private def convertComponentProcessing(cache: CacheApi, assemblyNameMap: Map[Int, String], y: Seq[_root_.dbgeneratedtable.Tables.ComponentProcessingStateRow]) = {
+
+      val firstRow = if (y.takeRight(1).size == 1) Some(y.take(1)(0)) else None
+      //get each row and form the scheduling information Details
+      var oinfo: List[OperationProcessingInfo] = List()
+
+      val curr = if (firstRow.isDefined && firstRow.get.endTime.isDefined) {
+        //normal processing record as the end time is defined
+        oinfo = y.map(x => mapToOperationProcessingInfo(x, assemblyNameMap.get(x.assemblyid).getOrElse(""))
+        ).toList
+        None
+      } else if (firstRow.isDefined) {
+        //there is current processing record present whose end time is defiend.. Append all the items in previous and
+        // first as current processing
+        oinfo = y.takeRight(y.length - 1).map(x => mapToOperationProcessingInfo(x, assemblyNameMap.get(x.assemblyid).getOrElse(""))
+        ).toList
+
+        val c = firstRow.get
+        Some(new OperationProcessingInfo(c.operationid, c.assemblyid, assemblyNameMap.get(c.assemblyid).getOrElse("")
+          , c.startTime.get.getTime, 0l))
+      } else {
+        //No info is present
+        None
+      }
+
+      val sequemce = if (firstRow.isDefined) firstRow.get.sequencenum + 1 else 0
+
+      val completedOPerationList = oinfo.map(_.operationId).reverse.map(operation.selectByOperationId(_, cache))
+
+      new ComponentSchedulingInfo(oinfo.reverse, curr, sequemce, completedOPerationList)
+
     }
 
     private def isOnline(x:Tables.ComponentRow):Boolean ={
       if (x.last_active.isDefined) x.last_active.get.after(DateTimeUtils.getOldBySecondsTS(6)) else false
     }
 
-    private def getProcessingInfo(cid:Int , cache:CacheApi) = {
+
+//    private def getProcessingInfo(cid:List[Int] , cache:CacheApi) = {
+//          cid.map(x=> (x -> getProcessingInfo(x,cache)))
+//    }
+    private def getProcessingInfo(cid:Int , cache:CacheApi):List[ProcessingSequence] = {
       cache.getOrElse[List[ProcessingSequence]](s"c${cid}") {
         Await.result(db.run(componentsOperationMapping.filter(_.componentId === cid).result), Duration.Inf) match {
           case row => { //:List[ComponentOperationMappingRow]
@@ -217,7 +264,6 @@ trait SlickComponentDaoRepo extends ComponentDaoRepo {
       }
     }
 
-    //---------------------simulation id based database methods
 
     override def selectComponentNameMapBySimulationId(simulationId: Int, cache: CacheApi): Map[Int, String] = {
 

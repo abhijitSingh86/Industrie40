@@ -1,10 +1,12 @@
 package json
 
 import dbgeneratedtable.Tables
-import models.{Component, Simulation}
+import models.{Assembly, Component, Simulation}
 import play.api.libs.json.{JsArray, JsValue, Json}
 import factory.JsonImplicitFactory._
 import utils.ComponentUtils
+
+import scala.collection.mutable
 /**
   * Created by billa on 31.05.17.
   */
@@ -39,6 +41,35 @@ sealed trait Response{
 //  }
 //}
 
+case class ProcessingStatus(cmps:Map[Int,Component] , asms:Map[Int,(Assembly,Seq[Tables.ComponentProcessingStateRow])]) extends Response{
+  def generate() = {
+    val componentNameMap = cmps.values.map(x=>(x.id->x.name)).toMap
+    Json.obj("components" -> cmps.values.map(ComponentWithSchedulingInfo(_).generate()),
+    "assemblies"-> asms.values.map(x=>AssemblySchedulingInfo(x._1,componentNameMap,x._2).generate()))
+  }
+}
+
+case class AssemblySchedulingInfo(assembly:Assembly,componentNameMap:Map[Int,String],list:Seq[Tables.ComponentProcessingStateRow]) extends Response{
+  override def generate(): JsValue = {
+    Json.obj("id"->assembly.id,"operations"->
+      assembly.totalOperations.map(f => {
+        var past:mutable.ListBuffer[(Int,String)] = mutable.ListBuffer()
+        var current:Option[(Int,String)]=None
+        //get current and past processing for the operation details
+        list.filter(_.operationid == f.operation.id).map(o => if(o.endTime.isDefined){
+          past = past :+ (o.componentid,componentNameMap.get(o.componentid).getOrElse(""))
+        }else{
+          current = Some((o.componentid,componentNameMap.get(o.componentid).getOrElse("")))
+        })
+        //make json object and append
+        Json.obj("op_id" -> f.operation.id , "currentOpDetails" -> Json.obj(
+          "past" -> past.map(temp => Json.obj("cmp_id"->temp._1,"cmp_name"->temp._2)),
+          "current" -> Json.obj("cmp_id"->current.getOrElse((0,""))._1,"cmp_name"->current.getOrElse((0,""))._2)
+        ))
+      })
+    )
+  }
+}
 case class ComponentWithSchedulingInfo(x:Component) extends Response{
 
   def generate()= {
