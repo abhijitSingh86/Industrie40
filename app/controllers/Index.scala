@@ -42,7 +42,7 @@ class Index @Inject()(ws:WSClient,db:DbModule)  extends Controller{
     //get Assembly processing record
     val assembly = db.getAssemblyMappedToSimulationId(assemblyId = asmId,simulationId = simId)
     val componentNameMap = db.getComponentNameMapBySimulationId(simId)
-    def makeAssemblyResponse(list:Seq[Tables.ComponentProcessingStateRow],map:Map[Int,String]) = {
+    def makeAssemblyResponse(list:Seq[Tables.ComponentProcessingStateRow],componentNameMap:Map[Int,String]) = {
 
       Json.obj("id"->asmId,"operations"->
       assembly.get.totalOperations.map(f => {
@@ -50,9 +50,9 @@ class Index @Inject()(ws:WSClient,db:DbModule)  extends Controller{
         var current:Option[(Int,String)]=None
         //get current and past processing for the operation details
         list.filter(_.operationid == f.operation.id).map(o => if(o.endTime.isDefined){
-           past = past :+ (o.componentid,map.get(o.componentid).getOrElse(""))
+           past = past :+ (o.componentid,componentNameMap.get(o.componentid).getOrElse(""))
         }else{
-          current = Some((o.componentid,map.get(o.componentid).getOrElse("")))
+          current = Some((o.componentid,componentNameMap.get(o.componentid).getOrElse("")))
         })
         //make json object and append
         Json.obj("op_id" -> f.operation.id , "currentOpDetails" -> Json.obj(

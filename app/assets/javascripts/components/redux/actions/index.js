@@ -9,6 +9,27 @@ export const CHANGE_COMPLETION_COUNT='CHANGE_COMPLETION_COUNT';
 export const GET_ASSEMBLY_RUNNING_STATUS = 'GET_ASSEMBLY_RUNNING_STATUS'
 
 export const GET_COMPONENT_RUNNING_STATUS = 'GET_COMPONENT_RUNNING_STATUS';
+export const GET_SIMULATION_RUNNING_STATUS = 'GET_SIMULATION_RUNNING_STATUS';
+
+
+export function getSimulationRunningStatus(simulationId){
+    return function(dispatch){
+        axios.post('/simulation/' + simulationId+ '/runningstatus').then(function (response) {
+
+            var action ={
+                type:GET_SIMULATION_RUNNING_STATUS,
+                payload:response.data
+            }
+            dispatch(action);
+        })
+
+        // .catch(function (error) {
+        // _this.setState({
+        //     error: "Error while Starting Simulation. \n " + error
+        // });
+        // })
+    }
+}
 
 export function getComponentRunningStatus(componentId,simulationId){
     return function(dispatch){

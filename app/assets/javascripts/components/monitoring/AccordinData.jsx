@@ -11,9 +11,9 @@ class AccordinData extends React.Component {
     constructor(props) {
         super(props);
         this.colFun = this.colFun.bind(this)
-        this.updateComponentState = this.updateComponentState.bind(this);
-        this.startTimer = this.startTimer.bind(this);
-        this.stopTimer = this.stopTimer.bind(this);
+        // this.updateComponentState = this.updateComponentState.bind(this);
+        // this.startTimer = this.startTimer.bind(this);
+        // this.stopTimer = this.stopTimer.bind(this);
         this.getComponentOperationColor = this.getComponentOperationColor.bind(this);
 
         var updatedState = this.getComponentUpdatedStateIfExist(props)
@@ -36,31 +36,31 @@ class AccordinData extends React.Component {
         return temp
     }
 
-    updateComponentState() {
-        if (this.props.activeKey === this.props.index && this.state.completed === false) {
-            this.props.actions.getComponentRunningStatus(this.props.data.id, this.props.simulationId);
-        }
-    }
-
-    startTimer() {
-        clearInterval(this.timer);
-        this.updateComponentState();
-        this.timer = setInterval(this.updateComponentState.bind(this), 7000)
-    }
-
-    stopTimer() {
-        clearInterval(this.timer)
-    }
-
-    componentDidMount() {
-        console.log("starting"+this.props.completedComponents.length);
-        this.startTimer()
-    }
-
-    componentWillUnmount() {
-        console.log("STopping "+this.props.completedComponents.length);
-        this.stopTimer()
-    }
+    // updateComponentState() {
+    //     if (this.props.activeKey === this.props.index && this.state.completed === false) {
+    //         this.props.actions.getComponentRunningStatus(this.props.data.id, this.props.simulationId);
+    //     }
+    // }
+    //
+    // startTimer() {
+    //     clearInterval(this.timer);
+    //     this.updateComponentState();
+    //     this.timer = setInterval(this.updateComponentState.bind(this), 7000)
+    // }
+    //
+    // stopTimer() {
+    //     clearInterval(this.timer)
+    // }
+    //
+    // componentDidMount() {
+    //     console.log("starting"+this.props.completedComponents.length);
+    //     this.startTimer()
+    // }
+    //
+    // componentWillUnmount() {
+    //     console.log("STopping "+this.props.completedComponents.length);
+    //     this.stopTimer()
+    // }
 
 
     colFun(arr) {
@@ -152,7 +152,7 @@ class AccordinData extends React.Component {
             var op = "In Progress "
             if (this.state.component.schedulinginfo.currentOperation != null) {
                 var curr = this.state.component.schedulinginfo.currentOperation;
-                op = op + ": Current Operation" + this.getOperationLabel(curr.operationId)  + " ON Assembly "+curr.assemblyName;
+                op = op + ": Current Operation " + this.getOperationLabel(curr.operationId)  + " ON Assembly "+curr.assemblyName;
             }
             return <td>{op}</td>;
         }

@@ -61,6 +61,11 @@ trait DbModule {
   def getAssemblyRunningStatus(assemblyId:Int,simulationId:Int):Future[Seq[Tables.ComponentProcessingStateRow]]
 
   def getComponentNameMapBySimulationId(simulationId:Int):Map[Int,String]
+
+  def getComponentProcessingInfoForSimulation(simulationId: Int)
+  :Future[Seq[Tables.ComponentProcessingStateRow]]
+
+  def getComponentById(componentId:Int ,simulationId:Int, processingRecords:Seq[Tables.ComponentProcessingStateRow]):Component
 }
 
 class SlickModuleImplementation(cache:CacheApi) extends DbModule {
@@ -71,6 +76,15 @@ class SlickModuleImplementation(cache:CacheApi) extends DbModule {
     with OperationDaoRepo
     with DBComponent =>
 
+  def getComponentById(componentId:Int ,simulationId:Int, processingRecords:Seq[Tables.ComponentProcessingStateRow]):Component={
+    val assemblyNameMap = assembly.selectAssemblyNameMapBySimulationId(simulationId,cache)
+    component.selectByComponentId(componentId,cache,assemblyNameMap,processingRecords)
+  }
+  def getComponentProcessingInfoForSimulation(simulationId: Int)
+  :Future[Seq[Tables.ComponentProcessingStateRow]] ={
+    val assemblyNameMap = assembly.selectAssemblyNameMapBySimulationId(simulationId,cache)
+    component.getComponentProcessingInfoForSimulation(simulationId, cache, assemblyNameMap)
+  }
 
   def getComponentNameMapBySimulationId(simulationId:Int):Map[Int,String] ={
     component.selectComponentNameMapBySimulationId(simulationId,cache)
