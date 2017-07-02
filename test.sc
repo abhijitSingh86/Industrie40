@@ -11,7 +11,15 @@ import utils.DateTimeUtils
 //val li:mutable.ListBuffer[Int] = mutable.ListBuffer(1,2)
 //li :+ 3
 
+val m = List((1->List(1,2,3)) , (2->List(1,2,5)) , (3->List(4,5,6))).toMap
+val m1 = List((1->List(2)) , (2->List(1))).toMap
+
+m1++ m
+m ++ m1
+
+
 val l = List(1,2,4,2,3,4,5,6)
+l.filterNot(_ == 1)
 l.distinct
 l.sortWith(_ > _)
 

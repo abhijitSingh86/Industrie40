@@ -95,8 +95,29 @@ class AccordinData extends React.Component {
                 var secondsSpent = (etd - std) / 1000
                 // console.log(secondsSpent);
                 rows.push(<tr>
-                    <td>{this.getOperationLabel(past[i].operationId)} on Assembly {past[i].assemblyName}</td>
-                    <td>{secondsSpent}</td>
+                    <td colSpan={2}>
+                        <table>
+                            <tbody>
+                            <tr>
+                                <td>
+                                    {this.getOperationLabel(past[i].operationId)} on Assembly
+                                </td>
+                                <td>
+                                    {past[i].assemblyName}
+                                </td>
+                                <td>
+                                    {std.toLocaleString()}
+                                </td>
+                                <td>
+                                    {etd.toLocaleString()}
+                                </td>
+                                <td>
+                                    {secondsSpent}
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                  </td>
                 </tr>)
             }
             // console.log(rows);

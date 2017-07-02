@@ -161,7 +161,8 @@ trait Tables {
     *  @param startTime Database column start_time SqlType(DATETIME), Default(None)
     *  @param endTime Database column end_time SqlType(DATETIME), Default(None)
     *  @param assemblyid Database column assemblyId SqlType(INT) */
-  case class ComponentProcessingStateRow(componentid: Int, simulationid: Int, sequencenum: Int, operationid: Int, startTime: Option[java.sql.Timestamp] = None, endTime: Option[java.sql.Timestamp] = None, assemblyid: Int)
+  case class ComponentProcessingStateRow(componentid: Int, simulationid: Int, sequencenum: Int, operationid: Int,
+                                         startTime: Option[java.sql.Timestamp] = None, endTime: Option[java.sql.Timestamp] = None, assemblyid: Int)
   /** GetResult implicit for fetching ComponentProcessingStateRow objects using plain SQL queries */
   implicit def GetResultComponentProcessingStateRow(implicit e0: GR[Int], e1: GR[Option[java.sql.Timestamp]]): GR[ComponentProcessingStateRow] = GR{
     prs => import prs._

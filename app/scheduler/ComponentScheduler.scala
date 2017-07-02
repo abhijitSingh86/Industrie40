@@ -1,5 +1,6 @@
 package scheduler
 import models.{Assembly, Component, Operation}
+import play.api.Logger
 
 import scala.annotation.tailrec
 import scala.collection.immutable.{HashMap, ListMap}
@@ -10,6 +11,8 @@ import scala.collection.mutable
   */
 class ComponentScheduler(scheduleDbHandler:ScheduleDbHandler) extends Scheduler {
 
+
+  private val logger = Logger("access")
   /**
     * Function will take the component and assemblies and schedule them with Interval timing greedy algorithm.
     * Return will be the list of components which are not scheduled by the algorithm this is possible in case of
@@ -22,9 +25,12 @@ class ComponentScheduler(scheduleDbHandler:ScheduleDbHandler) extends Scheduler 
   override def scheduleComponents(components: List[Component], assemblies: List[Assembly]): List[Int] = {
     //first get the available resource map
     var availableResourceMap = getAvailableResourceMap(assemblies)
-
     val requiredOperationMap = ListMap(getRequiredOperationMap(components).toSeq.sortWith(_._2.size < _._2.size):_*)
-//    val list = List[Option[Component]](None)
+    logger.info("*************************************************")
+    logger.info(availableResourceMap.mkString)
+    logger.info(requiredOperationMap.mkString)
+    logger.info("*************************************************")
+    //    val list = List[Option[Component]](None)
     val scheduledComponent = mutable.ArrayBuffer[Int]()
      requiredOperationMap.map {
       case (operation, componentList) => {
@@ -40,8 +46,9 @@ class ComponentScheduler(scheduleDbHandler:ScheduleDbHandler) extends Scheduler 
                // assembly.allocateOperation(o)
                //TODO
                 // component.scheduleCurrentOperation(operation, assembly)
-                val updatedList:List[Assembly] = availableResourceMap.get(operation).get.drop(1)
-                availableResourceMap += (operation -> updatedList)
+//                val updatedList:List[Assembly] = availableResourceMap.get(operation).get.drop(1)
+//                availableResourceMap += (operation -> updatedList)
+                availableResourceMap = removeAssemblyFromAvailabelResourceMap(availableResourceMap,assembly)
                 scheduledComponent += component.id
               }
               case _ =>{
@@ -58,6 +65,16 @@ class ComponentScheduler(scheduleDbHandler:ScheduleDbHandler) extends Scheduler 
     scheduledComponent.toList
   }
 
+  def removeAssemblyFromAvailabelResourceMap(availableResourceMap: Map[Operation, List[Assembly]], assembly: Assembly)
+  : Map[models.Operation, scala.List[models.Assembly]] = {
+
+    val availableOperationMap = new mutable.HashMap[Operation, List[Assembly]]()
+    assembly.totalOperations.map(x=> if(availableResourceMap.get(x.operation).isDefined){
+      val updatedAssemblyList = availableResourceMap.get(x.operation).get.filterNot(_.id == assembly.id)
+      availableOperationMap += (x.operation -> updatedAssemblyList)
+    })
+    availableResourceMap ++ availableOperationMap.toMap
+  }
 
   private def getRequiredOperationMap(components: List[Component]):Map[Operation, List[Component]] = {
 
