@@ -15,7 +15,7 @@ class StartPage extends React.Component {
         this.startagain_simulation = this.startagain_simulation.bind(this);
         this.handleSelect = this.handleSelect.bind(this);
         this.createSimulationIdDropDown = this.createSimulationIdDropDown.bind(this);
-
+        this.view_simulation = this.view_simulation.bind(this);
     }
 
     createSimulationIdDropDown(){
@@ -61,6 +61,28 @@ class StartPage extends React.Component {
                     response: "Error while clearing previous simulation data. \n " + error
                 });
             })
+        }
+    }
+
+    view_simulation(){
+        if(this.state.selectedSimulationId == undefined){
+            this.setState({
+                selectedSimulationName:"Please Select a simulation First."
+            })
+        }else {
+            var key = this.state.selectedSimulationId;
+            // var _this = this;
+            // axios.post('/simualtion/'+key+'/clear').then(function (response) {
+            //     _this.setState({
+            //         response: "Previous run data cleared successfully."
+            //     });
+                this.props.changeHandler(this.state.selectedSimulationId)
+
+            // }).catch(function (error) {
+            //     _this.setState({
+            //         response: "Error while clearing previous simulation data. \n " + error
+            //     });
+            // })
         }
     }
 
@@ -122,6 +144,9 @@ class StartPage extends React.Component {
                             </DropdownButton>{this.state.selectedSimulationName}
                         </td>
                         <td className="pull-right">
+                            <Button  bsStyle="primary" onClick={this.view_simulation}>
+                               View
+                            </Button>
                             <Button  bsStyle="primary" onClick={this.startagain_simulation}>
                                 Re Run
                             </Button>

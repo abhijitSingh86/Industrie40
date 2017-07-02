@@ -4,15 +4,35 @@ import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 import * as Actions from '../redux/actions';
 
+const TableSkelton = (body)=>{
+    return (
+        <table>
+            <tbody>
+            {body}
+            </tbody>
+        </table>
+    )
+}
 
-// class OperationRow extends React.Component{
-//     constructor(props){
-//         super(props);
-//
-//     }
-//
-//
-// }
+const tabularData = (row , name)=>{
+    return  (
+        <tr>
+            <td>
+                {row.componentid}
+            </td>
+            <td>
+                {name}
+            </td>
+            <td>
+                {new Date(row.startTime).toLocaleString()}
+            </td>
+            <td>
+                {new Date(row.endTime).toLocaleString()}
+            </td>
+
+        </tr>
+    );
+}
 
 const OperationRow = (operation,assemblyObj,assemblyid )=>{
 
@@ -23,8 +43,11 @@ const OperationRow = (operation,assemblyObj,assemblyid )=>{
     if(assemblyObj.length == 1){
         var opObj = assemblyObj[0].operations.filter(x=>x.op_id == operation.id)[0];
 
-        data =opObj.currentOpDetails.past.length>0 ?  opObj.currentOpDetails.past.map(x=> (<div>{x.cmp_id} : {x.cmp_name}</div>)) : data;
-        if(opObj.currentOpDetails.current.cmp_id != 0){
+        data =opObj.currentOpDetails.past.length>0 ? TableSkelton(
+            opObj.currentOpDetails.past.map(x=> tabularData(x.row, x.cmp_name)) ): data;
+
+
+        if(opObj.currentOpDetails.current.isPresent === true){
             header = header+ ` CurrentComponent : ${opObj.currentOpDetails.current.cmp_name}`;
         }
 

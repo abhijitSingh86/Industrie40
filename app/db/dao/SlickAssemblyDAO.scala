@@ -134,10 +134,10 @@ trait SlickAssemblyDaoRepo extends AssemblyDaoRepo {
       } match {
         case Some(x) => {
           //transform into assembly object
-          val operations =      cache.getOrElse[Seq[AssemblyOperation]](s"aom${assemblyId}") {
-            Await.result(db.run(assemblyOperationMapping.filter(_.assemblyId === x.id).result), Duration.Inf).map(y =>
+
+//            cache.getOrElse[Seq[AssemblyOperation]](s"aom${assemblyId}") {
+            val operations =Await.result(db.run(assemblyOperationMapping.filter(_.assemblyId === x.id).result), Duration.Inf).map(y =>
               AssemblyOperation(operation.selectByOperationId(y.operationId, cache), y.operationTime, AssemblyOperationStatus(y.status)))
-          }
 
           val isOnline = if (x.lastActive.isDefined) x.lastActive.get.after(DateTimeUtils.getOldBySecondsTS(6)) else false
 

@@ -1,5 +1,6 @@
 package factory
 
+import dbgeneratedtable.Tables
 import enums.PriorityEnum
 import models._
 import play.api.libs.json._
@@ -15,6 +16,13 @@ object JsonImplicitFactory {
       (JsPath \ "label").format[String]
     ) (models.Operation.apply _ , unlift(models.Operation.unapply))
 
+
+
+//  implicit val componentProcessingRowFormat:Format[Tables.ComponentProcessingStateRow] =
+//    (
+//      (JsPath  \ "componentid").format[Int] and
+//        (__ \ "startTime").for
+//    )
 
   implicit val operationProcessingInfoFormat:Format[OperationProcessingInfo]= Json.format[OperationProcessingInfo]
 

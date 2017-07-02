@@ -12,7 +12,7 @@ import scheduler.{ComponentQueue, Scheduler}
 class ScheduleCommand(dbModule : DbModule,scheduler:Scheduler,proxy: NetworkProxy) extends Command{
 
 
-  val logger = Logger(this.getClass())
+  val logger = Logger("access")
   override def execute(): Unit = {
     logger.info("Schedule command execute command started")
     //retrieve all the assemblies to schedule on
@@ -24,12 +24,15 @@ class ScheduleCommand(dbModule : DbModule,scheduler:Scheduler,proxy: NetworkProx
 
       val assemblies = dbModule.getAllAssembliesForSimulation(ComponentQueue.getSimulationId())
       logger.debug("Retrieved Assemblies" + assemblies.mkString(","))
-
+      val filteredBusyAssemblies = assemblies.filterNot(x=>{
+        x.allocatedOperations.size > 0
+      })
+      logger.debug("Filtered  Assemblies  =" + filteredBusyAssemblies.mkString(","))
 
       val alreadyScheduledList = components.filter(_.getCurrentOperation().isDefined).map(_.id)
       //call algorithm for scheduling
       val scheduledComponentIds = scheduler.scheduleComponents(components.filterNot(x=> alreadyScheduledList.contains(x.id))
-        , assemblies)
+        , filteredBusyAssemblies)
       //get scheduled component and send them to network proxy for information sending
 
       val finalListToSendSchedulingInfo = alreadyScheduledList ::: scheduledComponentIds
