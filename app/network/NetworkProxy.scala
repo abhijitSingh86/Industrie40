@@ -3,6 +3,7 @@ package network
 import models.{Assembly, Operation}
 import play.api.Logger
 import play.api.libs.ws._
+import play.api.mvc.Results
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
@@ -14,6 +15,7 @@ class NetworkProxy(ws:WSClient) {
 
   val logger = Logger(this.getClass())
   val componentAssemblyHook = "/assignAssembly"
+  val componentStartSimulationHook = "/startScheduling"
 
 
   def sendAssemblyDetails(url: String, assembly: Assembly, assemblyUrls: Map[Int, String],operationId:Int) = {
@@ -32,6 +34,20 @@ class NetworkProxy(ws:WSClient) {
       logger.info(s"Posted Url ${url}${componentAssemblyHook}")
       logger.info(s"Posted Data ${data.toString()}")
       val req = Await.result(ws.url(url+componentAssemblyHook).post(data), Duration.Inf)
+      status = if(req.status !=200)status+1 else req.status
+    }while (status != 200 && status !=5)
+  }
+
+  def sendSimulationStartDetails(url: String) = {
+    //send http request using assemblies details
+    val host = if(url.split(":").size >2) url.split(":")(1).substring(2) else ""
+    val port = if(url.split(":").size >2) url.split(":")(2).toInt else 0
+
+
+    var status=0
+    do {
+      logger.info(s"Posted Url ${url}${componentStartSimulationHook}")
+      val req = Await.result(ws.url(url+componentStartSimulationHook).post(Results.EmptyContent()), Duration.Inf)
       status = if(req.status !=200)status+1 else req.status
     }while (status != 200 && status !=5)
   }

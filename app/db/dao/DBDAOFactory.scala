@@ -90,6 +90,8 @@ trait ComponentDaoRepo {
 
     def updateComponentProcessingInfo(simId:Int,cmpId:Int,assemblyId:Int,sequence:Int,opId:Int):Boolean
 
+    def updateComponentProcessingInfoForFailure(simId:Int,cmpId:Int,assemblyId:Int,sequence:Int,opId:Int):Boolean
+
     def componentHeartBeatUpdateAsync(componentId:Int,simulationId:Int):Future[Boolean]
 
     def clearComponentProcessingDetailsAsync(simulationId:Int):Future[Boolean]

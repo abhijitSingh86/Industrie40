@@ -11,6 +11,7 @@ GET           /simulationStatus/:id                 controllers.Index.simulation
 
 POST          /initComponent                        controllers.ComponentController.initComponentRequest
 POST          /componentComplete                    controllers.ComponentController.updateComponentCompletionTime
+POST          /componentFailure                     controllers.ComponentController.updateComponentOperationFailure
 GET           /componentStatus/:simId/:cmpId        controllers.ComponentController.componentRunningStatus(cmpId:Int,simId:Int)
 POST          /startComponentScheduling             controllers.ComponentController.startComponentScheduling
 POST          /componentHeartBeat                   controllers.ComponentController.componentHeartBeat

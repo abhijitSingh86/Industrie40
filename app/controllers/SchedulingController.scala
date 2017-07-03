@@ -2,6 +2,7 @@ package controllers
 
 import db.DbModule
 import json.DefaultRequestFormat
+import network.NetworkProxy
 import play.api.Logger
 import play.api.mvc.{Action, Controller}
 import scheduler.{ComponentQueue, SchedulerThread}
@@ -11,7 +12,7 @@ import scala.util.Try
 /**
   * Created by billa on 25.04.17.
   */
-class SchedulingController(schedulingThread:SchedulerThread,db:DbModule)  extends Controller{
+class SchedulingController(schedulingThread:SchedulerThread,db:DbModule , networkProxy:NetworkProxy)  extends Controller{
 
 
   def start(id:Int)=Action{ implicit request =>
@@ -20,11 +21,18 @@ class SchedulingController(schedulingThread:SchedulerThread,db:DbModule)  extend
     simulationId.isSuccess match{
       case true =>
         ComponentQueue.updateSimulationId(simulationId.get)
+        sendStartMsgToAllComponent(simulationId.get)
         schedulingThread.startExecution()
         Logger.info("Schedule thread created")
         Ok(DefaultRequestFormat.getEmptySuccessResponse())
       case _=> Ok(DefaultRequestFormat.getValidationErrorResponse(List(("error","simulation Id is not found in Json"))) )
     }
+  }
+
+  def sendStartMsgToAllComponent(simulationId:Int)={
+    db.getAllComponentUrlBySimulationId(simulationId).map(x=>{
+      networkProxy.sendSimulationStartDetails(x._2)
+    })
   }
 
 

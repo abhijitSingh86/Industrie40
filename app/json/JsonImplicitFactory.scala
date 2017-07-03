@@ -24,6 +24,8 @@ object JsonImplicitFactory {
 //        (__ \ "startTime").for
 //    )
 
+//  implicit val componentProcessingStatus:Format[models.ComponentProcessingStatus] = Json.format[ComponentProcessingStatus]
+
   implicit val operationProcessingInfoFormat:Format[OperationProcessingInfo]= Json.format[OperationProcessingInfo]
 
 //  implicit val schedulingInfoFormat:Format[ComponentSchedulingInfo]=

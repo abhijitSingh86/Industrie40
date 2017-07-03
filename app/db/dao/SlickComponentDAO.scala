@@ -44,11 +44,21 @@ trait SlickComponentDaoRepo extends ComponentDaoRepo {
       }
     }
 
+    def updateComponentProcessingInfoForFailure(simId:Int,cmpId:Int,assemblyId:Int,sequence:Int,opId:Int):Boolean = {
+      val res = for {c <- componentProcessingState if (c.assemblyid === assemblyId && c.componentid === cmpId &&
+        c.operationid === opId && c.simulationid === simId && c.sequencenum === sequence)} yield (c.endTime , c.status)
+
+      Await.result(db.run(res.update((Some(DateTimeUtils.getCurrentTimeStamp()) , FailedProcessingStatus.text))), Duration.Inf) match {
+        case 1 => true
+        case _ => false
+      }
+    }
+
     def updateComponentProcessingInfo(simId: Int, cmpId: Int, assemblyId: Int, sequence: Int, opId: Int): Boolean = {
       val res = for {c <- componentProcessingState if (c.assemblyid === assemblyId && c.componentid === cmpId &&
-        c.operationid === opId && c.simulationid === simId && c.sequencenum === sequence)} yield c.endTime
+        c.operationid === opId && c.simulationid === simId && c.sequencenum === sequence)} yield (c.endTime , c.status)
 
-      Await.result(db.run(res.update(Some(DateTimeUtils.getCurrentTimeStamp()))), Duration.Inf) match {
+      Await.result(db.run(res.update((Some(DateTimeUtils.getCurrentTimeStamp()) , FinishedProcessingStatus.text))), Duration.Inf) match {
         case 1 => true
         case _ => false
       }
@@ -56,7 +66,7 @@ trait SlickComponentDaoRepo extends ComponentDaoRepo {
 
     def addComponentProcessingInfo(simId: Int, cmpId: Int, assemblyId: Int, sequence: Int, opId: Int): Boolean = {
       val result = db.run(componentProcessingState += new ComponentProcessingStateRow(cmpId, simId, sequence, opId,
-        Some(DateTimeUtils.getCurrentTimeStamp()), None, assemblyId))
+        Some(DateTimeUtils.getCurrentTimeStamp()), None, assemblyId , InProgressProcessingStatus.text))
 
       Await.result(result, Duration.Inf) match {
         case 1 => true
@@ -172,7 +182,7 @@ trait SlickComponentDaoRepo extends ComponentDaoRepo {
     }
 
     def mapToOperationProcessingInfo(x: Tables.ComponentProcessingStateRow,assmeblyName:String) = {
-      new OperationProcessingInfo(x.operationid, x.assemblyid, assmeblyName ,x.startTime.get.getTime, x.endTime.get.getTime)
+      new OperationProcessingInfo(x.operationid, x.assemblyid, assmeblyName ,x.startTime.get.getTime, x.endTime.get.getTime , ComponentProcessingStatus(x.status).text)
     }
 
 
@@ -219,7 +229,7 @@ trait SlickComponentDaoRepo extends ComponentDaoRepo {
 
         val c = firstRow.get
         Some(new OperationProcessingInfo(c.operationid, c.assemblyid, assemblyNameMap.get(c.assemblyid).getOrElse("")
-          , c.startTime.get.getTime, 0l))
+          , c.startTime.get.getTime, 0l , ComponentProcessingStatus(c.status).text))
       } else {
         //No info is present
         None

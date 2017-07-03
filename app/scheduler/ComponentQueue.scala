@@ -11,7 +11,7 @@ import scala.collection.mutable
 object ComponentQueue {
 
   val logger = Logger(this.getClass())
-  val requestQueue:mutable.Queue[Component] = new mutable.Queue[Component]()
+  val requestQueue:mutable.LinkedHashSet[Component] = new mutable.LinkedHashSet[Component]()
   private var simulationId =0
 
   def updateSimulationId(id:Int): Unit ={
@@ -22,7 +22,9 @@ object ComponentQueue {
   def push(component:Component): Unit ={
     logger.info("push invoked size"+requestQueue.size)
     requestQueue.synchronized{
-      requestQueue+=component
+
+      requestQueue +=  component
+
     }
     logger.info("push finished size"+requestQueue.size)
   }
@@ -31,7 +33,7 @@ object ComponentQueue {
     requestQueue.synchronized {
       requestQueue.size match {
         case x if x > 0 =>
-          Some(requestQueue.dequeue())
+          requestQueue.headOption
         case _ => None
       }
     }
@@ -43,7 +45,9 @@ object ComponentQueue {
       requestQueue.size match {
         case x if x > 0 =>
           logger.info("popAll dequeuing size"+requestQueue.size)
-          requestQueue.dequeueAll((_) => true).toList
+          val comps = requestQueue.filter((_) => true).toList
+          requestQueue.clear()
+          comps
         case _ => {
           logger.info("found empty list")
           List[Component]()
