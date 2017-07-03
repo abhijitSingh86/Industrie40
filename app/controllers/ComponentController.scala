@@ -22,7 +22,7 @@ class ComponentController(db:DbModule) extends Controller {
     val assemblyId = (json.get \ "assemblyId").get.as[Int]
     val operationId = (json.get \ "operationId").get.as[Int]
     val sequence= (json.get \ "sequence").get.as[Int]
-    db.updateComponentProcessingInfoInFailureScenarion(simulationId,componentId,assemblyId,sequence , operationId) match {
+    db.updateComponentProcessingInfo(simulationId,componentId,assemblyId,sequence , operationId) match {
       case true => Ok(DefaultRequestFormat.getEmptySuccessResponse())
       case false => Ok(DefaultRequestFormat.getValidationErrorResponse(
         List(("ComponentProcessingInfo","Component Processing record not found"))))

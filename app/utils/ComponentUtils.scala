@@ -6,7 +6,7 @@ object ComponentUtils {
 
   def isCompleted(x: Component): Boolean = {
     if (x.componentSchedulingInfo.pastProcessings.size > 0) {
-      val seq = x.componentSchedulingInfo.pastProcessings.filter(x=>ComponentProcessingStatus(x.status) == FinishedProcessingStatus)
+      val seq = x.componentSchedulingInfo.pastProcessings.filter(x=>x.status == FinishedProcessingStatus.text)
 
       x.processingSequences.map(y => {
         val sub = y.seq.slice(0, seq.size)
