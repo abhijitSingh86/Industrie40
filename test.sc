@@ -6,22 +6,38 @@ import java.util.concurrent.TimeUnit
 import sun.util.resources.LocaleData
 import utils.DateTimeUtils
 
+import scala.collection.mutable
+
 //import scala.collection.mutable
 //
 //val li:mutable.ListBuffer[Int] = mutable.ListBuffer(1,2)
 //li :+ 3
 
-val m = List((1->List(1,2,3)) , (2->List(1,2,5)) , (3->List(4,5,6))).toMap
-val m1 = List((1->List(2)) , (2->List(1))).toMap
+val q = new mutable.Queue[Int]
+q += 1
+q +=2
 
-m1++ m
-m ++ m1
+q.filterNot(_ ==2)
+val l =new  mutable.LinkedHashSet[Int]()
+l +=1
+l +=2
+l
+l+=2
+l
 
 
-val l = List(1,2,4,2,3,4,5,6)
-l.filterNot(_ == 1)
-l.distinct
-l.sortWith(_ > _)
+//
+//val m = List((1->List(1,2,3)) , (2->List(1,2,5)) , (3->List(4,5,6))).toMap
+//val m1 = List((1->List(2)) , (2->List(1))).toMap
+//
+//m1++ m
+//m ++ m1
+//
+//
+//val l = List(1,2,4,2,3,4,5,6)
+//l.filterNot(_ == 1)
+//l.distinct
+//l.sortWith(_ > _)
 
 
 //val st:Long = 1495580454000l

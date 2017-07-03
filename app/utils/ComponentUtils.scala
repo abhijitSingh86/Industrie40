@@ -1,12 +1,12 @@
 package utils
 
-import models.Component
+import models.{Component, ComponentProcessingStatus, FinishedProcessingStatus}
 
 object ComponentUtils {
 
   def isCompleted(x: Component): Boolean = {
     if (x.componentSchedulingInfo.pastProcessings.size > 0) {
-      val seq = x.componentSchedulingInfo.pastProcessings.filter(_.status == "Pass")
+      val seq = x.componentSchedulingInfo.pastProcessings.filter(x=>ComponentProcessingStatus(x.status) == FinishedProcessingStatus)
 
       x.processingSequences.map(y => {
         val sub = y.seq.slice(0, seq.size)

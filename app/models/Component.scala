@@ -9,6 +9,34 @@ import scala.collection.mutable
 /**
   * Created by billa on 2016-12-15.
   */
+
+sealed trait ComponentProcessingStatus{
+  def text:String
+}
+
+case object FinishedProcessingStatus extends ComponentProcessingStatus{
+  def text = "finished"
+}
+case object InProgressProcessingStatus extends ComponentProcessingStatus{
+  def text = "InProgress"
+}
+
+case object FailedProcessingStatus extends ComponentProcessingStatus{
+  def text = "failed"
+}
+
+
+object ComponentProcessingStatus{
+  def apply(text:String) ={
+    text match {
+      case "finished" => FinishedProcessingStatus
+      case "InProgress" => InProgressProcessingStatus
+      case "failed" => FailedProcessingStatus
+    }
+  }
+
+  def unapply(arg: ComponentProcessingStatus): String = arg.text
+}
 case class Component(id: Int, name: String, processingSequences: List[ProcessingSequence] ,
                       componentSchedulingInfo:SchedulingInfo,isOnline:Boolean =false) {
 

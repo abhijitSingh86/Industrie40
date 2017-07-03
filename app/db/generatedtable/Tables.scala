@@ -162,17 +162,18 @@ trait Tables {
     *  @param endTime Database column end_time SqlType(DATETIME), Default(None)
     *  @param assemblyid Database column assemblyId SqlType(INT) */
   case class ComponentProcessingStateRow(componentid: Int, simulationid: Int, sequencenum: Int, operationid: Int,
-                                         startTime: Option[java.sql.Timestamp] = None, endTime: Option[java.sql.Timestamp] = None, assemblyid: Int)
+                                         startTime: Option[java.sql.Timestamp] = None, endTime: Option[java.sql.Timestamp] = None,
+                                         assemblyid: Int , status:String)
   /** GetResult implicit for fetching ComponentProcessingStateRow objects using plain SQL queries */
   implicit def GetResultComponentProcessingStateRow(implicit e0: GR[Int], e1: GR[Option[java.sql.Timestamp]]): GR[ComponentProcessingStateRow] = GR{
     prs => import prs._
-      ComponentProcessingStateRow.tupled((<<[Int], <<[Int], <<[Int], <<[Int], <<?[java.sql.Timestamp], <<?[java.sql.Timestamp], <<[Int]))
+      ComponentProcessingStateRow.tupled((<<[Int], <<[Int], <<[Int], <<[Int], <<?[java.sql.Timestamp], <<?[java.sql.Timestamp], <<[Int] ,<<[String]))
   }
   /** Table description of table component_processing_state. Objects of this class serve as prototypes for rows in queries. */
   class ComponentProcessingState(_tableTag: Tag) extends Table[ComponentProcessingStateRow](_tableTag, "component_processing_state") {
-    def * = (componentid, simulationid, sequencenum, operationid, startTime, endTime, assemblyid) <> (ComponentProcessingStateRow.tupled, ComponentProcessingStateRow.unapply)
+    def * = (componentid, simulationid, sequencenum, operationid, startTime, endTime, assemblyid,status) <> (ComponentProcessingStateRow.tupled, ComponentProcessingStateRow.unapply)
     /** Maps whole row to an option. Useful for outer joins. */
-    def ? = (Rep.Some(componentid), Rep.Some(simulationid), Rep.Some(sequencenum), Rep.Some(operationid), startTime, endTime, Rep.Some(assemblyid)).shaped.<>({r=>import r._; _1.map(_=> ComponentProcessingStateRow.tupled((_1.get, _2.get, _3.get, _4.get, _5, _6, _7.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+    def ? = (Rep.Some(componentid), Rep.Some(simulationid), Rep.Some(sequencenum), Rep.Some(operationid), startTime, endTime, Rep.Some(assemblyid) ,Rep.Some(status)).shaped.<>({r=>import r._; _1.map(_=> ComponentProcessingStateRow.tupled((_1.get, _2.get, _3.get, _4.get, _5, _6, _7.get , _8.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
 
     /** Database column componentId SqlType(INT) */
     val componentid: Rep[Int] = column[Int]("componentId")
@@ -188,6 +189,7 @@ trait Tables {
     val endTime: Rep[Option[java.sql.Timestamp]] = column[Option[java.sql.Timestamp]]("end_time", O.Default(None))
     /** Database column assemblyId SqlType(INT) */
     val assemblyid: Rep[Int] = column[Int]("assemblyId")
+    val status: Rep[String] = column[String]("status")
 
     /** Primary key of ComponentProcessingState (database name component_processing_state_PK) */
     val pk = primaryKey("component_processing_state_PK", (componentid, simulationid, assemblyid , operationid , sequencenum))

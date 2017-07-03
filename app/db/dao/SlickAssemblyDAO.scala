@@ -3,7 +3,7 @@ package db.dao
 import db.DBComponent
 import dbgeneratedtable.Tables
 import dbgeneratedtable.Tables.AssemblyOperationMappingRow
-import models.{AssemblyOperation, AssemblyOperationStatus, BusyOperationStatus, FreeOperationStatus}
+import models.{AssemblyOperation, AssemblyOperationStatus, FinishedProcessingStatus, InProgressProcessingStatus}
 import play.api.cache.CacheApi
 import utils.DateTimeUtils
 
@@ -62,7 +62,7 @@ trait SlickAssemblyDaoRepo extends AssemblyDaoRepo {
     private def addAssemblyOperationMapping(assemblyId: Int, operations: List[AssemblyOperation]) = {
       operations.map(obj =>
         Await.result(db.run(assemblyOperationMapping += AssemblyOperationMappingRow(assemblyId, obj.operation.id,
-          obj.time, FreeOperationStatus.text)), Duration.Inf)
+          obj.time, InProgressProcessingStatus.text)), Duration.Inf)
       )
     }
 
@@ -142,7 +142,7 @@ trait SlickAssemblyDaoRepo extends AssemblyDaoRepo {
           val isOnline = if (x.lastActive.isDefined) x.lastActive.get.after(DateTimeUtils.getOldBySecondsTS(6)) else false
 
           Some(new models.Assembly(x.id, x.name, operations.toList,
-            operations.filter(_.status == BusyOperationStatus).toList, isOnline))
+            operations.filter(_.status == FinishedProcessingStatus).toList, isOnline))
 
         }
         case None => {
