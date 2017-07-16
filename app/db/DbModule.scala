@@ -1,7 +1,9 @@
 package db
 
+import java.util.Calendar
+
 import db.dao._
-import dbgeneratedtable.Tables
+import db.generatedtable.Tables
 import models._
 import play.api.cache.CacheApi
 
@@ -13,6 +15,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 trait DbModule {
   def updateComponentProcessingInfoInFailureScenarion(simulationId: Int, componentId: Int, assemblyId: Int, sequence: Int, operationId: Int):Boolean
 
+  def updateSimulationEndTime(simulationId:Int):Boolean
 
   def componentHeartBeatUpdateAsync(componentId:Int,simulationId:Int):Future[Boolean]
 
@@ -68,6 +71,7 @@ trait DbModule {
   :Future[Seq[Tables.ComponentProcessingStateRow]]
 
   def getComponentById(componentId:Int ,simulationId:Int, processingRecords:Seq[Tables.ComponentProcessingStateRow]):Component
+  def updateSimulationStartTime(simulationId:Int):Boolean
 }
 
 class SlickModuleImplementation(cache:CacheApi) extends DbModule {
@@ -77,6 +81,16 @@ class SlickModuleImplementation(cache:CacheApi) extends DbModule {
     with ComponentDaoRepo
     with OperationDaoRepo
     with DBComponent =>
+
+  def updateSimulationEndTime(simulationId:Int):Boolean = {
+    val etTime = component.getLastEndTimeFromComponentProcessingInfo(simulationId)
+    simulation.updateEndTime(simulationId , etTime)
+  }
+
+  def updateSimulationStartTime(simulationId:Int):Boolean = {
+    val stTime = Calendar.getInstance().getTimeInMillis
+    simulation.updateStartTime(simulationId , stTime)
+  }
 
   def getComponentById(componentId:Int ,simulationId:Int, processingRecords:Seq[Tables.ComponentProcessingStateRow]):Component={
     val assemblyNameMap = assembly.selectAssemblyNameMapBySimulationId(simulationId,cache)

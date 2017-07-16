@@ -3,7 +3,7 @@ package controllers
 import javax.inject.Inject
 
 import db.DbModule
-import dbgeneratedtable.Tables
+import db.generatedtable.Tables
 import json.{ComponentWithSchedulingInfo, DefaultRequestFormat, ResponseFactory, SimulationJson}
 import models.{Assembly, Component, Operation, Simulation}
 import play.api.Logger

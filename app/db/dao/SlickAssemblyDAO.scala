@@ -1,8 +1,8 @@
 package db.dao
 
 import db.DBComponent
-import dbgeneratedtable.Tables
-import dbgeneratedtable.Tables.AssemblyOperationMappingRow
+import db.generatedtable.Tables
+import db.generatedtable.Tables.AssemblyOperationMappingRow
 import models.{AssemblyOperation, AssemblyOperationStatus, BusyOperationStatus, FreeOperationStatus}
 import play.api.cache.CacheApi
 import utils.DateTimeUtils
@@ -115,7 +115,7 @@ trait SlickAssemblyDaoRepo extends AssemblyDaoRepo {
     }
 
     def assemblyHeartBeatUpdateAsync(assemblyId: Int, simulationId: Int): Future[Boolean] = {
-      val query = for (c <- assemblies if ((c.id === assemblyId))) yield c.lastActive
+      val query = for (c <- assemblies if ((c.id === assemblyId))) yield c.lastactive
       db.run(query.update(Some(DateTimeUtils.getCurrentTimeStamp()))).map {
         case 1 => true
         case _ => false
@@ -139,7 +139,7 @@ trait SlickAssemblyDaoRepo extends AssemblyDaoRepo {
             val operations =Await.result(db.run(assemblyOperationMapping.filter(_.assemblyId === x.id).result), Duration.Inf).map(y =>
               AssemblyOperation(operation.selectByOperationId(y.operationId, cache), y.operationTime, AssemblyOperationStatus(y.status)))
 
-          val isOnline = if (x.lastActive.isDefined) x.lastActive.get.after(DateTimeUtils.getOldBySecondsTS(6)) else false
+          val isOnline = if (x.lastactive.isDefined) x.lastactive.get.after(DateTimeUtils.getOldBySecondsTS(6)) else false
 
           Some(new models.Assembly(x.id, x.name, operations.toList,
             operations.filter(_.status == BusyOperationStatus).toList, isOnline))

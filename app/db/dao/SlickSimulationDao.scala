@@ -2,8 +2,8 @@ package db.dao
 
 import controllers.ApiResponse
 import db.DBComponent
-import dbgeneratedtable.Tables
-import dbgeneratedtable.Tables.{SimulationComponentMappingRow, SimulationassemblymapRow}
+import db.generatedtable.Tables
+import db.generatedtable.Tables.{SimulationComponentMappingRow, SimulationassemblymapRow}
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
@@ -26,6 +26,17 @@ trait SlickSimulationDaoRepo extends SimulationDaoRepo{
 
   private lazy val simulationAssemblyMapping = Tables.Simulationassemblymap
 
+    def updateEndTime(simulationId:Int,etTime:Long):Boolean = {
+      val q = for { x <- simulations if x.id === simulationId } yield x.endtime
+      val query = q.update(Some(etTime))
+      Await.result(db.run(query),Duration.Inf)  == 1
+    }
+
+    def updateStartTime(simulationId:Int,stTime:Long):Boolean = {
+      val q = for { x <- simulations if x.id === simulationId } yield x.starttime
+      val query = q.update(Some(stTime))
+      Await.result(db.run(query),Duration.Inf)  == 1
+    }
 
   def getSimulationById(simulationId: Int): models.Simulation = {
     Await.result(db.run(simulations.filter(_.id === simulationId).result.headOption), Duration.Inf) match {

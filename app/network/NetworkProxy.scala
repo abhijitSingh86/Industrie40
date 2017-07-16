@@ -26,7 +26,7 @@ class NetworkProxy(ws:WSClient) {
     val port = if(aurl.split(":").size >2) aurl.split(":")(2).toInt else 0
 
     val data = Json.obj("assemblyId" -> assembly.id,"assemblyName"->assembly.name
-    ,"url" -> url,"transportationTime"->5 , "operationTime"->assembly.totalOperations.filter(
+    ,"url" -> url,"transportationTime"->0 , "operationTime"->assembly.totalOperations.filter(
         _.operation.id.equals(operationId)).head.time ,
     "hostname" -> host, "port" -> port , "operationId" -> operationId )
     var status=0

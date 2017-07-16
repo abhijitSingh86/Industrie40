@@ -23,6 +23,7 @@ class SchedulingController(schedulingThread:SchedulerThread,db:DbModule , networ
         ComponentQueue.updateSimulationId(simulationId.get)
         sendStartMsgToAllComponent(simulationId.get)
         schedulingThread.startExecution()
+        db.updateSimulationStartTime(simulationId.get)
         Logger.info("Schedule thread created")
         Ok(DefaultRequestFormat.getEmptySuccessResponse())
       case _=> Ok(DefaultRequestFormat.getValidationErrorResponse(List(("error","simulation Id is not found in Json"))) )
@@ -41,6 +42,7 @@ class SchedulingController(schedulingThread:SchedulerThread,db:DbModule , networ
         Logger.info("Stop request recieved..")
         if(schedulingThread !=null){
           schedulingThread.endExecution()
+          db.updateSimulationEndTime(id)
           Logger.info("Stop request processed.. ")
         }
         Ok(DefaultRequestFormat.getEmptySuccessResponse())
