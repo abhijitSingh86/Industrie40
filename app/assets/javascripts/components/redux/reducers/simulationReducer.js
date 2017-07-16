@@ -8,6 +8,7 @@ const initialState = {
     ,completedComponents:[]
     ,components:[]
     ,assemblies:[]
+    ,isSimulationComplete:false
 }
 
 export default function simulationReducer(state = initialState,action){
@@ -16,7 +17,7 @@ export default function simulationReducer(state = initialState,action){
         case START_SIMULATION : {
             // console.log(action.payload.response === true)
             var response = action.payload.response === true ? "Started Successfully" : "Error Starting:"+action.payload.response
-            return Object.assign({},state,{response:response})
+            return Object.assign({},state,{response:response , isSimulationComplete:false})
         }
 
         case STOP_SIMULATION : {
@@ -55,7 +56,9 @@ export default function simulationReducer(state = initialState,action){
                     t.push(x);
                 }
             });
-            return Object.assign({},state,{components:body.components,completedComponents:t , assemblies:body.assemblies})
+            var simulationCompleteFlag = body.components.length === t.length && t.length !=0
+            return Object.assign({},state,{components:body.components,completedComponents:t , assemblies:body.assemblies ,
+                isSimulationComplete:simulationCompleteFlag})
         }
 
         case GET_ASSEMBLY_RUNNING_STATUS : {
