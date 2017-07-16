@@ -19,8 +19,11 @@ class SimulationMonitor extends React.Component {
     }
 
     doSomething(){
-        console.log('Triggered');
-        this.props.actions.getSimulationRunningStatus(this.props.simulation.simulationId);
+        if(!this.props.isSimulationComplete) {
+            this.props.actions.getSimulationRunningStatus(this.props.simulation.simulationId);
+        }else{
+            this.props.actions.stopSimulation(this.props.simulation.simulationId);
+        }
     }
     startTimer() {
         clearInterval(this.timer);
@@ -50,6 +53,7 @@ class SimulationMonitor extends React.Component {
 
     stop_simulation() {
         this.props.actions.stopSimulation(this.props.simulation.simulationId);
+        clearInterval(this.timer)
     }
 
     completedComponentCount(count){
@@ -136,6 +140,7 @@ function mapStateToProps(state) {
         simulation: state.mainMode.simulationObj
         ,completedComponents:state.simulation.completedComponents
         ,response:state.simulation.response
+        ,isSimulationComplete:state.simulation.isSimulationComplete
     };
 }
 

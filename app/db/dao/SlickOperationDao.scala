@@ -1,7 +1,7 @@
 package db.dao
 
 import db.DBComponent
-import dbgeneratedtable.Tables
+import db.generatedtable.Tables
 import models.Operation
 import play.api.cache.CacheApi
 

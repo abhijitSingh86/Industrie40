@@ -1,6 +1,6 @@
 package json
 
-import dbgeneratedtable.Tables
+import db.generatedtable.Tables
 import models.{Assembly, Component, Simulation}
 import play.api.libs.json.{JsArray, JsValue, Json}
 import factory.JsonImplicitFactory._

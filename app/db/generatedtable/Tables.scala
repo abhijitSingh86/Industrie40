@@ -1,7 +1,4 @@
-package dbgeneratedtable
-
-import java.sql.Timestamp
-// AUTO-GENERATED Slick data model
+package db.generatedtable
 /** Stand-alone Slick data model for immediate use */
 object Tables extends {
   val profile = slick.driver.MySQLDriver
@@ -22,24 +19,26 @@ trait Tables {
 
   /** Entity class storing rows of table Assembly
     *  @param id Database column id SqlType(INT), AutoInc, PrimaryKey
-    *  @param name Database column name SqlType(VARCHAR), Length(255,true) */
-  case class AssemblyRow(id: Int, name: String,lastActive:Option[java.sql.Timestamp] = None)
+    *  @param name Database column name SqlType(VARCHAR), Length(255,true)
+    *  @param lastactive Database column lastActive SqlType(DATETIME), Default(None) */
+  case class AssemblyRow(id: Int, name: String, lastactive: Option[java.sql.Timestamp] = None)
   /** GetResult implicit for fetching AssemblyRow objects using plain SQL queries */
-  implicit def GetResultAssemblyRow(implicit e0: GR[Int], e1: GR[String] , e2:GR[Option[Timestamp]]): GR[AssemblyRow] = GR{
+  implicit def GetResultAssemblyRow(implicit e0: GR[Int], e1: GR[String], e2: GR[Option[java.sql.Timestamp]]): GR[AssemblyRow] = GR{
     prs => import prs._
-      AssemblyRow.tupled((<<[Int], <<[String], <<[Option[Timestamp]]))
+      AssemblyRow.tupled((<<[Int], <<[String], <<?[java.sql.Timestamp]))
   }
   /** Table description of table Assembly. Objects of this class serve as prototypes for rows in queries. */
   class Assembly(_tableTag: Tag) extends Table[AssemblyRow](_tableTag, "Assembly") {
-    def * = (id, name,lastActive) <> (AssemblyRow.tupled, AssemblyRow.unapply)
+    def * = (id, name, lastactive) <> (AssemblyRow.tupled, AssemblyRow.unapply)
     /** Maps whole row to an option. Useful for outer joins. */
-    def ? = (Rep.Some(id), Rep.Some(name),Rep.Some(lastActive)).shaped.<>({r=>import r._; _1.map(_=> AssemblyRow.tupled((_1.get, _2.get , _3.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+    def ? = (Rep.Some(id), Rep.Some(name), lastactive).shaped.<>({r=>import r._; _1.map(_=> AssemblyRow.tupled((_1.get, _2.get, _3)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
 
     /** Database column id SqlType(INT), AutoInc, PrimaryKey */
     val id: Rep[Int] = column[Int]("id", O.AutoInc, O.PrimaryKey)
     /** Database column name SqlType(VARCHAR), Length(255,true) */
     val name: Rep[String] = column[String]("name", O.Length(255,varying=true))
-    val lastActive: Rep[Option[Timestamp]] = column[Option[Timestamp]]("lastActive",O.Default(None))
+    /** Database column lastActive SqlType(DATETIME), Default(None) */
+    val lastactive: Rep[Option[java.sql.Timestamp]] = column[Option[java.sql.Timestamp]]("lastActive", O.Default(None))
   }
   /** Collection-like TableQuery object for table Assembly */
   lazy val Assembly = new TableQuery(tag => new Assembly(tag))
@@ -47,19 +46,19 @@ trait Tables {
   /** Entity class storing rows of table AssemblyOperationMapping
     *  @param assemblyId Database column assembly_id SqlType(INT)
     *  @param operationId Database column operation_id SqlType(INT)
-    *  @param operationTime Database column operation_time SqlType(INT) */
-  case class AssemblyOperationMappingRow(assemblyId: Int, operationId: Int, operationTime: Int,status:String)
+    *  @param operationTime Database column operation_time SqlType(INT)
+    *  @param status Database column status SqlType(VARCHAR), Length(255,true) */
+  case class AssemblyOperationMappingRow(assemblyId: Int, operationId: Int, operationTime: Int, status: String)
   /** GetResult implicit for fetching AssemblyOperationMappingRow objects using plain SQL queries */
-  implicit def GetResultAssemblyOperationMappingRow(implicit e0: GR[Int]): GR[AssemblyOperationMappingRow] = GR{
+  implicit def GetResultAssemblyOperationMappingRow(implicit e0: GR[Int], e1: GR[String]): GR[AssemblyOperationMappingRow] = GR{
     prs => import prs._
       AssemblyOperationMappingRow.tupled((<<[Int], <<[Int], <<[Int], <<[String]))
   }
   /** Table description of table assembly_operation_mapping. Objects of this class serve as prototypes for rows in queries. */
   class AssemblyOperationMapping(_tableTag: Tag) extends Table[AssemblyOperationMappingRow](_tableTag, "assembly_operation_mapping") {
-    def * = (assemblyId, operationId, operationTime , status) <> (AssemblyOperationMappingRow.tupled, AssemblyOperationMappingRow.unapply)
+    def * = (assemblyId, operationId, operationTime, status) <> (AssemblyOperationMappingRow.tupled, AssemblyOperationMappingRow.unapply)
     /** Maps whole row to an option. Useful for outer joins. */
-    def ? = (Rep.Some(assemblyId), Rep.Some(operationId), Rep.Some(operationTime) , Rep.Some(status)).shaped.<>({r=>import r._; _1.map(_=>
-      AssemblyOperationMappingRow.tupled((_1.get, _2.get, _3.get, _4.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+    def ? = (Rep.Some(assemblyId), Rep.Some(operationId), Rep.Some(operationTime), Rep.Some(status)).shaped.<>({r=>import r._; _1.map(_=> AssemblyOperationMappingRow.tupled((_1.get, _2.get, _3.get, _4.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
 
     /** Database column assembly_id SqlType(INT) */
     val assemblyId: Rep[Int] = column[Int]("assembly_id")
@@ -67,8 +66,8 @@ trait Tables {
     val operationId: Rep[Int] = column[Int]("operation_id")
     /** Database column operation_time SqlType(INT) */
     val operationTime: Rep[Int] = column[Int]("operation_time")
-
-    val status:Rep[String] = column[String]("status")
+    /** Database column status SqlType(VARCHAR), Length(255,true) */
+    val status: Rep[String] = column[String]("status", O.Length(255,varying=true))
 
     /** Foreign key referencing Assembly (database name fk_assembly_operation_mapping_1) */
     lazy val assemblyFk = foreignKey("fk_assembly_operation_mapping_1", assemblyId, Assembly)(r => r.id, onUpdate=ForeignKeyAction.Cascade, onDelete=ForeignKeyAction.Cascade)
@@ -100,24 +99,26 @@ trait Tables {
 
   /** Entity class storing rows of table Component
     *  @param id Database column id SqlType(INT), AutoInc, PrimaryKey
-    *  @param name Database column name SqlType(VARCHAR), Length(255,true) */
-  case class ComponentRow(id: Int, name: String,last_active: Option[java.sql.Timestamp] = None)
+    *  @param name Database column name SqlType(VARCHAR), Length(255,true)
+    *  @param lastActive Database column last_active SqlType(DATETIME), Default(None) */
+  case class ComponentRow(id: Int, name: String, lastActive: Option[java.sql.Timestamp] = None)
   /** GetResult implicit for fetching ComponentRow objects using plain SQL queries */
-  implicit def GetResultComponentRow(implicit e0: GR[Int], e1: GR[String], e2:GR[Option[Timestamp]]): GR[ComponentRow] = GR{
+  implicit def GetResultComponentRow(implicit e0: GR[Int], e1: GR[String], e2: GR[Option[java.sql.Timestamp]]): GR[ComponentRow] = GR{
     prs => import prs._
-      ComponentRow.tupled((<<[Int], <<[String], <<[Option[Timestamp]]))
+      ComponentRow.tupled((<<[Int], <<[String], <<?[java.sql.Timestamp]))
   }
   /** Table description of table Component. Objects of this class serve as prototypes for rows in queries. */
   class Component(_tableTag: Tag) extends Table[ComponentRow](_tableTag, "Component") {
-    def * = (id, name , last_active) <> (ComponentRow.tupled, ComponentRow.unapply)
+    def * = (id, name, lastActive) <> (ComponentRow.tupled, ComponentRow.unapply)
     /** Maps whole row to an option. Useful for outer joins. */
-    def ? = (Rep.Some(id), Rep.Some(name) , Rep.Some(last_active)).shaped.<>({r=>import r._; _1.map(_=> ComponentRow.tupled((_1.get, _2.get,_3.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+    def ? = (Rep.Some(id), Rep.Some(name), lastActive).shaped.<>({r=>import r._; _1.map(_=> ComponentRow.tupled((_1.get, _2.get, _3)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
 
     /** Database column id SqlType(INT), AutoInc, PrimaryKey */
     val id: Rep[Int] = column[Int]("id", O.AutoInc, O.PrimaryKey)
     /** Database column name SqlType(VARCHAR), Length(255,true) */
     val name: Rep[String] = column[String]("name", O.Length(255,varying=true))
-    val last_active: Rep[Option[Timestamp]] = column[Option[Timestamp]]("last_active",O.Default(None))
+    /** Database column last_active SqlType(DATETIME), Default(None) */
+    val lastActive: Rep[Option[java.sql.Timestamp]] = column[Option[java.sql.Timestamp]]("last_active", O.Default(None))
   }
   /** Collection-like TableQuery object for table Component */
   lazy val Component = new TableQuery(tag => new Component(tag))
@@ -160,20 +161,19 @@ trait Tables {
     *  @param operationid Database column operationId SqlType(INT)
     *  @param startTime Database column start_time SqlType(DATETIME), Default(None)
     *  @param endTime Database column end_time SqlType(DATETIME), Default(None)
-    *  @param assemblyid Database column assemblyId SqlType(INT) */
-  case class ComponentProcessingStateRow(componentid: Int, simulationid: Int, sequencenum: Int, operationid: Int,
-                                         startTime: Option[java.sql.Timestamp] = None, endTime: Option[java.sql.Timestamp] = None,
-                                         assemblyid: Int , status:String)
+    *  @param assemblyid Database column assemblyId SqlType(INT)
+    *  @param status Database column status SqlType(VARCHAR), Length(45,true) */
+  case class ComponentProcessingStateRow(componentid: Int, simulationid: Int, sequencenum: Int, operationid: Int, startTime: Option[java.sql.Timestamp] = None, endTime: Option[java.sql.Timestamp] = None, assemblyid: Int, status: String)
   /** GetResult implicit for fetching ComponentProcessingStateRow objects using plain SQL queries */
-  implicit def GetResultComponentProcessingStateRow(implicit e0: GR[Int], e1: GR[Option[java.sql.Timestamp]]): GR[ComponentProcessingStateRow] = GR{
+  implicit def GetResultComponentProcessingStateRow(implicit e0: GR[Int], e1: GR[Option[java.sql.Timestamp]], e2: GR[String]): GR[ComponentProcessingStateRow] = GR{
     prs => import prs._
-      ComponentProcessingStateRow.tupled((<<[Int], <<[Int], <<[Int], <<[Int], <<?[java.sql.Timestamp], <<?[java.sql.Timestamp], <<[Int] ,<<[String]))
+      ComponentProcessingStateRow.tupled((<<[Int], <<[Int], <<[Int], <<[Int], <<?[java.sql.Timestamp], <<?[java.sql.Timestamp], <<[Int], <<[String]))
   }
   /** Table description of table component_processing_state. Objects of this class serve as prototypes for rows in queries. */
   class ComponentProcessingState(_tableTag: Tag) extends Table[ComponentProcessingStateRow](_tableTag, "component_processing_state") {
-    def * = (componentid, simulationid, sequencenum, operationid, startTime, endTime, assemblyid,status) <> (ComponentProcessingStateRow.tupled, ComponentProcessingStateRow.unapply)
+    def * = (componentid, simulationid, sequencenum, operationid, startTime, endTime, assemblyid, status) <> (ComponentProcessingStateRow.tupled, ComponentProcessingStateRow.unapply)
     /** Maps whole row to an option. Useful for outer joins. */
-    def ? = (Rep.Some(componentid), Rep.Some(simulationid), Rep.Some(sequencenum), Rep.Some(operationid), startTime, endTime, Rep.Some(assemblyid) ,Rep.Some(status)).shaped.<>({r=>import r._; _1.map(_=> ComponentProcessingStateRow.tupled((_1.get, _2.get, _3.get, _4.get, _5, _6, _7.get , _8.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+    def ? = (Rep.Some(componentid), Rep.Some(simulationid), Rep.Some(sequencenum), Rep.Some(operationid), startTime, endTime, Rep.Some(assemblyid), Rep.Some(status)).shaped.<>({r=>import r._; _1.map(_=> ComponentProcessingStateRow.tupled((_1.get, _2.get, _3.get, _4.get, _5, _6, _7.get, _8.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
 
     /** Database column componentId SqlType(INT) */
     val componentid: Rep[Int] = column[Int]("componentId")
@@ -189,10 +189,11 @@ trait Tables {
     val endTime: Rep[Option[java.sql.Timestamp]] = column[Option[java.sql.Timestamp]]("end_time", O.Default(None))
     /** Database column assemblyId SqlType(INT) */
     val assemblyid: Rep[Int] = column[Int]("assemblyId")
-    val status: Rep[String] = column[String]("status")
+    /** Database column status SqlType(VARCHAR), Length(45,true) */
+    val status: Rep[String] = column[String]("status", O.Length(45,varying=true))
 
     /** Primary key of ComponentProcessingState (database name component_processing_state_PK) */
-    val pk = primaryKey("component_processing_state_PK", (componentid, simulationid, assemblyid , operationid , sequencenum))
+    val pk = primaryKey("component_processing_state_PK", (componentid, simulationid, assemblyid, operationid, sequencenum))
   }
   /** Collection-like TableQuery object for table ComponentProcessingState */
   lazy val ComponentProcessingState = new TableQuery(tag => new ComponentProcessingState(tag))
@@ -243,18 +244,20 @@ trait Tables {
   /** Entity class storing rows of table Simulation
     *  @param id Database column id SqlType(INT), AutoInc, PrimaryKey
     *  @param name Database column name SqlType(VARCHAR), Length(255,true)
-    *  @param desc Database column desc SqlType(VARCHAR), Length(500,true), Default(None) */
-  case class SimulationRow(id: Int, name: String, desc: Option[String] = None)
+    *  @param desc Database column desc SqlType(VARCHAR), Length(500,true), Default(None)
+    *  @param starttime Database column starttime SqlType(BIGINT), Default(None)
+    *  @param endtime Database column endtime SqlType(BIGINT), Default(None) */
+  case class SimulationRow(id: Int, name: String, desc: Option[String] = None, starttime: Option[Long] = None, endtime: Option[Long] = None)
   /** GetResult implicit for fetching SimulationRow objects using plain SQL queries */
-  implicit def GetResultSimulationRow(implicit e0: GR[Int], e1: GR[String], e2: GR[Option[String]]): GR[SimulationRow] = GR{
+  implicit def GetResultSimulationRow(implicit e0: GR[Int], e1: GR[String], e2: GR[Option[String]], e3: GR[Option[Long]]): GR[SimulationRow] = GR{
     prs => import prs._
-      SimulationRow.tupled((<<[Int], <<[String], <<?[String]))
+      SimulationRow.tupled((<<[Int], <<[String], <<?[String], <<?[Long], <<?[Long]))
   }
   /** Table description of table simulation. Objects of this class serve as prototypes for rows in queries. */
   class Simulation(_tableTag: Tag) extends Table[SimulationRow](_tableTag, "simulation") {
-    def * = (id, name, desc) <> (SimulationRow.tupled, SimulationRow.unapply)
+    def * = (id, name, desc, starttime, endtime) <> (SimulationRow.tupled, SimulationRow.unapply)
     /** Maps whole row to an option. Useful for outer joins. */
-    def ? = (Rep.Some(id), Rep.Some(name), desc).shaped.<>({r=>import r._; _1.map(_=> SimulationRow.tupled((_1.get, _2.get, _3)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+    def ? = (Rep.Some(id), Rep.Some(name), desc, starttime, endtime).shaped.<>({r=>import r._; _1.map(_=> SimulationRow.tupled((_1.get, _2.get, _3, _4, _5)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
 
     /** Database column id SqlType(INT), AutoInc, PrimaryKey */
     val id: Rep[Int] = column[Int]("id", O.AutoInc, O.PrimaryKey)
@@ -262,6 +265,10 @@ trait Tables {
     val name: Rep[String] = column[String]("name", O.Length(255,varying=true))
     /** Database column desc SqlType(VARCHAR), Length(500,true), Default(None) */
     val desc: Rep[Option[String]] = column[Option[String]]("desc", O.Length(500,varying=true), O.Default(None))
+    /** Database column starttime SqlType(BIGINT), Default(None) */
+    val starttime: Rep[Option[Long]] = column[Option[Long]]("starttime", O.Default(None))
+    /** Database column endtime SqlType(BIGINT), Default(None) */
+    val endtime: Rep[Option[Long]] = column[Option[Long]]("endtime", O.Default(None))
   }
   /** Collection-like TableQuery object for table Simulation */
   lazy val Simulation = new TableQuery(tag => new Simulation(tag))

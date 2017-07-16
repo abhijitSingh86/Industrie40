@@ -1,6 +1,6 @@
 package factory
 
-import dbgeneratedtable.Tables
+import db.generatedtable.Tables
 import enums.PriorityEnum
 import models._
 import play.api.libs.json._

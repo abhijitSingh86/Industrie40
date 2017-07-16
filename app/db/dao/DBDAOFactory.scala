@@ -1,11 +1,10 @@
 package db.dao
 
-import dbgeneratedtable.Tables
-import models.{Component, ComponentSchedulingInfo, Operation}
+import db.generatedtable.Tables
+import models.Operation
 import play.api.cache.CacheApi
 
 import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
 /**
   * Created by billa on 26.12.16.
   */
@@ -33,6 +32,10 @@ trait SimulationDaoRepo{
     def getAllAssemblyIdsBySimulationId(simunlationId: Int): List[Int]
 
     def getSimulationById(simulationId:Int):models.Simulation
+
+    def updateEndTime(simulationId:Int , etTime:Long):Boolean
+
+    def updateStartTime(simulationId:Int , stTime:Long):Boolean
 
     def selectAllSimulations():List[models.Simulation]
 
@@ -75,6 +78,8 @@ trait ComponentDaoRepo {
     def delete(componentId: Int): Boolean
 
     def selectAll(): List[models.Component]
+
+    def getLastEndTimeFromComponentProcessingInfo(simulationId:Int):Long
 
     def selectComponentNameMapBySimulationId(simulationId: Int , cache: CacheApi): Map[Int,String]
 

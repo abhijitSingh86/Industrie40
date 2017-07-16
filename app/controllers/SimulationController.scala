@@ -1,7 +1,7 @@
 package controllers
 
 import db.DbModule
-import dbgeneratedtable.Tables
+import db.generatedtable.Tables
 import json._
 import models._
 import play.api.Logger

@@ -1,8 +1,8 @@
 package db.dao
 
 import db.DBComponent
-import dbgeneratedtable.Tables
-import dbgeneratedtable.Tables.ComponentProcessingStateRow
+import db.generatedtable.Tables
+import db.generatedtable.Tables.ComponentProcessingStateRow
 import models._
 import play.api.cache.CacheApi
 import utils.DateTimeUtils
@@ -37,7 +37,7 @@ trait SlickComponentDaoRepo extends ComponentDaoRepo {
     }
 
     def componentHeartBeatUpdateAsync(componentId: Int, simulationId: Int): Future[Boolean] = {
-      val query = for (c <- components if ((c.id === componentId))) yield c.last_active
+      val query = for (c <- components if ((c.id === componentId))) yield c.lastActive
       db.run(query.update(Some(DateTimeUtils.getCurrentTimeStamp()))).map {
         case 1 => true
         case _ => false
@@ -186,6 +186,14 @@ trait SlickComponentDaoRepo extends ComponentDaoRepo {
     }
 
 
+    def getLastEndTimeFromComponentProcessingInfo(simulationId:Int):Long = {
+    val q =db.run(componentProcessingState.filter(x => (x.simulationid === simulationId)).sortBy(_.endTime.desc).result.headOption)
+      Await.result(q,Duration.Inf) match{
+        case Some(x) => if(x.endTime.isDefined) x.endTime.get.getTime else 0l
+        case _ => 0l
+      }
+    }
+
     def getComponentProcessingInfoForSimulation(simulationId: Int, cache: CacheApi ,assemblyNameMap:Map[Int,String])
     :Future[Seq[Tables.ComponentProcessingStateRow]] ={
       val q = for{
@@ -210,7 +218,7 @@ trait SlickComponentDaoRepo extends ComponentDaoRepo {
       Await.result(result, Duration.Inf)
     }
 
-    private def convertComponentProcessing(cache: CacheApi, assemblyNameMap: Map[Int, String], y: Seq[_root_.dbgeneratedtable.Tables.ComponentProcessingStateRow]) = {
+    private def convertComponentProcessing(cache: CacheApi, assemblyNameMap: Map[Int, String], y: Seq[Tables.ComponentProcessingStateRow]) = {
 
       val firstRow = if (y.takeRight(1).size == 1) Some(y.take(1)(0)) else None
       //get each row and form the scheduling information Details
@@ -244,7 +252,7 @@ trait SlickComponentDaoRepo extends ComponentDaoRepo {
     }
 
     private def isOnline(x:Tables.ComponentRow):Boolean ={
-      if (x.last_active.isDefined) x.last_active.get.after(DateTimeUtils.getOldBySecondsTS(6)) else false
+      if (x.lastActive.isDefined) x.lastActive.get.after(DateTimeUtils.getOldBySecondsTS(6)) else false
     }
 
 
