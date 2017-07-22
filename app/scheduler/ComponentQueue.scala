@@ -14,6 +14,7 @@ object ComponentQueue {
   val requestQueue:mutable.LinkedHashSet[Component] = new mutable.LinkedHashSet[Component]()
   private var simulationId =0
 
+  var failedAssemblyId = -1
   def updateSimulationId(id:Int): Unit ={
     simulationId  = id
   }

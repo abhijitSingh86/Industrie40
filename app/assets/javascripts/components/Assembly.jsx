@@ -57,6 +57,8 @@ var Assembly = React.createClass({
       var arr = this.state.assemblyArr;
       var removedNode = this.remove(arr,id);
       this.assemblyName.value =  removedNode.name;
+      this.fcount.value = removedNode.fcount;
+      this.ftime.value = removedNode.ftime;
       this.operationCount.value = removedNode.operationDetails.length;
       this.setState({
         assemblyArr:arr,
@@ -81,6 +83,14 @@ var Assembly = React.createClass({
           <li>
             <label>Name</label>
             <input type="text" ref={(assemblyName)=>{this.assemblyName= assemblyName}}  />
+          </li>
+          <li>
+            <label>Failure Count</label>
+            <input type="text" ref={(fcount)=>{this.fcount= fcount}}  />
+          </li>
+          <li>
+            <label>Total Failure Time</label>
+            <input type="text" ref={(ftime)=>{this.ftime= ftime}}  />
           </li>
           <li>
             <label>Operation Count</label>
@@ -115,11 +125,11 @@ var Assembly = React.createClass({
           }
           }
 
-          console.log("Assembly")
-      console.log(tempArr)
     var data = {
       id:this.state.localAssemblyCounter,
       name:this.assemblyName.value,
+        fcount:parseInt(this.fcount.value),
+        ftime:parseInt(this.ftime.value),
       operationDetails:tempArr
     }
     var arr=this.state.assemblyArr
@@ -137,6 +147,8 @@ var Assembly = React.createClass({
       localAssemblyCounter:localAssemblyCounter
     });
 
+    this.fcount.value ="";
+    this.ftime.value ="";
     this.operationCount.value="";
     this.assemblyName.value = "";
   },

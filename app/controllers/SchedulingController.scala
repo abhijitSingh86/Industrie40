@@ -1,5 +1,9 @@
 package controllers
 
+import actor.FailureActor.{SetSimulation, Start, Stop}
+import actor.FailureGeneratorActor
+import akka.actor.{ActorSystem, Props}
+import akka.stream.ActorMaterializer
 import db.DbModule
 import json.DefaultRequestFormat
 import network.NetworkProxy
@@ -14,14 +18,19 @@ import scala.util.Try
   */
 class SchedulingController(schedulingThread:SchedulerThread,db:DbModule , networkProxy:NetworkProxy)  extends Controller{
 
-
+  implicit val system = ActorSystem("Assembly-System")
+  implicit val materializer = ActorMaterializer()
+  lazy val failureGeneratorActor = system.actorOf(Props(new FailureGeneratorActor(networkProxy,db)) , name="failureActor")
   def start(id:Int)=Action{ implicit request =>
     val json =request.body.asJson
     val simulationId = Try(id)//Try((json.get \ "simulationId").get.as[Int])
     simulationId.isSuccess match{
       case true =>
+        failureGeneratorActor ! SetSimulation(simulationId.get)
         ComponentQueue.updateSimulationId(simulationId.get)
         sendStartMsgToAllComponent(simulationId.get)
+        //Start the failure actor
+        failureGeneratorActor ! Start
         schedulingThread.startExecution()
         db.updateSimulationStartTime(simulationId.get)
         Logger.info("Schedule thread created")
@@ -43,6 +52,7 @@ class SchedulingController(schedulingThread:SchedulerThread,db:DbModule , networ
         if(schedulingThread !=null){
           schedulingThread.endExecution()
           db.updateSimulationEndTime(id)
+          failureGeneratorActor ! Stop
           Logger.info("Stop request processed.. ")
         }
         Ok(DefaultRequestFormat.getEmptySuccessResponse())

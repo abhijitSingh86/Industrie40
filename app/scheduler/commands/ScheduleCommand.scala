@@ -1,16 +1,23 @@
 package scheduler.commands
 
+import actor.FailureActor.GetFailedAssembly
+import actor.FailureGeneratorActor
+import akka.actor.{ActorSystem, Props}
+import akka.stream.ActorMaterializer
 import db.DbModule
-import models.Component
+import models.{Assembly, Component}
 import network.NetworkProxy
 import play.api.Logger
 import scheduler.{ComponentQueue, Scheduler}
+import akka.pattern.ask
 
+import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.duration._
+import akka.util.Timeout
 /**
   * Created by billa on 10.01.17.
   */
 class ScheduleCommand(dbModule : DbModule,scheduler:Scheduler,proxy: NetworkProxy) extends Command{
-
 
   val logger = Logger("access")
   override def execute(): Unit = {
@@ -22,11 +29,18 @@ class ScheduleCommand(dbModule : DbModule,scheduler:Scheduler,proxy: NetworkProx
     logger.debug("retrieved Components"+components.mkString(","))
     if(components.size >0) {
 
+      println("++++++++++++++++++++++++++++++++++++")
+      println(ComponentQueue.failedAssemblyId)
+      println("++++++++++++++++++++++++++++++++++++")
       val assemblies = dbModule.getAllAssembliesForSimulation(ComponentQueue.getSimulationId())
       logger.debug("Retrieved Assemblies" + assemblies.mkString(","))
       val filteredBusyAssemblies = assemblies.filterNot(x=>{
-        x.allocatedOperations.size > 0
+        x.allocatedOperations.size > 0 || x.id == ComponentQueue.failedAssemblyId
       })
+
+
+
+
       logger.debug("Filtered  Assemblies  =" + filteredBusyAssemblies.mkString(","))
 
       val alreadyScheduledList = components.filter(_.getCurrentOperation().isDefined).map(_.id)
