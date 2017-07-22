@@ -1,6 +1,6 @@
 package controllers
 
-import actor.FailureActor.{Start, Stop}
+import actor.FailureActor.{SetSimulation, Start, Stop}
 import actor.FailureGeneratorActor
 import akka.actor.{ActorSystem, Props}
 import akka.stream.ActorMaterializer
@@ -20,12 +20,13 @@ class SchedulingController(schedulingThread:SchedulerThread,db:DbModule , networ
 
   implicit val system = ActorSystem("Assembly-System")
   implicit val materializer = ActorMaterializer()
-  lazy val failureGeneratorActor = system.actorOf(Props(new FailureGeneratorActor(ComponentQueue.getSimulationId(),db)))
+  lazy val failureGeneratorActor = system.actorOf(Props(new FailureGeneratorActor(networkProxy,db)) , name="failureActor")
   def start(id:Int)=Action{ implicit request =>
     val json =request.body.asJson
     val simulationId = Try(id)//Try((json.get \ "simulationId").get.as[Int])
     simulationId.isSuccess match{
       case true =>
+        failureGeneratorActor ! SetSimulation(simulationId.get)
         ComponentQueue.updateSimulationId(simulationId.get)
         sendStartMsgToAllComponent(simulationId.get)
         //Start the failure actor

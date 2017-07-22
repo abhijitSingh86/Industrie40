@@ -2,6 +2,7 @@ package network
 
 import models.{Assembly, Operation}
 import play.api.Logger
+import play.api.libs.json.Json
 import play.api.libs.ws._
 import play.api.mvc.Results
 
@@ -16,6 +17,7 @@ class NetworkProxy(ws:WSClient) {
   val logger = Logger(this.getClass())
   val componentAssemblyHook = "/assignAssembly"
   val componentStartSimulationHook = "/startScheduling"
+  val assemblyFailureHook = "/receiveFailure"
 
 
   def sendAssemblyDetails(url: String, assembly: Assembly, assemblyUrls: Map[Int, String],operationId:Int) = {
@@ -38,6 +40,15 @@ class NetworkProxy(ws:WSClient) {
     }while (status != 200 && status !=5)
   }
 
+  def sendFailureNotificationToAssembly(url:String,failureTime:Int,action:String)={
+
+    var status=0
+    do{
+      val data = Json.obj("failureTime"->failureTime,"componentAction"->action)
+      val req = Await.result(ws.url(url+assemblyFailureHook).post(data),Duration.Inf)
+      status = if(req.status !=200)status+1 else req.status
+    }while(status !=200 && status !=5)
+  }
   def sendSimulationStartDetails(url: String) = {
     //send http request using assemblies details
     val host = if(url.split(":").size >2) url.split(":")(1).substring(2) else ""
