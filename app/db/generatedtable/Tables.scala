@@ -20,18 +20,20 @@ trait Tables {
   /** Entity class storing rows of table Assembly
     *  @param id Database column id SqlType(INT), AutoInc, PrimaryKey
     *  @param name Database column name SqlType(VARCHAR), Length(255,true)
-    *  @param lastactive Database column lastActive SqlType(DATETIME), Default(None) */
-  case class AssemblyRow(id: Int, name: String, lastactive: Option[java.sql.Timestamp] = None)
+    *  @param lastactive Database column lastActive SqlType(DATETIME), Default(None)
+    *  @param failurenumber Database column failureNumber SqlType(INT), Default(Some(0))
+    *  @param failuretime Database column failureTime SqlType(INT), Default(Some(0)) */
+  case class AssemblyRow(id: Int, name: String, lastactive: Option[java.sql.Timestamp] = None, failurenumber: Option[Int] = Some(0), failuretime: Option[Int] = Some(0))
   /** GetResult implicit for fetching AssemblyRow objects using plain SQL queries */
-  implicit def GetResultAssemblyRow(implicit e0: GR[Int], e1: GR[String], e2: GR[Option[java.sql.Timestamp]]): GR[AssemblyRow] = GR{
+  implicit def GetResultAssemblyRow(implicit e0: GR[Int], e1: GR[String], e2: GR[Option[java.sql.Timestamp]], e3: GR[Option[Int]]): GR[AssemblyRow] = GR{
     prs => import prs._
-      AssemblyRow.tupled((<<[Int], <<[String], <<?[java.sql.Timestamp]))
+      AssemblyRow.tupled((<<[Int], <<[String], <<?[java.sql.Timestamp], <<?[Int], <<?[Int]))
   }
   /** Table description of table Assembly. Objects of this class serve as prototypes for rows in queries. */
   class Assembly(_tableTag: Tag) extends Table[AssemblyRow](_tableTag, "Assembly") {
-    def * = (id, name, lastactive) <> (AssemblyRow.tupled, AssemblyRow.unapply)
+    def * = (id, name, lastactive, failurenumber, failuretime) <> (AssemblyRow.tupled, AssemblyRow.unapply)
     /** Maps whole row to an option. Useful for outer joins. */
-    def ? = (Rep.Some(id), Rep.Some(name), lastactive).shaped.<>({r=>import r._; _1.map(_=> AssemblyRow.tupled((_1.get, _2.get, _3)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+    def ? = (Rep.Some(id), Rep.Some(name), lastactive, failurenumber, failuretime).shaped.<>({r=>import r._; _1.map(_=> AssemblyRow.tupled((_1.get, _2.get, _3, _4, _5)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
 
     /** Database column id SqlType(INT), AutoInc, PrimaryKey */
     val id: Rep[Int] = column[Int]("id", O.AutoInc, O.PrimaryKey)
@@ -39,6 +41,10 @@ trait Tables {
     val name: Rep[String] = column[String]("name", O.Length(255,varying=true))
     /** Database column lastActive SqlType(DATETIME), Default(None) */
     val lastactive: Rep[Option[java.sql.Timestamp]] = column[Option[java.sql.Timestamp]]("lastActive", O.Default(None))
+    /** Database column failureNumber SqlType(INT), Default(Some(0)) */
+    val failurenumber: Rep[Option[Int]] = column[Option[Int]]("failureNumber", O.Default(Some(0)))
+    /** Database column failureTime SqlType(INT), Default(Some(0)) */
+    val failuretime: Rep[Option[Int]] = column[Option[Int]]("failureTime", O.Default(Some(0)))
   }
   /** Collection-like TableQuery object for table Assembly */
   lazy val Assembly = new TableQuery(tag => new Assembly(tag))

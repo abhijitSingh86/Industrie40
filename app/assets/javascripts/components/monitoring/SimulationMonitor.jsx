@@ -23,6 +23,7 @@ class SimulationMonitor extends React.Component {
             this.props.actions.getSimulationRunningStatus(this.props.simulation.simulationId);
         }else{
             this.props.actions.stopSimulation(this.props.simulation.simulationId);
+            this.stopTimer()
         }
     }
     startTimer() {

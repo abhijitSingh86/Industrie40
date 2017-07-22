@@ -45,7 +45,7 @@ class CustomAssemblyRow extends React.Component {
 
     return (
       <tr >
-        <td>{label}</td>
+        <td>{label} <br/> Failure Count: {this.props.row.fcount} <br/> Failure Time: {this.props.row.ftime}</td>
         <td>
           <table>
             <tbody>

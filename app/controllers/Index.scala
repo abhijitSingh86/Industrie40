@@ -124,6 +124,8 @@ class Index @Inject()(ws:WSClient,db:DbModule)  extends Controller{
             //return OK response
             Ok(DefaultRequestFormat.getSuccessResponse(Json.obj("id" -> x.id,"simulationId" -> simulationId ,
               "availableOperations" -> x.totalOperations.map(_.operation.id) ,
+              "failureTimes"->2,
+              "totalFailureTime"->10,
               "usedOperationRecords" -> JsArray(List.empty) ,
               "toDoRetryOperations" ->JsArray(List.empty) , "toBefailedOperations" -> JsArray(List.empty) )))
           case false=>
