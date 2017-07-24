@@ -53,7 +53,7 @@ class ScheduleCommand(dbModule : DbModule,scheduler:Scheduler,proxy: NetworkProx
       sendScheduleInformationToComponent(ComponentQueue.getSimulationId(), components.filter(x=> finalListToSendSchedulingInfo.contains(x.id)))
 
 
-      logger.debug("command nearly finished, processed UnScheduled components are " + scheduledComponentIds.mkString(","))
+      logger.debug("command nearly finished, processed Scheduled components are " + scheduledComponentIds.mkString(","))
       //add pending if any to the component queue again
       components.filter(x=> !scheduledComponentIds.contains(x.id)).map(ComponentQueue.push(_))
     }

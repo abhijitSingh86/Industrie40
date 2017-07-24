@@ -63,18 +63,18 @@ class FailureGeneratorActor(networkProxy:NetworkProxy,db:DbModule) extends Actor
         if(index < list.length && list(index).fcount > 0 ){
           val assembly = list(index)
           val failureTime = if(assembly.fcount == 1) assembly.ftime else random.nextInt(assembly.ftime)
-
-          val updatedAssembly = assembly.copy(fcount = assembly.fcount-1,ftime = failureTime)
-          list = updatedAssembly :: list.filterNot(_.id == assembly.id)
           //Decide component action
-          val componentAction = "wait"
+          val componentAction = "error"
           ComponentQueue.failedAssemblyId = assembly.id
           //Communicate to assembly for Failure Introduction
-          networkProxy.sendFailureNotificationToAssembly(assemblyUrlMap.get(assembly.id).get,failureTime,componentAction)
-          failedAssembly = Some(assembly)
+          val flag:Boolean = networkProxy.sendFailureNotificationToAssembly(assemblyUrlMap.get(assembly.id).get,failureTime,componentAction)
+//          if(flag) {
+            val updatedAssembly = assembly.copy(fcount = assembly.fcount - 1, ftime = failureTime)
+            list = updatedAssembly :: list.filterNot(_.id == assembly.id)
+            failedAssembly = Some(assembly)
+//          }
           //Store Fail assembly obj in Session to be used by scheduler
-
-          context.system.scheduler.scheduleOnce(failureTime seconds, self, IntroduceFailure)
+          context.system.scheduler.scheduleOnce(failureTime+1 seconds, self, IntroduceFailure)
         }else{
           context.system.scheduler.scheduleOnce(5 seconds, self, IntroduceFailure)
         }

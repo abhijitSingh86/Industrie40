@@ -32,6 +32,7 @@ object ComponentProcessingStatus{
       case "finished" => FinishedProcessingStatus
       case "InProgress" => InProgressProcessingStatus
       case "failed" => FailedProcessingStatus
+      case _ => FinishedProcessingStatus
     }
   }
 

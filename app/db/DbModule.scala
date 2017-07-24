@@ -13,7 +13,9 @@ import scala.concurrent.ExecutionContext.Implicits.global
   * Created by billa on 25.04.17.
   */
 trait DbModule {
-  def updateComponentProcessingInfoInFailureScenarion(simulationId: Int, componentId: Int, assemblyId: Int, sequence: Int, operationId: Int):Boolean
+
+
+  def updateComponentProcessingInfoInFailureScenarion(simulationId: Int, componentId: Int, assemblyId: Int, sequence: Int, operationId: Int ):Boolean
 
   def updateSimulationEndTime(simulationId:Int):Boolean
 
@@ -57,7 +59,7 @@ trait DbModule {
 
   def updateAssemblyOperationStatus(assemblyId:Int, operationId:Int, status:String):Boolean
 
-  def updateComponentProcessingInfo(simId:Int,cmpId:Int,assemblyId:Int,sequence:Int,opId:Int):Boolean
+  def updateComponentProcessingInfo(simulationId: Int, componentId: Int, assemblyId: Int, sequence: Int, operationId: Int, failureWaitTime: Int):Boolean
 
   def clearPreviousSimulationProcessingDetails(simulationId:Int):Future[Boolean]
 
@@ -143,9 +145,10 @@ class SlickModuleImplementation(cache:CacheApi) extends DbModule {
     assembly.updateAssemblyOperationStatus(assemblyId,operationId,FreeOperationStatus.text,cache)
     component.updateComponentProcessingInfoForFailure(simulationId,componentId,assemblyId,sequence,operationId)
   }
-  def updateComponentProcessingInfo(simId:Int,cmpId:Int,assemblyId:Int,sequence:Int,opId:Int):Boolean ={
-    assembly.updateAssemblyOperationStatus(assemblyId,opId,FreeOperationStatus.text,cache)
-    component.updateComponentProcessingInfo(simId,cmpId,assemblyId,sequence,opId)
+  def updateComponentProcessingInfo(simulationId: Int, componentId: Int, assemblyId: Int, sequence: Int, operationId: Int, failureWaitTime: Int) :Boolean ={
+    assembly.updateAssemblyOperationStatus(assemblyId,operationId,FreeOperationStatus.text,cache)
+
+    component.updateComponentProcessingInfo(simulationId,componentId,assemblyId,sequence,operationId , FinishedProcessingStatus,failureWaitTime)
   }
   def addComponentProcessingInfo(simId:Int,cmpId:Int,assemblyId:Int,sequence:Int,opId:Int):Boolean={
     component.addComponentProcessingInfo(simId,cmpId,assemblyId,sequence,opId)
