@@ -40,14 +40,19 @@ class NetworkProxy(ws:WSClient) {
     }while (status != 200 && status !=5)
   }
 
-  def sendFailureNotificationToAssembly(url:String,failureTime:Int,action:String)={
+  def sendFailureNotificationToAssembly(url:String,failureTime:Int,action:String):Boolean={
 
     var status=0
+    var flag  =true
     do{
       val data = Json.obj("failureTime"->failureTime,"componentAction"->action)
       val req = Await.result(ws.url(url+assemblyFailureHook).post(data),Duration.Inf)
+      logger.info("Assembly Failure Request send and Response is "+req.status+"  :: "+req)
+
       status = if(req.status !=200)status+1 else req.status
+      flag = ((Json.parse(req.body.toString) \ "body") \ "status").as[Boolean]
     }while(status !=200 && status !=5)
+    flag
   }
   def sendSimulationStartDetails(url: String) = {
     //send http request using assemblies details

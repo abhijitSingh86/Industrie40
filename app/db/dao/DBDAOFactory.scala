@@ -1,7 +1,7 @@
 package db.dao
 
 import db.generatedtable.Tables
-import models.Operation
+import models.{ComponentProcessingStatus, Operation}
 import play.api.cache.CacheApi
 
 import scala.concurrent.Future
@@ -70,6 +70,7 @@ trait ComponentDaoRepo {
   def component: ComponentDao
 
   trait ComponentDao {
+    def updateComponentProcessingInfo(simulationId: Int, componentId: Int, assemblyId: Int, sequence: Int, operationId: Int, status: ComponentProcessingStatus, failureWaitTime: Int): Boolean
 
     def add(component: models.Component): Int
 
@@ -92,8 +93,6 @@ trait ComponentDaoRepo {
     :Option[models.Component]
 
     def addComponentProcessingInfo(simId:Int,cmpId:Int,assemblyId:Int,sequence:Int,opId:Int):Boolean
-
-    def updateComponentProcessingInfo(simId:Int,cmpId:Int,assemblyId:Int,sequence:Int,opId:Int):Boolean
 
     def updateComponentProcessingInfoForFailure(simId:Int,cmpId:Int,assemblyId:Int,sequence:Int,opId:Int):Boolean
 

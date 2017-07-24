@@ -93,6 +93,13 @@ class AccordinData extends React.Component {
                 var std = new Date(past[i].startTime)
                 var etd = new Date(past[i].endTime)
                 var secondsSpent = (etd - std) / 1000
+
+                var timeString = ""
+                var failTime = past[i].failureWaitTime == 0 ? "" : past[i].failureWaitTime+" Sec"
+                if(past[i].status === 'failed')
+                    timeString = "Failed after "+secondsSpent + " Sec";
+                else
+                    timeString = secondsSpent +" Sec"+ failTime
                 // console.log(secondsSpent);
                 rows.push(<tr>
                     <td colSpan={2}>
@@ -112,7 +119,7 @@ class AccordinData extends React.Component {
                                     {etd.toLocaleString()}
                                 </td>
                                 <td>
-                                    {secondsSpent}
+                                    {timeString}
                                 </td>
                             </tr>
                             </tbody>
@@ -133,7 +140,10 @@ class AccordinData extends React.Component {
         var color = []
         if (this.state != null && this.state.component != undefined) {
             // console.log("Into state component")
-            var past = this.state.component.schedulinginfo.pastOperations;
+            function isFailed(row){
+                row.status === "failed"
+            }
+            var past = this.state.component.schedulinginfo.pastOperations.filter(isFailed);
             var subarr = arr.slice(0, past.length);
             // console.log(subarr);
             // console.log(past);

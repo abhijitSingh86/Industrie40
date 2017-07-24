@@ -54,11 +54,12 @@ trait SlickComponentDaoRepo extends ComponentDaoRepo {
       }
     }
 
-    def updateComponentProcessingInfo(simId: Int, cmpId: Int, assemblyId: Int, sequence: Int, opId: Int): Boolean = {
+//    def updateComponentProcessingInfo(simulationId: Int, componentId: Int, assemblyId: Int, sequence: Int, operationId: Int, status: ComponentProcessingStatus, failureWaitTime: Int): Boolean ={
+    def updateComponentProcessingInfo(simId: Int, cmpId: Int, assemblyId: Int, sequence: Int, opId: Int ,status: ComponentProcessingStatus, failureWaitTime: Int): Boolean = {
       val res = for {c <- componentProcessingState if (c.assemblyid === assemblyId && c.componentid === cmpId &&
-        c.operationid === opId && c.simulationid === simId && c.sequencenum === sequence)} yield (c.endTime , c.status)
+        c.operationid === opId && c.simulationid === simId && c.sequencenum === sequence)} yield (c.endTime , c.status ,c.failwaittime)
 
-      Await.result(db.run(res.update((Some(DateTimeUtils.getCurrentTimeStamp()) , FinishedProcessingStatus.text))), Duration.Inf) match {
+      Await.result(db.run(res.update((Some(DateTimeUtils.getCurrentTimeStamp()) , status.text , Some(failureWaitTime)))), Duration.Inf) match {
         case 1 => true
         case _ => false
       }
@@ -182,7 +183,7 @@ trait SlickComponentDaoRepo extends ComponentDaoRepo {
     }
 
     def mapToOperationProcessingInfo(x: Tables.ComponentProcessingStateRow,assmeblyName:String) = {
-      new OperationProcessingInfo(x.operationid, x.assemblyid, assmeblyName ,x.startTime.get.getTime, x.endTime.get.getTime , ComponentProcessingStatus(x.status).text)
+      new OperationProcessingInfo(x.operationid, x.assemblyid, assmeblyName ,x.startTime.get.getTime, x.endTime.get.getTime , ComponentProcessingStatus(x.status).text , x.failwaittime.getOrElse(0))
     }
 
 
@@ -214,40 +215,42 @@ trait SlickComponentDaoRepo extends ComponentDaoRepo {
                                       assemblyNameMap:Map[Int,String]): ComponentSchedulingInfo = {
       //TODO check for sort be descending after some values
       val result = db.run(componentProcessingState.filter(x => (x.componentid === componentId &&
-        x.simulationid === simulationId)).sortBy(_.sequencenum.desc).result).map(y => convertComponentProcessing(cache, assemblyNameMap, y))
+        x.simulationid === simulationId)).sortBy(_.startTime.desc).result).map(y => convertComponentProcessing(cache, assemblyNameMap, y))
       Await.result(result, Duration.Inf)
     }
 
     private def convertComponentProcessing(cache: CacheApi, assemblyNameMap: Map[Int, String], y: Seq[Tables.ComponentProcessingStateRow]) = {
 
-      val firstRow = if (y.takeRight(1).size == 1) Some(y.take(1)(0)) else None
+      val inProgressList = y.filter(_.status == InProgressProcessingStatus.text)
+      if(inProgressList.size > 1)
+        throw new Exception("component state is not in correct state")
+
+      val inProgressRow = if (inProgressList.size == 1) Some(inProgressList(0)) else None
       //get each row and form the scheduling information Details
       var oinfo: List[OperationProcessingInfo] = List()
 
-      val curr = if (firstRow.isDefined && firstRow.get.endTime.isDefined) {
+      val curr = if (inProgressRow.isDefined) {
+        //there is current processing record present whose end time is defiend.. Append all the items in previous and
+        // first as current processing
+        oinfo = y.filterNot(_.status.equalsIgnoreCase(InProgressProcessingStatus.text)).map(x => mapToOperationProcessingInfo(x, assemblyNameMap.get(x.assemblyid).getOrElse(""))
+        ).toList
+        val c = inProgressRow.get
+        Some(new OperationProcessingInfo(c.operationid, c.assemblyid, assemblyNameMap.get(c.assemblyid).getOrElse("")
+          , c.startTime.get.getTime, 0l , ComponentProcessingStatus(c.status).text , c.failwaittime.getOrElse(0)))
+
+      } else {
         //normal processing record as the end time is defined
         oinfo = y.map(x => mapToOperationProcessingInfo(x, assemblyNameMap.get(x.assemblyid).getOrElse(""))
         ).toList
         None
-      } else if (firstRow.isDefined) {
-        //there is current processing record present whose end time is defiend.. Append all the items in previous and
-        // first as current processing
-        oinfo = y.takeRight(y.length - 1).map(x => mapToOperationProcessingInfo(x, assemblyNameMap.get(x.assemblyid).getOrElse(""))
-        ).toList
-
-        val c = firstRow.get
-        Some(new OperationProcessingInfo(c.operationid, c.assemblyid, assemblyNameMap.get(c.assemblyid).getOrElse("")
-          , c.startTime.get.getTime, 0l , ComponentProcessingStatus(c.status).text))
-      } else {
-        //No info is present
-        None
       }
 
-      val sequemce = if (firstRow.isDefined) firstRow.get.sequencenum + 1 else 0
+      val headElement= y.filterNot(_.status.equalsIgnoreCase(FailedProcessingStatus.text)).sortBy(_.sequencenum).take(1)
+      val seq = if(headElement.size ==1) headElement(0).sequencenum+1 else 0
+      println("Component Sequence number is"+seq)
+      val completedOPerationList = oinfo.filter(_.status.equalsIgnoreCase(FinishedProcessingStatus.text)).map(_.operationId).reverse.map(operation.selectByOperationId(_, cache))
 
-      val completedOPerationList = oinfo.map(_.operationId).reverse.map(operation.selectByOperationId(_, cache))
-
-      new ComponentSchedulingInfo(oinfo.reverse, curr, sequemce, completedOPerationList)
+      new ComponentSchedulingInfo(oinfo.reverse, curr, seq, completedOPerationList)
 
     }
 
