@@ -13,17 +13,23 @@ import scala.collection.mutable
 //val li:mutable.ListBuffer[Int] = mutable.ListBuffer(1,2)
 //li :+ 3
 
-val q = new mutable.Queue[Int]
-q += 1
-q +=2
+val list = List(8,1,2,3,4,5,6,7)
 
-q.filterNot(_ ==2)
-val l =new  mutable.LinkedHashSet[Int]()
-l +=1
-l +=2
-l
-l+=2
-l
+list.sortWith(_ > _)
+
+
+
+//val q = new mutable.Queue[Int]
+//q += 1
+//q +=2
+//
+//q.filterNot(_ ==2)
+//val l =new  mutable.LinkedHashSet[Int]()
+//l +=1
+//l +=2
+//l
+//l+=2
+//l
 
 
 //

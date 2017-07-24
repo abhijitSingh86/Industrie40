@@ -165,22 +165,23 @@ trait Tables {
     *  @param simulationid Database column simulationId SqlType(INT)
     *  @param sequencenum Database column sequenceNum SqlType(INT)
     *  @param operationid Database column operationId SqlType(INT)
-    *  @param startTime Database column start_time SqlType(DATETIME), Default(None)
+    *  @param startTime Database column start_time SqlType(DATETIME)
     *  @param endTime Database column end_time SqlType(DATETIME), Default(None)
     *  @param assemblyid Database column assemblyId SqlType(INT)
     *  @param status Database column status SqlType(VARCHAR), Length(45,true)
-    *  @param failwaittime Database column failWaitTime SqlType(INT), Default(None) */
-  case class ComponentProcessingStateRow(componentid: Int, simulationid: Int, sequencenum: Int, operationid: Int, startTime: Option[java.sql.Timestamp] = None, endTime: Option[java.sql.Timestamp] = None, assemblyid: Int, status: String, failwaittime: Option[Int] = None)
+    *  @param failwaittime Database column failWaitTime SqlType(INT), Default(None)
+    *  @param actualoperationtime Database column actualOperationTime SqlType(INT) */
+  case class ComponentProcessingStateRow(componentid: Int, simulationid: Int, sequencenum: Int, operationid: Int, startTime: java.sql.Timestamp, endTime: Option[java.sql.Timestamp] = None, assemblyid: Int, status: String, failwaittime: Option[Int] = None, actualoperationtime: Int)
   /** GetResult implicit for fetching ComponentProcessingStateRow objects using plain SQL queries */
-  implicit def GetResultComponentProcessingStateRow(implicit e0: GR[Int], e1: GR[Option[java.sql.Timestamp]], e2: GR[String], e3: GR[Option[Int]]): GR[ComponentProcessingStateRow] = GR{
+  implicit def GetResultComponentProcessingStateRow(implicit e0: GR[Int], e1: GR[java.sql.Timestamp], e2: GR[Option[java.sql.Timestamp]], e3: GR[String], e4: GR[Option[Int]]): GR[ComponentProcessingStateRow] = GR{
     prs => import prs._
-      ComponentProcessingStateRow.tupled((<<[Int], <<[Int], <<[Int], <<[Int], <<?[java.sql.Timestamp], <<?[java.sql.Timestamp], <<[Int], <<[String], <<?[Int]))
+      ComponentProcessingStateRow.tupled((<<[Int], <<[Int], <<[Int], <<[Int], <<[java.sql.Timestamp], <<?[java.sql.Timestamp], <<[Int], <<[String], <<?[Int], <<[Int]))
   }
   /** Table description of table component_processing_state. Objects of this class serve as prototypes for rows in queries. */
   class ComponentProcessingState(_tableTag: Tag) extends Table[ComponentProcessingStateRow](_tableTag, "component_processing_state") {
-    def * = (componentid, simulationid, sequencenum, operationid, startTime, endTime, assemblyid, status, failwaittime) <> (ComponentProcessingStateRow.tupled, ComponentProcessingStateRow.unapply)
+    def * = (componentid, simulationid, sequencenum, operationid, startTime, endTime, assemblyid, status, failwaittime, actualoperationtime) <> (ComponentProcessingStateRow.tupled, ComponentProcessingStateRow.unapply)
     /** Maps whole row to an option. Useful for outer joins. */
-    def ? = (Rep.Some(componentid), Rep.Some(simulationid), Rep.Some(sequencenum), Rep.Some(operationid), startTime, endTime, Rep.Some(assemblyid), Rep.Some(status), failwaittime).shaped.<>({r=>import r._; _1.map(_=> ComponentProcessingStateRow.tupled((_1.get, _2.get, _3.get, _4.get, _5, _6, _7.get, _8.get, _9)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+    def ? = (Rep.Some(componentid), Rep.Some(simulationid), Rep.Some(sequencenum), Rep.Some(operationid), Rep.Some(startTime), endTime, Rep.Some(assemblyid), Rep.Some(status), failwaittime, Rep.Some(actualoperationtime)).shaped.<>({r=>import r._; _1.map(_=> ComponentProcessingStateRow.tupled((_1.get, _2.get, _3.get, _4.get, _5.get, _6, _7.get, _8.get, _9, _10.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
 
     /** Database column componentId SqlType(INT) */
     val componentid: Rep[Int] = column[Int]("componentId")
@@ -190,8 +191,8 @@ trait Tables {
     val sequencenum: Rep[Int] = column[Int]("sequenceNum")
     /** Database column operationId SqlType(INT) */
     val operationid: Rep[Int] = column[Int]("operationId")
-    /** Database column start_time SqlType(DATETIME), Default(None) */
-    val startTime: Rep[Option[java.sql.Timestamp]] = column[Option[java.sql.Timestamp]]("start_time", O.Default(None))
+    /** Database column start_time SqlType(DATETIME) */
+    val startTime: Rep[java.sql.Timestamp] = column[java.sql.Timestamp]("start_time")
     /** Database column end_time SqlType(DATETIME), Default(None) */
     val endTime: Rep[Option[java.sql.Timestamp]] = column[Option[java.sql.Timestamp]]("end_time", O.Default(None))
     /** Database column assemblyId SqlType(INT) */
@@ -200,9 +201,11 @@ trait Tables {
     val status: Rep[String] = column[String]("status", O.Length(45,varying=true))
     /** Database column failWaitTime SqlType(INT), Default(None) */
     val failwaittime: Rep[Option[Int]] = column[Option[Int]]("failWaitTime", O.Default(None))
+    /** Database column actualOperationTime SqlType(INT) */
+    val actualoperationtime: Rep[Int] = column[Int]("actualOperationTime")
 
     /** Primary key of ComponentProcessingState (database name component_processing_state_PK) */
-    val pk = primaryKey("component_processing_state_PK", (componentid, simulationid, assemblyid, operationid, sequencenum,startTime))
+    val pk = primaryKey("component_processing_state_PK", (componentid, simulationid, assemblyid, operationid, sequencenum, startTime))
   }
   /** Collection-like TableQuery object for table ComponentProcessingState */
   lazy val ComponentProcessingState = new TableQuery(tag => new ComponentProcessingState(tag))

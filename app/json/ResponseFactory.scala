@@ -60,7 +60,7 @@ case class AssemblySchedulingInfo(assembly:Assembly,componentNameMap:Map[Int,Str
     }
     def tableRow(x:Tables.ComponentProcessingStateRow):JsValue= {
       val et = checkAndGet(x.endTime,0L,(x:java.sql.Timestamp)=> x.getTime())
-      val st = checkAndGet(x.startTime,0L,(x:java.sql.Timestamp)=> x.getTime())
+      val st = checkAndGet(Some(x.startTime),0L,(x:java.sql.Timestamp)=> x.getTime())
 
         Json.obj("componentid"-> x.componentid , "startTime"-> st , "endTime"-> et)
     }

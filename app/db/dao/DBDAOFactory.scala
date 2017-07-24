@@ -92,7 +92,7 @@ trait ComponentDaoRepo {
     def selectByComponentSimulationId(componentId: Int, simulationId:Int,cache:CacheApi,assemblyNameMap:Map[Int,String])
     :Option[models.Component]
 
-    def addComponentProcessingInfo(simId:Int,cmpId:Int,assemblyId:Int,sequence:Int,opId:Int):Boolean
+    def addComponentProcessingInfo(simId:Int,cmpId:Int,assemblyId:Int,sequence:Int,opId:Int  , operationTime:Int):Boolean
 
     def updateComponentProcessingInfoForFailure(simId:Int,cmpId:Int,assemblyId:Int,sequence:Int,opId:Int):Boolean
 
