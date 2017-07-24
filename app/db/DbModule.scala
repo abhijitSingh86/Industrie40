@@ -7,8 +7,9 @@ import db.generatedtable.Tables
 import models._
 import play.api.cache.CacheApi
 
-import scala.concurrent.Future
+import scala.concurrent.{Await, Future}
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration.Duration
 /**
   * Created by billa on 25.04.17.
   */
@@ -55,7 +56,9 @@ trait DbModule {
 
   def addAssembly(a:Assembly):Int
 
-  def addComponentProcessingInfo(simId:Int,cmpId:Int,assemblyId:Int,sequence:Int,opId:Int):Boolean
+  def fetchInProgressComponentOnAssembly(assemblyId:Int,simulationid:Int):(Option[Component],Long)
+
+  def addComponentProcessingInfo(simId:Int,cmpId:Int,assemblyId:Int,sequence:Int,opId:Int , operationTime:Int):Boolean
 
   def updateAssemblyOperationStatus(assemblyId:Int, operationId:Int, status:String):Boolean
 
@@ -83,6 +86,26 @@ class SlickModuleImplementation(cache:CacheApi) extends DbModule {
     with ComponentDaoRepo
     with OperationDaoRepo
     with DBComponent =>
+
+  def fetchInProgressComponentOnAssembly(assemblyId:Int,simulationid:Int):(Option[Component],Long) ={
+    val assemblyNameMap = assembly.selectAssemblyNameMapBySimulationId(simulationid,cache)
+    val comps =Await.result(
+      component.getComponentProcessingInfoForSimulation(simulationid,cache,assemblyNameMap).map(x=>
+      x.filter(y=> y.assemblyid == assemblyId && y.status.equalsIgnoreCase(InProgressProcessingStatus.text) && y.simulationid == simulationid))
+      , Duration.Inf)
+
+    comps.size match {
+      case 1 =>{
+        val row = comps(0)
+        val etl = (System.currentTimeMillis() - row.startTime.getTime)
+        ((component.selectByComponentSimulationId(row.componentid,simulationid,cache,assemblyNameMap)) , etl)
+
+      }
+      case _ => (None,0)
+    }
+
+
+  }
 
   def updateSimulationEndTime(simulationId:Int):Boolean = {
     val etTime = component.getLastEndTimeFromComponentProcessingInfo(simulationId)
@@ -150,8 +173,8 @@ class SlickModuleImplementation(cache:CacheApi) extends DbModule {
 
     component.updateComponentProcessingInfo(simulationId,componentId,assemblyId,sequence,operationId , FinishedProcessingStatus,failureWaitTime)
   }
-  def addComponentProcessingInfo(simId:Int,cmpId:Int,assemblyId:Int,sequence:Int,opId:Int):Boolean={
-    component.addComponentProcessingInfo(simId,cmpId,assemblyId,sequence,opId)
+  def addComponentProcessingInfo(simId:Int,cmpId:Int,assemblyId:Int,sequence:Int,opId:Int , operationTime:Int):Boolean={
+    component.addComponentProcessingInfo(simId,cmpId,assemblyId,sequence,opId,operationTime)
   }
 
   def getAllSimulation():List[Simulation] = {

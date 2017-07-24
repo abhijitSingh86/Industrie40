@@ -65,9 +65,9 @@ trait SlickComponentDaoRepo extends ComponentDaoRepo {
       }
     }
 
-    def addComponentProcessingInfo(simId: Int, cmpId: Int, assemblyId: Int, sequence: Int, opId: Int): Boolean = {
+    def addComponentProcessingInfo(simId: Int, cmpId: Int, assemblyId: Int, sequence: Int, opId: Int,operationTime:Int): Boolean = {
       val result = db.run(componentProcessingState += new ComponentProcessingStateRow(cmpId, simId, sequence, opId,
-        Some(DateTimeUtils.getCurrentTimeStamp()), None, assemblyId , InProgressProcessingStatus.text))
+        DateTimeUtils.getCurrentTimeStamp(), None, assemblyId , InProgressProcessingStatus.text,None , actualoperationtime = operationTime))
 
       Await.result(result, Duration.Inf) match {
         case 1 => true
@@ -183,7 +183,7 @@ trait SlickComponentDaoRepo extends ComponentDaoRepo {
     }
 
     def mapToOperationProcessingInfo(x: Tables.ComponentProcessingStateRow,assmeblyName:String) = {
-      new OperationProcessingInfo(x.operationid, x.assemblyid, assmeblyName ,x.startTime.get.getTime, x.endTime.get.getTime , ComponentProcessingStatus(x.status).text , x.failwaittime.getOrElse(0))
+      new OperationProcessingInfo(x.operationid, x.assemblyid, assmeblyName ,x.startTime.getTime, x.endTime.get.getTime , ComponentProcessingStatus(x.status).text , x.failwaittime.getOrElse(0))
     }
 
 
@@ -219,9 +219,9 @@ trait SlickComponentDaoRepo extends ComponentDaoRepo {
       Await.result(result, Duration.Inf)
     }
 
-    private def convertComponentProcessing(cache: CacheApi, assemblyNameMap: Map[Int, String], y: Seq[Tables.ComponentProcessingStateRow]) = {
+    private def convertComponentProcessing(cache: CacheApi, assemblyNameMap: Map[Int, String], CPSRDbRows: Seq[Tables.ComponentProcessingStateRow]) = {
 
-      val inProgressList = y.filter(_.status == InProgressProcessingStatus.text)
+      val inProgressList = CPSRDbRows.filter(_.status == InProgressProcessingStatus.text)
       if(inProgressList.size > 1)
         throw new Exception("component state is not in correct state")
 
@@ -232,20 +232,20 @@ trait SlickComponentDaoRepo extends ComponentDaoRepo {
       val curr = if (inProgressRow.isDefined) {
         //there is current processing record present whose end time is defiend.. Append all the items in previous and
         // first as current processing
-        oinfo = y.filterNot(_.status.equalsIgnoreCase(InProgressProcessingStatus.text)).map(x => mapToOperationProcessingInfo(x, assemblyNameMap.get(x.assemblyid).getOrElse(""))
+        oinfo = CPSRDbRows.filterNot(_.status.equalsIgnoreCase(InProgressProcessingStatus.text)).map(x => mapToOperationProcessingInfo(x, assemblyNameMap.get(x.assemblyid).getOrElse(""))
         ).toList
         val c = inProgressRow.get
         Some(new OperationProcessingInfo(c.operationid, c.assemblyid, assemblyNameMap.get(c.assemblyid).getOrElse("")
-          , c.startTime.get.getTime, 0l , ComponentProcessingStatus(c.status).text , c.failwaittime.getOrElse(0)))
+          , c.startTime.getTime, 0l , ComponentProcessingStatus(c.status).text , c.failwaittime.getOrElse(0)))
 
       } else {
         //normal processing record as the end time is defined
-        oinfo = y.map(x => mapToOperationProcessingInfo(x, assemblyNameMap.get(x.assemblyid).getOrElse(""))
+        oinfo = CPSRDbRows.map(x => mapToOperationProcessingInfo(x, assemblyNameMap.get(x.assemblyid).getOrElse(""))
         ).toList
         None
       }
 
-      val headElement= y.filterNot(_.status.equalsIgnoreCase(FailedProcessingStatus.text)).sortBy(_.sequencenum).take(1)
+      val headElement= CPSRDbRows.filterNot(_.status.equalsIgnoreCase(FailedProcessingStatus.text)).sortWith(_.sequencenum > _.sequencenum).take(1)
       val seq = if(headElement.size ==1) headElement(0).sequencenum+1 else 0
       println("Component Sequence number is"+seq)
       val completedOPerationList = oinfo.filter(_.status.equalsIgnoreCase(FinishedProcessingStatus.text)).map(_.operationId).reverse.map(operation.selectByOperationId(_, cache))
@@ -265,7 +265,7 @@ trait SlickComponentDaoRepo extends ComponentDaoRepo {
     private def getProcessingInfo(cid:Int , cache:CacheApi):List[ProcessingSequence] = {
       cache.getOrElse[List[ProcessingSequence]](s"c${cid}") {
         Await.result(db.run(componentsOperationMapping.filter(_.componentId === cid).result), Duration.Inf) match {
-          case row => { //:List[ComponentOperationMappingRow]
+          case row if row.size >0 => { //:List[ComponentOperationMappingRow]
             createProcessingSequenceList(row.toList, cache)
           }
           case _ => List[ProcessingSequence]()

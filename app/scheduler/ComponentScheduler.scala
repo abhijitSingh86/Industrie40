@@ -9,7 +9,7 @@ import scala.collection.mutable
 /**
   * Created by billa on 2016-12-16.
   */
-class ComponentScheduler(scheduleDbHandler:ScheduleDbHandler) extends Scheduler {
+class ComponentScheduler(scheduleDbHandler:SchedulerAssignmentHandler) extends Scheduler {
 
 
   private val logger = Logger("access")
@@ -20,7 +20,7 @@ class ComponentScheduler(scheduleDbHandler:ScheduleDbHandler) extends Scheduler 
     *
     * @param components
     * @param assemblies
-    * @return
+    * @return List of Scheduled Components
     */
   override def scheduleComponents(components: List[Component], assemblies: List[Assembly]): List[Int] = {
     //first get the available resource map
@@ -40,14 +40,7 @@ class ComponentScheduler(scheduleDbHandler:ScheduleDbHandler) extends Scheduler 
             component.getCurrentOperation() match {
               case None if(!scheduledComponent.contains(component.id)) => {
                 val assembly = availableResourceMap.get(operation).get(0)
-                //This line is ambiguous seems o is fix for earlier version of Operation Hierarchy
-               // val o = availableResourceMap.keySet.filter(_ == operation).head
                 scheduleDbHandler.assign(component,operation,assembly)
-               // assembly.allocateOperation(o)
-               //TODO
-                // component.scheduleCurrentOperation(operation, assembly)
-//                val updatedList:List[Assembly] = availableResourceMap.get(operation).get.drop(1)
-//                availableResourceMap += (operation -> updatedList)
                 availableResourceMap = removeAssemblyFromAvailabelResourceMap(availableResourceMap,assembly)
                 scheduledComponent += component.id
               }
