@@ -26,6 +26,8 @@ case object FailureActor{
 
 class AssemblyFailureCommunication(networkProxy: NetworkProxy , url:String,failureTime:Int){
 
+  def getFailTime():Int = failureTime
+
   def failCall() = sendFailureInfoToAssembly(url,failureTime,"error")
 
   def waitCall() = sendFailureInfoToAssembly(url,failureTime,"wait")
