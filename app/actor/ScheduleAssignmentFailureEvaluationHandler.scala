@@ -22,7 +22,7 @@ class ScheduleAssignmentFailureEvaluationHandler extends SchedulerAssignmentHand
     val newTime = assembly.totalOperations.filter(_.operation.id==operation.id)(0).time
 
     val randomTransportTime = 5
-    if((newTime+randomTransportTime) > estimatedFinishTime*2){
+    if((newTime+randomTransportTime) > estimatedFinishTime + assemblyFailureCommunication.getFailTime() ){
       // wait
       assemblyFailureCommunication.waitCall()
     } else{

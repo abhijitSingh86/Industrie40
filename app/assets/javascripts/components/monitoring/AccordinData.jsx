@@ -140,10 +140,15 @@ class AccordinData extends React.Component {
         var color = []
         if (this.state != null && this.state.component != undefined) {
             // console.log("Into state component")
-            function isFailed(row){
-                row.status === "failed"
+
+            var pastState = this.state.component.schedulinginfo.pastOperations;
+            // console.log(pastState)
+            // console.log(pastState.filter(x=>x.status === 'finished'))
+            var past = []
+            for(var i=0;i<pastState.length;i++){
+                if( pastState[i].status === 'finished')
+                past[i]=pastState[i];
             }
-            var past = this.state.component.schedulinginfo.pastOperations.filter(isFailed);
             var subarr = arr.slice(0, past.length);
             // console.log(subarr);
             // console.log(past);
