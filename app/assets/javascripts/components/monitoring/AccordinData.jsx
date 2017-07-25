@@ -139,14 +139,19 @@ class AccordinData extends React.Component {
     getComponentOperationColor(arr) {
         var color = []
         if (this.state != null && this.state.component != undefined) {
-            // console.log("Into state component")
-            function isFailed(row){
-                row.status === "failed"
+            console.log("Into state component")
+
+            var pastState = this.state.component.schedulinginfo.pastOperations;
+            console.log(pastState)
+            console.log(pastState.filter(x=>x.status === 'finished'))
+            var past = []
+            for(var i=0;i<pastState.length;i++){
+                if( pastState[i].status === 'finished')
+                past[i]=pastState[i];
             }
-            var past = this.state.component.schedulinginfo.pastOperations.filter(isFailed);
             var subarr = arr.slice(0, past.length);
-            // console.log(subarr);
-            // console.log(past);
+            console.log(subarr);
+            console.log(past);
             if (past.length != 0 && subarr.length == past.length &&
                 subarr.every((v, i) => v.id === past[i].operationId)) {
 
@@ -156,7 +161,7 @@ class AccordinData extends React.Component {
                 for (var i = past.length; i < arr.length; i++) {
                     color.push("#000000")
                 }
-                // console.log(color);
+                console.log(color);
                 return color;
             }
         }
