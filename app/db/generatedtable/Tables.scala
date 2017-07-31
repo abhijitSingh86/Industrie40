@@ -1,4 +1,5 @@
 package db.generatedtable
+// AUTO-GENERATED Slick data model
 /** Stand-alone Slick data model for immediate use */
 object Tables extends {
   val profile = slick.driver.MySQLDriver
@@ -13,7 +14,7 @@ trait Tables {
   import slick.jdbc.{GetResult => GR}
 
   /** DDL for all tables. Call .create to execute. */
-  lazy val schema: profile.SchemaDescription = Array(Assembly.schema, AssemblyOperationMapping.schema, AssemblyState.schema, Component.schema, ComponentOperationMapping.schema, ComponentProcessingState.schema, ComponentState.schema, Operation.schema, Simulation.schema, Simulationassemblymap.schema, SimulationComponentMapping.schema).reduceLeft(_ ++ _)
+  lazy val schema: profile.SchemaDescription = Array(Assembly.schema, AssemblyOperationMapping.schema, AssemblyState.schema, Component.schema, ComponentOperationMapping.schema, ComponentProcessingState.schema, ComponentState.schema, Operation.schema, Simulation.schema, Simulationa2atransporttime.schema, Simulationassemblymap.schema, Simulationc2atransporttime.schema, SimulationComponentMapping.schema).reduceLeft(_ ++ _)
   @deprecated("Use .schema instead of .ddl", "3.0")
   def ddl = schema
 
@@ -285,6 +286,45 @@ trait Tables {
   /** Collection-like TableQuery object for table Simulation */
   lazy val Simulation = new TableQuery(tag => new Simulation(tag))
 
+  /** Entity class storing rows of table Simulationa2atransporttime
+    *  @param assemblyid1 Database column assemblyId1 SqlType(INT)
+    *  @param assemblyid2 Database column assemblyId2 SqlType(INT)
+    *  @param simulationid Database column simulationId SqlType(INT)
+    *  @param transporttime Database column transportTime SqlType(INT) */
+  case class Simulationa2atransporttimeRow(assemblyid1: Int, assemblyid2: Int, simulationid: Int, transporttime: Int)
+  /** GetResult implicit for fetching Simulationa2atransporttimeRow objects using plain SQL queries */
+  implicit def GetResultSimulationa2atransporttimeRow(implicit e0: GR[Int]): GR[Simulationa2atransporttimeRow] = GR{
+    prs => import prs._
+      Simulationa2atransporttimeRow.tupled((<<[Int], <<[Int], <<[Int], <<[Int]))
+  }
+  /** Table description of table simulationA2ATransportTime. Objects of this class serve as prototypes for rows in queries. */
+  class Simulationa2atransporttime(_tableTag: Tag) extends Table[Simulationa2atransporttimeRow](_tableTag, "simulationA2ATransportTime") {
+    def * = (assemblyid1, assemblyid2, simulationid, transporttime) <> (Simulationa2atransporttimeRow.tupled, Simulationa2atransporttimeRow.unapply)
+    /** Maps whole row to an option. Useful for outer joins. */
+    def ? = (Rep.Some(assemblyid1), Rep.Some(assemblyid2), Rep.Some(simulationid), Rep.Some(transporttime)).shaped.<>({r=>import r._; _1.map(_=> Simulationa2atransporttimeRow.tupled((_1.get, _2.get, _3.get, _4.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+
+    /** Database column assemblyId1 SqlType(INT) */
+    val assemblyid1: Rep[Int] = column[Int]("assemblyId1")
+    /** Database column assemblyId2 SqlType(INT) */
+    val assemblyid2: Rep[Int] = column[Int]("assemblyId2")
+    /** Database column simulationId SqlType(INT) */
+    val simulationid: Rep[Int] = column[Int]("simulationId")
+    /** Database column transportTime SqlType(INT) */
+    val transporttime: Rep[Int] = column[Int]("transportTime")
+
+    /** Primary key of Simulationa2atransporttime (database name simulationA2ATransportTime_PK) */
+    val pk = primaryKey("simulationA2ATransportTime_PK", (assemblyid1, simulationid, assemblyid2))
+
+    /** Foreign key referencing Assembly (database name fk_new_table_1) */
+    lazy val assemblyFk1 = foreignKey("fk_new_table_1", assemblyid1, Assembly)(r => r.id, onUpdate=ForeignKeyAction.NoAction, onDelete=ForeignKeyAction.NoAction)
+    /** Foreign key referencing Assembly (database name fk_new_table_2) */
+    lazy val assemblyFk2 = foreignKey("fk_new_table_2", assemblyid2, Assembly)(r => r.id, onUpdate=ForeignKeyAction.NoAction, onDelete=ForeignKeyAction.NoAction)
+    /** Foreign key referencing Simulation (database name fk_new_table_4) */
+    lazy val simulationFk = foreignKey("fk_new_table_4", simulationid, Simulation)(r => r.id, onUpdate=ForeignKeyAction.NoAction, onDelete=ForeignKeyAction.NoAction)
+  }
+  /** Collection-like TableQuery object for table Simulationa2atransporttime */
+  lazy val Simulationa2atransporttime = new TableQuery(tag => new Simulationa2atransporttime(tag))
+
   /** Entity class storing rows of table Simulationassemblymap
     *  @param simulationId Database column simulation_id SqlType(INT)
     *  @param assemblyId Database column assembly_id SqlType(INT)
@@ -315,6 +355,45 @@ trait Tables {
   }
   /** Collection-like TableQuery object for table Simulationassemblymap */
   lazy val Simulationassemblymap = new TableQuery(tag => new Simulationassemblymap(tag))
+
+  /** Entity class storing rows of table Simulationc2atransporttime
+    *  @param assemblyid Database column assemblyId SqlType(INT)
+    *  @param componentid Database column componentId SqlType(INT)
+    *  @param simulationid Database column simulationId SqlType(INT)
+    *  @param transporttime Database column transportTime SqlType(INT), Default(None) */
+  case class Simulationc2atransporttimeRow(assemblyid: Int, componentid: Int, simulationid: Int, transporttime: Option[Int] = None)
+  /** GetResult implicit for fetching Simulationc2atransporttimeRow objects using plain SQL queries */
+  implicit def GetResultSimulationc2atransporttimeRow(implicit e0: GR[Int], e1: GR[Option[Int]]): GR[Simulationc2atransporttimeRow] = GR{
+    prs => import prs._
+      Simulationc2atransporttimeRow.tupled((<<[Int], <<[Int], <<[Int], <<?[Int]))
+  }
+  /** Table description of table simulationC2ATransportTime. Objects of this class serve as prototypes for rows in queries. */
+  class Simulationc2atransporttime(_tableTag: Tag) extends Table[Simulationc2atransporttimeRow](_tableTag, "simulationC2ATransportTime") {
+    def * = (assemblyid, componentid, simulationid, transporttime) <> (Simulationc2atransporttimeRow.tupled, Simulationc2atransporttimeRow.unapply)
+    /** Maps whole row to an option. Useful for outer joins. */
+    def ? = (Rep.Some(assemblyid), Rep.Some(componentid), Rep.Some(simulationid), transporttime).shaped.<>({r=>import r._; _1.map(_=> Simulationc2atransporttimeRow.tupled((_1.get, _2.get, _3.get, _4)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+
+    /** Database column assemblyId SqlType(INT) */
+    val assemblyid: Rep[Int] = column[Int]("assemblyId")
+    /** Database column componentId SqlType(INT) */
+    val componentid: Rep[Int] = column[Int]("componentId")
+    /** Database column simulationId SqlType(INT) */
+    val simulationid: Rep[Int] = column[Int]("simulationId")
+    /** Database column transportTime SqlType(INT), Default(None) */
+    val transporttime: Rep[Option[Int]] = column[Option[Int]]("transportTime", O.Default(None))
+
+    /** Primary key of Simulationc2atransporttime (database name simulationC2ATransportTime_PK) */
+    val pk = primaryKey("simulationC2ATransportTime_PK", (assemblyid, componentid, simulationid))
+
+    /** Foreign key referencing Assembly (database name fk_simulationC2ATransportTime_1) */
+    lazy val assemblyFk = foreignKey("fk_simulationC2ATransportTime_1", assemblyid, Assembly)(r => r.id, onUpdate=ForeignKeyAction.NoAction, onDelete=ForeignKeyAction.NoAction)
+    /** Foreign key referencing Component (database name fk_simulationC2ATransportTime_2) */
+    lazy val componentFk = foreignKey("fk_simulationC2ATransportTime_2", componentid, Component)(r => r.id, onUpdate=ForeignKeyAction.NoAction, onDelete=ForeignKeyAction.NoAction)
+    /** Foreign key referencing Simulation (database name fk_simulationC2ATransportTime_3) */
+    lazy val simulationFk = foreignKey("fk_simulationC2ATransportTime_3", simulationid, Simulation)(r => r.id, onUpdate=ForeignKeyAction.NoAction, onDelete=ForeignKeyAction.NoAction)
+  }
+  /** Collection-like TableQuery object for table Simulationc2atransporttime */
+  lazy val Simulationc2atransporttime = new TableQuery(tag => new Simulationc2atransporttime(tag))
 
   /** Entity class storing rows of table SimulationComponentMapping
     *  @param simulationId Database column simulation_id SqlType(INT)

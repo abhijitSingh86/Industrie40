@@ -1,7 +1,7 @@
 package db.dao
 
 import db.generatedtable.Tables
-import models.{ComponentProcessingStatus, Operation}
+import models.{AssemblyTransportTime, ComponentProcessingStatus, ComponentToAssemblyTransTime, Operation}
 import play.api.cache.CacheApi
 
 import scala.concurrent.Future
@@ -26,6 +26,10 @@ trait SimulationDaoRepo{
   def simulation:SimulationDao
 
   trait SimulationDao{
+
+    def addAssemblyTimeMap(simulationId:Int,assemblyTransTime: List[AssemblyTransportTime]):Unit
+
+    def addComponentTimeMap(simulationId:Int,componentToAssemblyTransTime: List[ComponentToAssemblyTransTime]):Unit
 
     def getAllComponentIdsBySimulationId(simunlationId: Int): List[Int]
 

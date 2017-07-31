@@ -76,7 +76,12 @@ trait DbModule {
   :Future[Seq[Tables.ComponentProcessingStateRow]]
 
   def getComponentById(componentId:Int ,simulationId:Int, processingRecords:Seq[Tables.ComponentProcessingStateRow]):Component
+
   def updateSimulationStartTime(simulationId:Int):Boolean
+
+  def addAssemblyTimeMap(simulationId:Int,assemblyTransTime: List[AssemblyTransportTime]):Unit
+
+  def addComponentTimeMap(simulationId:Int,componentToAssemblyTransTime: List[ComponentToAssemblyTransTime]):Unit
 }
 
 class SlickModuleImplementation(cache:CacheApi) extends DbModule {
@@ -86,6 +91,14 @@ class SlickModuleImplementation(cache:CacheApi) extends DbModule {
     with ComponentDaoRepo
     with OperationDaoRepo
     with DBComponent =>
+
+  def addAssemblyTimeMap(simulationId:Int,assemblyTransTime: List[AssemblyTransportTime]):Unit = {
+    simulation.addAssemblyTimeMap(simulationId,assemblyTransTime)
+  }
+
+  def addComponentTimeMap(simulationId:Int,componentToAssemblyTransTime: List[ComponentToAssemblyTransTime]):Unit = {
+    simulation.addComponentTimeMap(simulationId,componentToAssemblyTransTime)
+  }
 
   def fetchInProgressComponentOnAssembly(assemblyId:Int,simulationid:Int):(Option[Component],Long) ={
     val assemblyNameMap = assembly.selectAssemblyNameMapBySimulationId(simulationid,cache)

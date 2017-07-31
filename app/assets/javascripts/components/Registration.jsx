@@ -8,6 +8,7 @@ import Success       from './Success'
 import OperationForm  from './OperationForm'
 import assign        from 'object-assign'
 import StartPage from './StartPage'
+import TransportTime from './TransportTime'
 
 
 // Idealy, these form values would be saved in another
@@ -20,7 +21,9 @@ var fieldValues = {
   assemblies   : [],
   operationCounter:1,
   componentCounter:0,
-  assemblyCounter:0
+  assemblyCounter:0,
+    assemblyTT:[],
+    componentTT:[]
 }
 
 var Registration = React.createClass({
@@ -84,7 +87,12 @@ var Registration = React.createClass({
                          previousStep={this.previousStep}
                          saveValues={this.saveValues}
                          nextStep={this.nextStep}/>
-      case 5:
+        case 5:
+          return <TransportTime fieldValues={fieldValues}
+                                nextStep={this.nextStep}
+                                previousStep={this.previousStep}
+                                saveValues={this.saveValues} />
+        case 6:
         return <Success fieldValues={fieldValues}
                         previousStep={this.previousStep}
                         changeHandler={this.props.changeHandler}/>

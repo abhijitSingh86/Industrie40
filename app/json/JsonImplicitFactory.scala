@@ -10,6 +10,8 @@ import play.api.libs.functional.syntax._
   */
 object JsonImplicitFactory {
 
+  implicit val assemblyTT:Format[AssemblyTransportTime] = Json.format[AssemblyTransportTime]
+  implicit val comptoAssemTT:Format[ComponentToAssemblyTransTime] = Json.format[ComponentToAssemblyTransTime]
 
   implicit val opRead: Format[Operation] = (
     (JsPath \ "id").format[Int] and

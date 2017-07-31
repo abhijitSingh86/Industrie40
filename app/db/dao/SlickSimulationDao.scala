@@ -1,9 +1,10 @@
 package db.dao
 
 import controllers.ApiResponse
-import db.DBComponent
+import db.{DBComponent, generatedtable}
 import db.generatedtable.Tables
 import db.generatedtable.Tables.{SimulationComponentMappingRow, SimulationassemblymapRow}
+import models.{AssemblyTransportTime, ComponentToAssemblyTransTime}
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
@@ -25,6 +26,25 @@ trait SlickSimulationDaoRepo extends SimulationDaoRepo{
   private lazy val simulationComponentMapping = Tables.SimulationComponentMapping
 
   private lazy val simulationAssemblyMapping = Tables.Simulationassemblymap
+
+    private lazy val simulationAssemblyTT = Tables.Simulationa2atransporttime
+
+    private lazy val simulationComponentTT = Tables.Simulationc2atransporttime
+
+
+    def addAssemblyTimeMap(simulationId:Int,assemblyTransTime: List[AssemblyTransportTime]):Unit={
+      assemblyTransTime.map(x=>{
+        Await.result(db.run(simulationAssemblyTT+= new generatedtable.Tables.Simulationa2atransporttimeRow(x.assembly1,x.assembly2,simulationId,x.transportTime)), Duration.Inf)
+      })
+
+    }
+
+    def addComponentTimeMap(simulationId:Int,componentToAssemblyTransTime: List[ComponentToAssemblyTransTime]):Unit={
+      componentToAssemblyTransTime.map(x=>{
+          Await.result(db.run(simulationComponentTT += new Tables.Simulationc2atransporttimeRow(x.assembly,x.component,simulationId,Some(x.transportTime))), Duration.Inf)
+      })
+
+    }
 
     def updateEndTime(simulationId:Int,etTime:Long):Boolean = {
       val q = for { x <- simulations if x.id === simulationId } yield x.endtime

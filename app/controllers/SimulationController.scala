@@ -88,6 +88,10 @@ class SimulationController(database:DbModule) extends Controller {
 
     val assem = (json \ "assemblies").validate[List[Assembly]].get
 
+    val assemTT = (json \ "assemblyTT").validate[List[AssemblyTransportTime]].get
+
+    val compToAssemTT = (json \ "componentTT").validate[List[ComponentToAssemblyTransTime]].get
+
     op match {
       case s:JsSuccess[List[Operation]] => {
         val opMap = s.get.map(x => (x.id -> database.addOperation(x))).toMap
@@ -98,18 +102,29 @@ class SimulationController(database:DbModule) extends Controller {
         })
 
         val componentIds = updatedComps.map(x => {
-           database.addComponent(x)
+          x.id ->  database.addComponent(x)
         })
 
-        database.addComponentsToSimulation(simulationId,componentIds)
+        database.addComponentsToSimulation(simulationId,componentIds.map(_._2))
 
         val assemblyIds = assem.map(x=> x.copy(totalOperations = x.totalOperations.map(y => new AssemblyOperation(
           new Operation(opMap(y.operation.id),y.operation.name),y.time,FreeOperationStatus))
-        )).map(database.addAssembly(_))
+        )).map(x=> x.id -> database.addAssembly(x))
 
-        database.addAssembliesToSimulation(simulationId,assemblyIds)
+        database.addAssembliesToSimulation(simulationId,assemblyIds.map(_._2))
 
+        val assemblyTTUpdated = assemTT.map(x=>{
+          AssemblyTransportTime(assemblyIds.toMap.get(x.assembly1).get, assemblyIds.toMap.get(x.assembly2).get,
+            x.transportTime)
+        })
 
+        database.addAssemblyTimeMap(simulationId,assemblyTTUpdated)
+
+        val componentTT = compToAssemTT.map(x=>{
+          ComponentToAssemblyTransTime(assemblyIds.toMap.get(x.assembly).get , componentIds.toMap.get(x.component).get,x.transportTime )
+        })
+
+        database.addComponentTimeMap(simulationId,componentTT)
       }
       case f:JsError =>
         println(f)
