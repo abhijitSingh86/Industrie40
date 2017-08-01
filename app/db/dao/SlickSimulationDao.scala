@@ -36,7 +36,19 @@ trait SlickSimulationDaoRepo extends SimulationDaoRepo{
       assemblyTransTime.map(x=>{
         Await.result(db.run(simulationAssemblyTT+= new generatedtable.Tables.Simulationa2atransporttimeRow(x.assembly1,x.assembly2,simulationId,x.transportTime)), Duration.Inf)
       })
+    }
 
+
+    def getAssemblyTimeMap(simulationId:Int):List[AssemblyTransportTime] ={
+      Await.result(db.run(simulationAssemblyTT.filter(_.simulationid === simulationId).result),Duration.Inf).map(
+        x=>new AssemblyTransportTime(x.assemblyid1,x.assemblyid2,x.transporttime)
+      ).toList
+    }
+
+    def getComponentTimeMap(simulationId:Int):List[ComponentToAssemblyTransTime] ={
+      Await.result(db.run(simulationComponentTT.filter(_.simulationid === simulationId).result),Duration.Inf).map(
+        x=>new ComponentToAssemblyTransTime(x.assemblyid,x.componentid,x.transporttime.getOrElse(0))
+      ).toList
     }
 
     def addComponentTimeMap(simulationId:Int,componentToAssemblyTransTime: List[ComponentToAssemblyTransTime]):Unit={

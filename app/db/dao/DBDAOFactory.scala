@@ -27,6 +27,10 @@ trait SimulationDaoRepo{
 
   trait SimulationDao{
 
+    def getAssemblyTimeMap(simulationId:Int):List[AssemblyTransportTime]
+
+    def getComponentTimeMap(simulationId:Int):List[ComponentToAssemblyTransTime]
+
     def addAssemblyTimeMap(simulationId:Int,assemblyTransTime: List[AssemblyTransportTime]):Unit
 
     def addComponentTimeMap(simulationId:Int,componentToAssemblyTransTime: List[ComponentToAssemblyTransTime]):Unit

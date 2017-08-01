@@ -60,6 +60,26 @@ class ScheduleCommand(dbModule : DbModule,scheduler:Scheduler,proxy: NetworkProx
     logger.info("Schedule command execute finished")
   }
 
+  def getTransportTimeForComponentToAssembly(componentId: Int, assemblyId: Int, simulationId: Int):Int = {
+        val compTTs = dbModule.getComponentTimeMap(simulationId)
+        val compTT = compTTs.filter(_.component ==componentId)
+    if(compTT.isEmpty)
+      0
+    else
+      compTT(0).transportTime
+  }
+
+  def getTransportTimeForAssemblyToAssembly(assemblyId: Int, assemblyId2: Int, simulationId: Int):Int = {
+    val assemTTs = dbModule.getAssemblyTimeMap(simulationId)
+    val compTT = assemTTs.filter(x=> {
+      (x.assembly1 == assemblyId && x.assembly2 == assemblyId2) || (x.assembly1 == assemblyId2 && x.assembly2 == assemblyId)
+    })
+    if(compTT.isEmpty)
+      0
+    else
+      compTT(0).transportTime
+  }
+
   def sendScheduleInformationToComponent(simulationId: Int, components: List[Component]) = {
     val updatedCmps = components.map(x=> dbModule.getComponentWithProcessingInfo(x.id,simulationId)).flatten
     val urls = dbModule.getAllComponentUrlBySimulationId(simulationId).toMap
@@ -71,7 +91,16 @@ class ScheduleCommand(dbModule : DbModule,scheduler:Scheduler,proxy: NetworkProx
       //TODO
       // send request at component attached urls for assembly assignments
       val ass = assemMap.get(x.componentSchedulingInfo.currentProcessing.get.assemblyId).get
-      proxy.sendAssemblyDetails(urls.get(x.id).get,ass,assemblyUrls,x.componentSchedulingInfo.currentProcessing.get.operationId)
+      //Calculate Transport Time
+      val transportTime  = if(x.componentSchedulingInfo.pastProcessings.size == 0){
+        getTransportTimeForComponentToAssembly(x.id,ass.id,simulationId)
+      }else{
+        val last = x.componentSchedulingInfo.pastProcessings.sortBy(_.endTime).head
+        getTransportTimeForAssemblyToAssembly(last.assemblyId,ass.id,simulationId)
+      }
+
+      logger.info("**********Transport Time is "+transportTime)
+      proxy.sendAssemblyDetails(urls.get(x.id).get,ass,assemblyUrls,x.componentSchedulingInfo.currentProcessing.get.operationId , transportTime)
     })
   }
 }

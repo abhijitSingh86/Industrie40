@@ -23,7 +23,8 @@ class TransportTime extends React.Component{
             var flag=false;
             var i=0;
             for(var i=0;i<assemblyTT.length;i++){
-                if(assemblyTT[i].assembly1 === assembyId1){
+                if((assemblyTT[i].assembly1 === assembyId1 && assemblyTT[i].assembly2 === assemblyId2) ||
+                    (assemblyTT[i].assembly1 === assemblyId2 && assemblyTT[i].assembly2 === assembyId1) ){
                     tempTT[i] = json
                     flag=true;
                 }else{
@@ -53,7 +54,7 @@ class TransportTime extends React.Component{
             var flag=false;
             var i=0;
             for(i=0;i<assemblyTT.length;i++){
-                if(assemblyTT[i].assembly === assembyId){
+                if(assemblyTT[i].assembly === assembyId && assemblyTT[i].component === componentId){
                         tempTT[i] = json;
                     flag=true;
                 }else{

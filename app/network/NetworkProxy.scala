@@ -20,15 +20,14 @@ class NetworkProxy(ws:WSClient) {
   val assemblyFailureHook = "/receiveFailure"
 
 
-  def sendAssemblyDetails(url: String, assembly: Assembly, assemblyUrls: Map[Int, String],operationId:Int) = {
+  def sendAssemblyDetails(url: String, assembly: Assembly, assemblyUrls: Map[Int, String],operationId:Int,transportTime:Int) = {
       //send http request using assemblies details
     import play.api.libs.json._
     val aurl = assemblyUrls.get(assembly.id).getOrElse("")
     val host = if(aurl.split(":").size >2) aurl.split(":")(1).substring(2) else ""
     val port = if(aurl.split(":").size >2) aurl.split(":")(2).toInt else 0
-    //TODO (Transportation Time Defualt Value Set )
     val data = Json.obj("assemblyId" -> assembly.id,"assemblyName"->assembly.name
-    ,"url" -> url,"transportationTime"->0 , "operationTime"->assembly.totalOperations.filter(
+    ,"url" -> url,"transportationTime"->transportTime, "operationTime"->assembly.totalOperations.filter(
         _.operation.id.equals(operationId)).head.time ,
     "hostname" -> host, "port" -> port , "operationId" -> operationId )
     var status=0

@@ -75,6 +75,7 @@ class FailureGeneratorActor(networkProxy:NetworkProxy,db:DbModule) extends Actor
       isStopReceived=true
     }
     case IntroduceFailure=>{
+      ComponentQueue.failedAssemblyId = -1
       if(!isStopReceived){
 
         val random = new Random()

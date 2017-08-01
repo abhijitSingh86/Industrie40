@@ -81,7 +81,10 @@ trait DbModule {
 
   def addAssemblyTimeMap(simulationId:Int,assemblyTransTime: List[AssemblyTransportTime]):Unit
 
+  def getAssemblyTimeMap(simulationId:Int):List[AssemblyTransportTime]
+
   def addComponentTimeMap(simulationId:Int,componentToAssemblyTransTime: List[ComponentToAssemblyTransTime]):Unit
+  def getComponentTimeMap(simulationId:Int): List[ComponentToAssemblyTransTime]
 }
 
 class SlickModuleImplementation(cache:CacheApi) extends DbModule {
@@ -91,6 +94,18 @@ class SlickModuleImplementation(cache:CacheApi) extends DbModule {
     with ComponentDaoRepo
     with OperationDaoRepo
     with DBComponent =>
+
+  def getAssemblyTimeMap(simulationId:Int):List[AssemblyTransportTime] = {
+    cache.getOrElse[List[AssemblyTransportTime]](s"assemblyTT${simulationId}") {
+      simulation.getAssemblyTimeMap(simulationId)
+    }
+  }
+
+  def getComponentTimeMap(simulationId:Int): List[ComponentToAssemblyTransTime] = {
+    cache.getOrElse[List[ComponentToAssemblyTransTime]](s"componentTT${simulationId}") {
+      simulation.getComponentTimeMap(simulationId)
+    }
+  }
 
   def addAssemblyTimeMap(simulationId:Int,assemblyTransTime: List[AssemblyTransportTime]):Unit = {
     simulation.addAssemblyTimeMap(simulationId,assemblyTransTime)
