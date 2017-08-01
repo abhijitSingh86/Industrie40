@@ -152,7 +152,7 @@ var Components = React.createClass({
     for(var i=0;i<cmpCount;i++){
         var data = {
             id:this.localComponentCounter,
-            name:this.componentName.value,
+            name:this.componentName.value+':'+i,
             opCount:this.state.opCount,
             operationDetails:this.state.opSeqArr
         }
