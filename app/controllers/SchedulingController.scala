@@ -28,6 +28,9 @@ class SchedulingController(schedulingThread:SchedulerThread,db:DbModule , networ
       case true =>
         failureGeneratorActor ! SetSimulation(simulationId.get)
         ComponentQueue.updateSimulationId(simulationId.get)
+        //Fetch Transport Time Details
+        ComponentQueue.setComponentTT(db.getComponentTimeMap(simulationId.get))
+        ComponentQueue.setAssemblyTT(db.getAssemblyTimeMap(simulationId.get))
         sendStartMsgToAllComponent(simulationId.get)
         //Start the failure actor
         failureGeneratorActor ! Start

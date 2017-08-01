@@ -1,7 +1,7 @@
 package actor
 
 import models.{Assembly, Component, Operation}
-import scheduler.SchedulerAssignmentHandler
+import scheduler.{ComponentQueue, SchedulerAssignmentHandler}
 
 class ScheduleAssignmentFailureEvaluationHandler extends SchedulerAssignmentHandler{
 
@@ -10,6 +10,8 @@ class ScheduleAssignmentFailureEvaluationHandler extends SchedulerAssignmentHand
   def setFailureCommunicationHandler(assemblyFailureCommunication: AssemblyFailureCommunication) = {
     this.assemblyFailureCommunication = assemblyFailureCommunication
   }
+
+
 
 
   var estimatedFinishTime = 0.0
@@ -21,8 +23,8 @@ class ScheduleAssignmentFailureEvaluationHandler extends SchedulerAssignmentHand
 
     val newTime = assembly.totalOperations.filter(_.operation.id==operation.id)(0).time
 
-    val randomTransportTime = 5
-    if((newTime+randomTransportTime) > estimatedFinishTime + assemblyFailureCommunication.getFailTime() ){
+    val transportTime = ComponentQueue.getTransportTime(component,assembly)
+    if((newTime+transportTime) > estimatedFinishTime + assemblyFailureCommunication.getFailTime() ){
       // wait
       assemblyFailureCommunication.waitCall()
     } else{
