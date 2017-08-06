@@ -67,7 +67,7 @@ trait SlickAssemblyDaoRepo extends AssemblyDaoRepo {
     }
 
     override def add(assembly: models.Assembly): Int = {
-      val addedId = Await.result(db.run(assemblies returning assemblies.map(_.id) += new Tables.AssemblyRow(0, assembly.name,lastactive = None , failurenumber = Some(assembly.fcount) , failuretime = Some(assembly.ftime))), Duration.Inf)
+      val addedId = Await.result(db.run(assemblies returning assemblies.map(_.id) += new Tables.AssemblyRow(0, assembly.name,lastactive = None , failurenumber = Some(assembly.fcount) , failuretime = Some(assembly.ftime) , iffailallowed = Some(assembly.ifFailAllowed))), Duration.Inf)
       addedId match {
         case id: Int => {
           addAssemblyOperationMapping(id, assembly.totalOperations)
@@ -142,7 +142,7 @@ trait SlickAssemblyDaoRepo extends AssemblyDaoRepo {
           val isOnline = if (x.lastactive.isDefined) x.lastactive.get.after(DateTimeUtils.getOldBySecondsTS(6)) else false
 
           Some(new models.Assembly(x.id, x.name,x.failurenumber.getOrElse(0),x.failuretime.getOrElse(0), operations.toList,
-            operations.filter(_.status == BusyOperationStatus).toList, isOnline))
+            operations.filter(_.status == BusyOperationStatus).toList, x.iffailallowed.getOrElse(false),isOnline))
 
         }
         case None => {

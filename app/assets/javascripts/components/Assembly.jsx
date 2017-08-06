@@ -2,13 +2,17 @@ var React = require('react')
 var AssemblyOperationInput =require("./AssemblyOperationInput")
 var CustomAssemblyTable = require("./CustomAssemblyTable");
 
+
+
+
 var Assembly = React.createClass({
 
   getInitialState(){
     return {
       localAssemblyCounter : this.props.fieldValues.assemblyCounter,
       assemblyArr:this.props.fieldValues.assemblies,
-      operationDetails:[]
+      operationDetails:[],
+        isFailed:true
     }
   },
   handleOpCountInputChange(e){
@@ -68,6 +72,20 @@ var Assembly = React.createClass({
       });
       console.log(removedNode);
     },
+
+   failpanel(){
+      return (<div>
+            <li>
+              <label>Failure Count</label>
+              <input type="text" ref={(fcount)=>{this.fcount= fcount}}  />
+            </li>
+            <li>
+              <label>Total Failure Time</label>
+              <input type="text" ref={(ftime)=>{this.ftime= ftime}}  />
+            </li>
+          </div>
+          );
+    },
     render: function() {
       var inputRow = [];
       console.log("opCount"+this.state.opCount+"opndetails"+this.state.operationDetails.length);
@@ -75,6 +93,11 @@ var Assembly = React.createClass({
           inputRow.push(<AssemblyOperationInput fieldValues={this.props.fieldValues}
             focusArr={this.state.operationDetails} count={this.state.opCount} saveHandler={this.handleOperationSelectChange} />
           );}
+          var failureEntryPanel = "";
+        console.log(this.state.isFailed)
+          if(this.state.isFailed){
+          failureEntryPanel =this.failpanel();
+          }
 
     return (
       <div>
@@ -85,13 +108,11 @@ var Assembly = React.createClass({
             <input type="text" ref={(assemblyName)=>{this.assemblyName= assemblyName}}  />
           </li>
           <li>
-            <label>Failure Count</label>
-            <input type="text" ref={(fcount)=>{this.fcount= fcount}}  />
+            <label>Is Assembly Fail Allowed</label>
+            <input type="checkbox" defaultChecked onChange={(isFailed)=>{this.setState({isFailed:isFailed.target.checked})}} />
           </li>
-          <li>
-            <label>Total Failure Time</label>
-            <input type="text" ref={(ftime)=>{this.ftime= ftime}}  />
-          </li>
+            {failureEntryPanel}
+
           <li>
             <label>Operation Count</label>
             <input type="text" ref={(o)=> this.operationCount=o} onChange={this.handleOpCountInputChange}/>
@@ -125,11 +146,18 @@ var Assembly = React.createClass({
           }
           }
 
+          var fcount = 0 ;
+          var ftime=0
+        if(this.state.isFailed){
+        fcount=  parseInt(this.fcount.value);
+            ftime = parseInt(this.ftime.value);
+        }
     var data = {
       id:this.state.localAssemblyCounter,
       name:this.assemblyName.value,
-        fcount:parseInt(this.fcount.value),
-        ftime:parseInt(this.ftime.value),
+        ifFailAllowed:this.state.isFailed,
+        fcount:fcount,
+        ftime:ftime,
       operationDetails:tempArr
     }
     var arr=this.state.assemblyArr
@@ -147,8 +175,10 @@ var Assembly = React.createClass({
       localAssemblyCounter:localAssemblyCounter
     });
 
-    this.fcount.value ="";
-    this.ftime.value ="";
+      if(this.state.isFailed) {
+          this.fcount.value = "";
+          this.ftime.value = "";
+      }
     this.operationCount.value="";
     this.assemblyName.value = "";
   },

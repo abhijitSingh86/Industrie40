@@ -34,7 +34,7 @@ object ComponentQueue {
     if(x.componentSchedulingInfo.pastProcessings.size == 0){
       ComponentQueue.getTransportTimeForComponentToAssembly(x.id,a.id,simulationId)
     }else{
-      val last = x.componentSchedulingInfo.pastProcessings.sortBy(_.endTime).head
+      val last = x.componentSchedulingInfo.pastProcessings.sortWith(_.endTime > _.endTime).head
       ComponentQueue.getTransportTimeForAssemblyToAssembly(last.assemblyId,a.id,simulationId)
     }
   }

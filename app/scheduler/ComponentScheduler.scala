@@ -24,10 +24,11 @@ class ComponentScheduler(scheduleDbHandler:SchedulerAssignmentHandler) extends S
     */
   override def scheduleComponents(components: List[Component], assemblies: List[Assembly]): List[Int] = {
     //first get the available resource map
-    var availableResourceMap = getAvailableResourceMap(assemblies)
+    var availableResourceMap = ListMap(getAvailableResourceMap(assemblies).toSeq.sortWith(_._2.size < _._2.size):_*)
     val requiredOperationMap = ListMap(getRequiredOperationMap(components).toSeq.sortWith(_._2.size < _._2.size):_*)
     logger.info("*************************************************")
     logger.info(availableResourceMap.mkString)
+    logger.info("--------------------------------------------------")
     logger.info(requiredOperationMap.mkString)
     logger.info("*************************************************")
     //    val list = List[Option[Component]](None)
@@ -40,6 +41,7 @@ class ComponentScheduler(scheduleDbHandler:SchedulerAssignmentHandler) extends S
             component.getCurrentOperation() match {
               case None if(!scheduledComponent.contains(component.id)) => {
                 val assembly = availableResourceMap.get(operation).get(0)
+
                 scheduleDbHandler.assign(component,operation,assembly)
                 availableResourceMap = removeAssemblyFromAvailabelResourceMap(availableResourceMap,assembly)
                 scheduledComponent += component.id
@@ -58,15 +60,18 @@ class ComponentScheduler(scheduleDbHandler:SchedulerAssignmentHandler) extends S
     scheduledComponent.toList
   }
 
-  def removeAssemblyFromAvailabelResourceMap(availableResourceMap: Map[Operation, List[Assembly]], assembly: Assembly)
-  : Map[models.Operation, scala.List[models.Assembly]] = {
+  def removeAssemblyFromAvailabelResourceMap(availableResourceMap: ListMap[Operation, List[Assembly]], assembly: Assembly)
+  : ListMap[models.Operation, scala.List[models.Assembly]] = {
 
-    val availableOperationMap = new mutable.HashMap[Operation, List[Assembly]]()
-    assembly.totalOperations.map(x=> if(availableResourceMap.get(x.operation).isDefined){
-      val updatedAssemblyList = availableResourceMap.get(x.operation).get.filterNot(_.id == assembly.id)
-      availableOperationMap += (x.operation -> updatedAssemblyList)
-    })
-    availableResourceMap ++ availableOperationMap.toMap
+    val availableOperationMap = new mutable.ListMap[Operation, List[Assembly]]()
+
+    assembly.totalOperations.map(x=>
+      if(availableResourceMap.get(x.operation).isDefined){
+        val updatedAssemblyList = availableResourceMap.get(x.operation).get.filterNot(_.id == assembly.id)
+        availableOperationMap += x.operation -> updatedAssemblyList
+      }
+    )
+    ListMap(availableOperationMap.toSeq:_*)
   }
 
   private def getRequiredOperationMap(components: List[Component]):Map[Operation, List[Component]] = {
@@ -107,18 +112,12 @@ class ComponentScheduler(scheduleDbHandler:SchedulerAssignmentHandler) extends S
       if (count < assemblies.size) {
         //retrieve the assembly's total operation
         val assembly = assemblies(count)
-        assembly.totalOperations.map(x => {
-          //if the operation is not in allocated operation, put it into a map for scheduling
-          assembly.allocatedOperations.contains(x) match {
-            case false => {
-              opMap.contains(x.operation) match {
-                case true => opMap += (x.operation -> (opMap.get(x.operation).get :+ assembly))
-                case false => opMap += (x.operation -> List(assembly))
-              }
+          assembly.totalOperations.map(x=>{
+            opMap.contains(x.operation) match {
+              case true => opMap += (x.operation -> (opMap.get(x.operation).get :+ assembly))
+              case false => opMap += (x.operation -> List(assembly))
             }
-            case true => None
-          }
-        })
+          })
         processAssemblies(opMap, count + 1)
       }
     }
@@ -126,6 +125,8 @@ class ComponentScheduler(scheduleDbHandler:SchedulerAssignmentHandler) extends S
     //start the tail recursion
     processAssemblies(availableOperationMap, 0)
     //return the operation map
-    availableOperationMap.toMap
+    availableOperationMap.map(x=>{
+      x._1 -> x._2.sortWith(_.totalOperations.size<_.totalOperations.size)
+    })toMap
   }
 }
