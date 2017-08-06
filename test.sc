@@ -15,7 +15,7 @@ import scala.collection.mutable
 
 val list = List(8,1,2,3,4,5,6,7)
 
-list.sortWith(_ > _)
+list.sortWith(_ < _)
 
 
 

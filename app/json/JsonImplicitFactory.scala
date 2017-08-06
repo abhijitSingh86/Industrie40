@@ -67,8 +67,9 @@ object JsonImplicitFactory {
         name <- (__ \ "name").read[String]
       fcount <- (__ \ "fcount").read[Int]
       ftime <- (__ \ "ftime").read[Int]
+      isFail <- (__ \ "ifFailAllowed").read[Boolean]
         od <- (__ \ "operationDetails").read[List[AssemblyOperation]]
-      } yield (Assembly apply(id = id, name = name,fcount = fcount , ftime = ftime, totalOperations = od,List[AssemblyOperation]()))
+      } yield (Assembly apply(id = id, name = name,fcount = fcount , ftime = ftime, totalOperations = od,List[AssemblyOperation]() , isFail))
     }
 
 

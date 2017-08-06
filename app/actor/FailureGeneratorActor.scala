@@ -65,7 +65,7 @@ class FailureGeneratorActor(networkProxy:NetworkProxy,db:DbModule) extends Actor
 
     case Start => {
       isStopReceived = false
-      list = db.getAllAssembliesForSimulation(simulationId)
+      list = db.getAllAssembliesForSimulation(simulationId).filter(_.ifFailAllowed)
       assemblyUrlMap = db.getAllAssemblyUrlBySimulationId(simulationId).toMap
       import scala.concurrent.duration._
       context.system.scheduler.scheduleOnce(5 seconds, self, IntroduceFailure)

@@ -125,7 +125,7 @@ class SlickModuleImplementation(cache:CacheApi) extends DbModule {
     comps.size match {
       case 1 =>{
         val row = comps(0)
-        val etl = (System.currentTimeMillis() - row.startTime.getTime)
+        val etl = (System.currentTimeMillis() - row.startTime)
         ((component.selectByComponentSimulationId(row.componentid,simulationid,cache,assemblyNameMap)) , etl)
 
       }
