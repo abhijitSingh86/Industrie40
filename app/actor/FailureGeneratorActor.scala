@@ -106,9 +106,10 @@ class FailureGeneratorActor(networkProxy:NetworkProxy,db:DbModule) extends Actor
               schedular.scheduleComponents(List(com) , filteredBusyAssemblies).size match{
                 case 1 => {
                   //Will be handled by FailureEvaluationHandler
+                  //resembles the component is scheduled
                 }
                 case 0 =>{
-                  //Wait is the only option
+                  //Can't be Schedlued, So Wait is the only option
                   assemblyFailureCommunication.waitCall()
                 }
               }

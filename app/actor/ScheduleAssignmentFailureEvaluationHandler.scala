@@ -29,6 +29,10 @@ class ScheduleAssignmentFailureEvaluationHandler extends SchedulerAssignmentHand
       assemblyFailureCommunication.waitCall()
     } else{
       //fail
+      //First insert the fail in processing info
+      //Get the ScheduleAssignmentDbHandler object and do the database entries
+      //
+
       assemblyFailureCommunication.failCall()
     }
 
