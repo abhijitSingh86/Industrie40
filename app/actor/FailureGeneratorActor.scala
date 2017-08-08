@@ -3,8 +3,9 @@ package actor
 import actor.FailureActor._
 import akka.actor.{Actor, ActorLogging, PoisonPill}
 import db.DbModule
-import models.Assembly
+import models.{Assembly, ComponentSchedulingInfo}
 import network.NetworkProxy
+import play.api.Logger
 import scheduler.{ComponentQueue, ComponentScheduler, ScheduleAssignmentDbHandler}
 
 import scala.concurrent.duration._
@@ -49,9 +50,10 @@ class FailureGeneratorActor(networkProxy:NetworkProxy,db:DbModule) extends Actor
   var failedAssembly:Option[Assembly] =None
 
   val scheduleAssignmentDbHandler = new ScheduleAssignmentDbHandler(db)
-  val failureEvaluationHandler = new ScheduleAssignmentFailureEvaluationHandler()
+  val failureEvaluationHandler = new ScheduleAssignmentFailureEvaluationHandler(networkProxy,db)
   val schedular = new ComponentScheduler(failureEvaluationHandler)
 
+  val logger = Logger("access")
   override def receive: Receive = {
 
     case GetFailedAssembly =>{
@@ -75,8 +77,10 @@ class FailureGeneratorActor(networkProxy:NetworkProxy,db:DbModule) extends Actor
       isStopReceived=true
     }
     case IntroduceFailure=>{
+      logger.info("Introduce Failure Called ")
       ComponentQueue.failedAssemblyId = -1
       if(!isStopReceived){
+        logger.info("Introduce Failure Called starting the process")
 
         val random = new Random()
         val index = random.nextInt(list.length*2);
@@ -90,6 +94,7 @@ class FailureGeneratorActor(networkProxy:NetworkProxy,db:DbModule) extends Actor
           //Decide component action
           val componentAction = "error"
 //          val componentAction = "wait"
+          ComponentQueue.failTime=failureTime
           ComponentQueue.failedAssemblyId = assembly.id
           val assemblies = db.getAllAssembliesForSimulation(ComponentQueue.getSimulationId())
           //fetch the component Object
@@ -100,21 +105,34 @@ class FailureGeneratorActor(networkProxy:NetworkProxy,db:DbModule) extends Actor
               x.allocatedOperations.size > 0 || x.id == ComponentQueue.failedAssemblyId
             })
 
-            if(filteredBusyAssemblies.size >0){
+              logger.info("Introduce Failure filtered Assembly")
+              logger.info(filteredBusyAssemblies.mkString(","))
+
+              if(filteredBusyAssemblies.size >0){
               failureEvaluationHandler.setEFT(compTup._2)
               failureEvaluationHandler.setFailureCommunicationHandler(assemblyFailureCommunication)
-              schedular.scheduleComponents(List(com) , filteredBusyAssemblies).size match{
+                failureEvaluationHandler.setComponentPreviousOperation(com.getCurrentOperation().get)
+                //Dirty hack to decrement the sequence
+                val componentSchedule:ComponentSchedulingInfo = com.componentSchedulingInfo.asInstanceOf[ComponentSchedulingInfo]
+                val component = com.copy(componentSchedulingInfo = componentSchedule.copy(sequence = componentSchedule.sequence-1 , currentProcessing = None))
+              schedular.scheduleComponents(List(component) , filteredBusyAssemblies).size match{
                 case 1 => {
+                  logger.info("Introduce Failure Scheduling successfull")
+
                   //Will be handled by FailureEvaluationHandler
                   //resembles the component is scheduled
                 }
                 case 0 =>{
+                  logger.info("Introduce Failure Scheduling not possible wait invoked")
+
                   //Can't be Schedlued, So Wait is the only option
                   assemblyFailureCommunication.waitCall()
                 }
               }
             }else{
-              //No Assembly Available Wait is the only option
+                logger.info("Introduce Failure assemblies not possible wait invoked")
+
+                //No Assembly Available Wait is the only option
               assemblyFailureCommunication.waitCall()
             }
 
@@ -123,6 +141,7 @@ class FailureGeneratorActor(networkProxy:NetworkProxy,db:DbModule) extends Actor
             list = updatedAssembly :: list.filterNot(_.id == assembly.id)
             failedAssembly = Some(assembly)
           } )
+          logger.info("Introduce Failure Called No COmponent on assembly found ")
 
           context.system.scheduler.scheduleOnce(failureTime+1 seconds, self, IntroduceFailure)
         }else{
