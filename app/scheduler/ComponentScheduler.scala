@@ -12,6 +12,12 @@ import scala.collection.mutable
 class ComponentScheduler(scheduleDbHandler:SchedulerAssignmentHandler) extends Scheduler {
 
 
+  private def getAvailableResourceMapString(map:Map[Operation,List[Assembly]]):String ={
+    map.map(x=> {
+      val st = x._2.map(_.id.toString+",")
+      s"opId:${x._1.id} opName${x._1.name} -> ${st}"
+    }).mkString(", \n")
+  }
   private val logger = Logger("access")
   /**
     * Function will take the component and assemblies and schedule them with Interval timing greedy algorithm.
@@ -27,9 +33,12 @@ class ComponentScheduler(scheduleDbHandler:SchedulerAssignmentHandler) extends S
     var availableResourceMap = ListMap(getAvailableResourceMap(assemblies).toSeq.sortWith(_._2.size < _._2.size):_*)
     val requiredOperationMap = ListMap(getRequiredOperationMap(components).toSeq.sortWith(_._2.size < _._2.size):_*)
     logger.info("*************************************************")
-    logger.info(availableResourceMap.mkString)
+    logger.info(getAvailableResourceMapString(availableResourceMap))
     logger.info("--------------------------------------------------")
-    logger.info(requiredOperationMap.mkString)
+    requiredOperationMap.foreach(x=>{
+      val st = x._2.map(_.id.toString+",")
+      logger.info(s"opId:${x._1.id} opName${x._1.name} -> ${st}")
+    })
     logger.info("*************************************************")
     //    val list = List[Option[Component]](None)
     val scheduledComponent = mutable.ArrayBuffer[Int]()
@@ -47,9 +56,12 @@ class ComponentScheduler(scheduleDbHandler:SchedulerAssignmentHandler) extends S
                 scheduledComponent += component.id
               }
               case _ =>{
+                logger.info(s"Skipping scheduling for this component ${component.id} flag: ${component.getCurrentOperation()} list: ${scheduledComponent}")
                 //Component Already scheduled, no action needed
               }
             }
+          }else{
+            logger.info(s"Required Operation not available scheduling for this component ${component.id} flag: ${operation} list: ${availableResourceMap.get(operation)} map:${getAvailableResourceMapString(availableResourceMap)}")
           }
         })
 
@@ -71,7 +83,7 @@ class ComponentScheduler(scheduleDbHandler:SchedulerAssignmentHandler) extends S
         availableOperationMap += x.operation -> updatedAssemblyList
       }
     )
-    ListMap(availableOperationMap.toSeq:_*)
+    ListMap((availableResourceMap ++ availableOperationMap).toSeq:_*)
   }
 
   private def getRequiredOperationMap(components: List[Component]):Map[Operation, List[Component]] = {
@@ -98,8 +110,8 @@ class ComponentScheduler(scheduleDbHandler:SchedulerAssignmentHandler) extends S
 
     //start the tail recursion
     processComponents(requiredOperationMap, 0)
-    //return the operation map
-    requiredOperationMap.toMap[Operation,List[Component]]
+    //return the operation map while make unique list for same operation requirement. Will help to minimize the loops
+    requiredOperationMap.map(x=> (x._1 -> x._2.distinct)).toMap[Operation,List[Component]]
   }
 
 
