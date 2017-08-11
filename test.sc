@@ -17,6 +17,14 @@ val list = List(8,1,2,3,4,5,6,7)
 
 list.sortWith(_ < _)
 
+val did = 1502475975562l-1502475509103l
+
+val f = (did/(1000f))/(60f)
+
+val st = Calendar.getInstance().setTimeInMillis(1502192176025l)
+val et = Calendar.getInstance().setTimeInMillis(1502192643126l)
+
+
 
 
 //val q = new mutable.Queue[Int]

@@ -9,6 +9,13 @@ abstract class SchedulingInfo{
   def currentProcessing:Option[OperationProcessingInfo]
   def sequence:Int
   def completedOperations:List[Operation]
+
+  def currentOperationId():Int = {
+    currentProcessing match{
+      case Some(x) => x.operationId
+      case None => 0
+    }
+  }
 }
 case class ComponentSchedulingInfo(pastProcessings:List[OperationProcessingInfo],currentProcessing:Option[OperationProcessingInfo]
                                    ,sequence:Int ,completedOperations:List[Operation] ) extends SchedulingInfo {

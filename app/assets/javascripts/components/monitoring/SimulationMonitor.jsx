@@ -65,6 +65,19 @@ class SimulationMonitor extends React.Component {
 
 
     render() {
+        var counter=3;
+        var arr = [];
+        for (var i = 0; i < this.props.simulation.components.length; i++) {
+            arr.push( <div>xterm -hold -e script compLog{this.props.simulation.components[i].id} -c " scala -classpath '*.jar' componentClient.jar -c {this.props.simulation.components[i].id} -s {this.props.simulation.simulationId}" &</div> );
+            arr.push( <div>sleep {counter}</div>);
+            // counter =counter + .5;
+        }
+        for (var i = 0; i < this.props.simulation.assemblies.length; i++) {
+            arr.push( <div>xterm -hold -e script assembly{this.props.simulation.assemblies[i].id} -c "scala -classpath '*.jar' assemblyClient.jar -a {this.props.simulation.assemblies[i].id} -s {this.props.simulation.simulationId}" &</div> );
+            arr.push( <div>sleep {counter}</div>);
+            // counter =counter + .5;
+        }
+
         // console.log(this.props.completedComponents);
         return (
             <Tabs >
@@ -128,6 +141,9 @@ class SimulationMonitor extends React.Component {
                     <AssemblyState data={this.props.simulation.assemblies}
                                    simulationId={this.props.simulation.simulationId}
                                    />
+                </Tab>
+                <Tab eventKey="4" title="Run Script">
+                    {arr}
                 </Tab>
             </Tabs>
         );

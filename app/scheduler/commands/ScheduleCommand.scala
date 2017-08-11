@@ -30,16 +30,13 @@ class ScheduleCommand(dbModule : DbModule,scheduler:Scheduler,proxy: NetworkProx
     if(components.size >0) {
 
       println("++++++++++++++++++++++++++++++++++++")
-      println(ComponentQueue.failedAssemblyId)
+      println(ComponentQueue.failedAssemblyId +"  :  "+ComponentQueue.failTime)
       println("++++++++++++++++++++++++++++++++++++")
       val assemblies = dbModule.getAllAssembliesForSimulation(ComponentQueue.getSimulationId())
       logger.debug("Retrieved Assemblies" + assemblies.mkString(","))
       val filteredBusyAssemblies = assemblies.filterNot(x=>{
         x.allocatedOperations.size > 0 || x.id == ComponentQueue.failedAssemblyId
       })
-
-
-
 
       logger.debug("Filtered  Assemblies  =" + filteredBusyAssemblies.mkString(","))
 
@@ -55,7 +52,7 @@ class ScheduleCommand(dbModule : DbModule,scheduler:Scheduler,proxy: NetworkProx
 
       logger.debug("command nearly finished, processed Scheduled components are " + scheduledComponentIds.mkString(","))
       //add pending if any to the component queue again
-      components.filter(x=> !scheduledComponentIds.contains(x.id)).map(ComponentQueue.push(_))
+      components.filter(x=> !finalListToSendSchedulingInfo.contains(x.id)).map(ComponentQueue.push(_))
     }
     logger.info("Schedule command execute finished")
   }

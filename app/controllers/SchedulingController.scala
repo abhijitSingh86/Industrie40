@@ -55,7 +55,11 @@ class SchedulingController(schedulingThread:SchedulerThread,db:DbModule , networ
         if(schedulingThread !=null){
           schedulingThread.endExecution()
           db.updateSimulationEndTime(id)
+          ComponentQueue.popAll()
           failureGeneratorActor ! Stop
+          db.getAllAssemblyUrlBySimulationId(ComponentQueue.getSimulationId()).map(x=>{
+            networkProxy.sendFinishNotificationToAssembly(x._2)
+          })
           Logger.info("Stop request processed.. ")
         }
         Ok(DefaultRequestFormat.getEmptySuccessResponse())
