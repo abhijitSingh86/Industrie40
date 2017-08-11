@@ -13,14 +13,23 @@ import scala.collection.mutable
 //val li:mutable.ListBuffer[Int] = mutable.ListBuffer(1,2)
 //li :+ 3
 
+val m = Map(1->List(1,2),2 -> List(2,3,4))
+
+val n = Map(1 -> List(1))
+
+m ++ n
+
 val list = List(8,1,2,3,4,5,6,7)
 
 list.sortWith(_ < _)
 
-val did = 1502475975562l-1502475509103l
+val did1 = 1502475975562l-1502475509103l
+val did = 1502481012013l-1502480568788l
 
 val f = (did/(1000f))/(60f)
+val f1 = (did1/(1000f))/(60f)
 
+f1-f
 val st = Calendar.getInstance().setTimeInMillis(1502192176025l)
 val et = Calendar.getInstance().setTimeInMillis(1502192643126l)
 
@@ -114,7 +123,7 @@ val et = Calendar.getInstance().setTimeInMillis(1502192643126l)
 //import play.api.libs.functional.syntax._
 //
 //
-//val str1 = """{"simulationName":"abhi","simulationDesc":"test","operations":[{"id":0,"label":"fixed in Registration omdule"},{"label":"o1","id":1},{"label":"o2","id":2},{"label":"o3","id":3}],"components":[{"id":0,"name":"c1","opCount":3,"operationDetails":[[{"label":"o1","id":1},{"label":"o2","id":2},{"label":"o3","id":3}],[{"label":"o2","id":2},{"label":"o1","id":1},{"label":"o3","id":3}]]},{"id":1,"name":"c2","opCount":2,"operationDetails":[[{"id":0,"label":"fixed in Registration omdule"},{"label":"o1","id":1}],[{"label":"o1","id":1},{"id":0,"label":"fixed in Registration omdule"}]]}],"assemblies":[{"id":0,"name":"a1","operationDetails":[{"time":20,"id":0,"label":"fixed in Registration omdule"},{"time":30,"id":1,"label":"o1"}]},{"id":1,"name":"a2","operationDetails":[{"time":23,"id":1,"label":"o1"},{"time":21,"id":2,"label":"o2"},{"time":20,"id":3,"label":"o3"}]}],"operationCounter":4,"componentCounter":2,"assemblyCounter":2}"""
+//val str1 = {"simulationName":"abhi","simulationDesc":"test","operations":[{"id":0,"label":"fixed in Registration omdule"},{"label":"o1","id":1},{"label":"o2","id":2},{"label":"o3","id":3}],"components":[{"id":0,"name":"c1","opCount":3,"operationDetails":[[{"label":"o1","id":1},{"label":"o2","id":2},{"label":"o3","id":3}],[{"label":"o2","id":2},{"label":"o1","id":1},{"label":"o3","id":3}]]},{"id":1,"name":"c2","opCount":2,"operationDetails":[[{"id":0,"label":"fixed in Registration omdule"},{"label":"o1","id":1}],[{"label":"o1","id":1},{"id":0,"label":"fixed in Registration omdule"}]]}],"assemblies":[{"id":0,"name":"a1","operationDetails":[{"time":20,"id":0,"label":"fixed in Registration omdule"},{"time":30,"id":1,"label":"o1"}]},{"id":1,"name":"a2","operationDetails":[{"time":23,"id":1,"label":"o1"},{"time":21,"id":2,"label":"o2"},{"time":20,"id":3,"label":"o3"}]}],"operationCounter":4,"componentCounter":2,"assemblyCounter":2}"""
 //
 //val jsonObj = Json.parse(str1)
 //
