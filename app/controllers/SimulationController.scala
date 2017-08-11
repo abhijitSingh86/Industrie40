@@ -114,8 +114,9 @@ class SimulationController(database:DbModule) extends Controller {
         database.addAssembliesToSimulation(simulationId,assemblyIds.map(_._2))
 
         val assemblyTTUpdated = assemTT.map(x=>{
-          AssemblyTransportTime(assemblyIds.toMap.get(x.assembly1).get, assemblyIds.toMap.get(x.assembly2).get,
-            x.transportTime)
+          val a1 = assemblyIds.toMap.get(x.assembly1).getOrElse(0)
+          val a2 = assemblyIds.toMap.get(x.assembly2).getOrElse(0)
+          AssemblyTransportTime(a1, a2,x.transportTime)
         })
 
         database.addAssemblyTimeMap(simulationId,assemblyTTUpdated)

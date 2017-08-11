@@ -19,6 +19,7 @@ class NetworkProxy(ws:WSClient) {
   val componentFailureHook = "/componentFailureNotification"
   val componentStartSimulationHook = "/startScheduling"
   val assemblyFailureHook = "/receiveFailure"
+  val assemblyFinishHook = "/receiveSimFinish"
 
 
   def sendAssemblyDetails(url: String, assembly: Assembly, assemblyUrls: Map[Int, String],operationId:Int,transportTime:Int) = {
@@ -47,7 +48,7 @@ class NetworkProxy(ws:WSClient) {
     val aurl = assemblyUrls.get(assembly.id).getOrElse("")
     val host = if(aurl.split(":").size >2) aurl.split(":")(1).substring(2) else ""
     val port = if(aurl.split(":").size >2) aurl.split(":")(2).toInt else 0
-    val data =Json.obj("componentAction"->"error","assembly"-> Json.obj("assemblyId" -> assembly.id,"assemblyName"->assembly.name
+    val data =Json.obj("action"->"error","assembly"-> Json.obj("assemblyId" -> assembly.id,"assemblyName"->assembly.name
       ,"url" -> url,"transportationTime"->transportTime, "operationTime"->assembly.totalOperations.filter(
         _.operation.id.equals(operationId)).head.time ,
       "hostname" -> host, "port" -> port , "operationId" -> operationId ))
@@ -58,6 +59,19 @@ class NetworkProxy(ws:WSClient) {
       val req = Await.result(ws.url(url+componentFailureHook).post(data), Duration.Inf)
       status = if(req.status !=200)status+1 else req.status
     }while (status != 200 && status !=5)
+  }
+
+  def sendFinishNotificationToAssembly(url:String):Boolean={
+    var status=0
+    var flag = true
+    do{
+      val data = Json.obj("finish"->true)
+      val req = Await.result(ws.url(url+assemblyFinishHook).post(data),Duration.Inf)
+      logger.info("Assembly Failure Request send and Response is "+req.status+"  :: "+req)
+      status = if(req.status !=200)status+1 else req.status
+      flag = ((Json.parse(req.body.toString) \ "body") \ "status").as[Boolean]
+    }while(status !=200 && status !=5)
+    flag
   }
 
   def sendFailureNotificationToAssembly(url:String,failureTime:Int,action:String):Boolean={

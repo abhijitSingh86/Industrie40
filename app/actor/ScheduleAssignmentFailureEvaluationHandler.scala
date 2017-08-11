@@ -45,7 +45,7 @@ class ScheduleAssignmentFailureEvaluationHandler(networkProxy:NetworkProxy,db:Db
       //First insert the fail in processing info
       //Get the ScheduleAssignmentDbHandler object and do the database entries
       //
-      assemblyFailureCommunication.waitCall()
+
       logger.info("Schedule Assignment Failure Evaluation handler error started")
 
       db.updateComponentProcessingInfoInFailureScenarion(ComponentQueue.getSimulationId(),component.id,componentPreviousOperation.assemblyId,
@@ -57,6 +57,7 @@ class ScheduleAssignmentFailureEvaluationHandler(networkProxy:NetworkProxy,db:Db
       logger.info("Schedule Assignment Failure Evaluation handler error new Schedule Db data enttered")
 
       sendNewScheduleInformationToComponent(ComponentQueue.getSimulationId() , List(component))
+      assemblyFailureCommunication.failCall()
       logger.info("Schedule Assignment Failure Evaluation handler error new assembly info sent to component")
 
     }

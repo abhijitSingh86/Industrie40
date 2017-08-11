@@ -19,7 +19,7 @@ import scala.util.Random
 case object FailureActor{
   case object Start
   case object Stop
-  case object IntroduceFailure
+  case class IntroduceFailure(counter:Int)
   case class SetSimulation(simulationId:Int)
   case object GetFailedAssembly
 }
@@ -49,6 +49,7 @@ class FailureGeneratorActor(networkProxy:NetworkProxy,db:DbModule) extends Actor
   var isStopReceived = false
   var failedAssembly:Option[Assembly] =None
 
+  var counter=0
   val scheduleAssignmentDbHandler = new ScheduleAssignmentDbHandler(db)
   val failureEvaluationHandler = new ScheduleAssignmentFailureEvaluationHandler(networkProxy,db)
   val schedular = new ComponentScheduler(failureEvaluationHandler)
@@ -57,30 +58,36 @@ class FailureGeneratorActor(networkProxy:NetworkProxy,db:DbModule) extends Actor
   override def receive: Receive = {
 
     case GetFailedAssembly =>{
-      println("Get Assembly Name Recieved")
+      log.info("Get Assembly Name Recieved")
       val ret = if(failedAssembly.isDefined) failedAssembly.get.id else -1
       sender ! ret
     }
     case SetSimulation(x:Int) => {
+      log.info("Set simulation Id Called ${x}")
       simulationId = x
     }
 
     case Start => {
+      log.info(s"Start failure actor received previous stop status ${isStopReceived}")
+      counter = counter +1
       isStopReceived = false
       list = db.getAllAssembliesForSimulation(simulationId).filter(_.ifFailAllowed)
       assemblyUrlMap = db.getAllAssemblyUrlBySimulationId(simulationId).toMap
       import scala.concurrent.duration._
-      context.system.scheduler.scheduleOnce(5 seconds, self, IntroduceFailure)
+      context.system.scheduler.scheduleOnce(5 seconds, self, IntroduceFailure(counter))
 
     }
     case Stop =>{
+      log.info(s"Stop message received ${simulationId}")
+      counter =0
       isStopReceived=true
     }
-    case IntroduceFailure=>{
-      logger.info("Introduce Failure Called ")
+    case x:IntroduceFailure=>{
+      log.info("Introduce Failure Called ")
       ComponentQueue.failedAssemblyId = -1
-      if(!isStopReceived){
-        logger.info("Introduce Failure Called starting the process")
+      if(!isStopReceived && x.counter  == counter){
+        counter = counter +1
+        log.info("Introduce Failure Called starting the process")
 
         val random = new Random()
         val index = random.nextInt(list.length*2);
@@ -143,9 +150,9 @@ class FailureGeneratorActor(networkProxy:NetworkProxy,db:DbModule) extends Actor
           } )
           logger.info("Introduce Failure Called No COmponent on assembly found ")
 
-          context.system.scheduler.scheduleOnce(failureTime+1 seconds, self, IntroduceFailure)
+          context.system.scheduler.scheduleOnce(failureTime+1 seconds, self, IntroduceFailure(counter))
         }else{
-          context.system.scheduler.scheduleOnce(5 seconds, self, IntroduceFailure)
+          context.system.scheduler.scheduleOnce(5 seconds, self, IntroduceFailure(counter))
         }
       }
 

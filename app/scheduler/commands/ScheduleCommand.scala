@@ -52,7 +52,7 @@ class ScheduleCommand(dbModule : DbModule,scheduler:Scheduler,proxy: NetworkProx
 
       logger.debug("command nearly finished, processed Scheduled components are " + scheduledComponentIds.mkString(","))
       //add pending if any to the component queue again
-      components.filter(x=> !scheduledComponentIds.contains(x.id)).map(ComponentQueue.push(_))
+      components.filter(x=> !finalListToSendSchedulingInfo.contains(x.id)).map(ComponentQueue.push(_))
     }
     logger.info("Schedule command execute finished")
   }
