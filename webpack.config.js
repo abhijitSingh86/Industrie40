@@ -37,6 +37,10 @@ var config = {
                 test: /\.scss$/,
                 include: /\/app\/assets/,
                 loader: 'style-loader!css-loader!sass-loader'
+            },
+            {
+                test: /\.(png|jpg|gif)$/,
+                loader: 'url-loader'
             }
         ]
     },
