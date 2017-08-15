@@ -6,17 +6,25 @@ import {connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import * as Actions from '../redux/actions';
 
+import Timeline from 'react-visjs-timeline'
+
+
 class SimulationMonitor extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
             keyTab2:-1,
-            keyTab3:-1
+            keyTab3:-1,
+            timelineDates:[]
         }
         this.start_simulation = this.start_simulation.bind(this);
         this.stop_simulation = this.stop_simulation.bind(this);
         this.completedComponentCount = this.completedComponentCount.bind(this);
+        this.createTimeLine = this.createTimeLine.bind(this);
+        this.getOperationLabel = this.getOperationLabel.bind(this);
     }
+
+
 
     doSomething(){
         if(!this.props.isSimulationComplete) {
@@ -63,7 +71,45 @@ class SimulationMonitor extends React.Component {
         });
     }
 
+    getOperationLabel(id) {
+        var opd = this.props.completedComponents[0].operationDetails
+        for (var i = 0; i < opd[0].length; i++) {
+            // console.log(opd[0][i] +":"+id)
+            if (opd[0][i].id === id)
+                return opd[0][i].label;
+        }
+        return "No Label";
+    }
 
+    createTimeLine(){
+        //fetch the details of component processing
+
+        var comps = this.props.completedComponents;
+        // var d=[];
+        // comps.map((x) => x.schedulinginfo.pastOperations.forEach((y)=>d.push(y)))
+        //
+        // console.log(d);
+        var myVal=[];
+        var grps=[];
+        comps.map((y)=>{
+            grps.push({"id":y.name});
+            var ro = y.schedulinginfo.pastOperations;
+
+
+            ro.map((x)=> {
+                var con = this.getOperationLabel(x.operationId)+"\n On Assembly "+x.assemblyName+"\n"+x.status;
+                myVal.push({
+                    "start": new Date(x.startTime), "end": new Date(x.endTime),  // end is optional
+                    "content": con, "group": y.name
+                })
+            });
+        })
+       console.log(JSON.stringify(myVal));
+       this.setState({
+           timelineDates:myVal
+           ,groups:grps
+       });
+    }
     render() {
         var counter=3;
         var arr = [];
@@ -78,7 +124,22 @@ class SimulationMonitor extends React.Component {
             // counter =counter + .5;
         }
 
-        // console.log(this.props.completedComponents);
+        const options = {
+            width: '100%',
+            height:'500px',
+            showMajorLabels: true,
+            showCurrentTime: true,
+            zoomMin: 0,
+            zoomMax:315360000000000,
+            zoomable:true,
+            moveable:true,
+            type: 'background',
+            format: {
+                minorLabels: {
+                    millisecond:'SSS'
+                }
+            }
+        }
         return (
             <Tabs >
                 <Tab eventKey="1" title="Simulation">
@@ -115,6 +176,7 @@ class SimulationMonitor extends React.Component {
                                     {this.props.completedComponents.length}
                                 </td>
                             </tr>
+
                             <tr>
                                 <td className="rightAlign pull-right">
                                     <Button  bsStyle="primary" onClick={this.start_simulation}>
@@ -127,8 +189,22 @@ class SimulationMonitor extends React.Component {
                                 </Button>
                             </td>
                             </tr>
+                            <tr>
+                                <td className="rightAlign pull-left" colSpan={2} >
+                                    <Button  bsStyle="primary" onClick={this.createTimeLine}>
+                                        Create TimeLine
+                                    </Button>
+
+                                </td>
+
+                            </tr>
                             </tbody>
                         </Table>
+                        <Timeline
+                            options={options}
+                            items={this.state.timelineDates}
+                            groups={this.state.groups}
+                        />
                     </div>
                 </Tab>
                 <Tab eventKey="2" title="Components">
