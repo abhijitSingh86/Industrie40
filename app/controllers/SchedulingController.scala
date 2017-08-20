@@ -8,6 +8,7 @@ import db.DbModule
 import json.DefaultRequestFormat
 import network.NetworkProxy
 import play.api.Logger
+import play.api.libs.json.Json
 import play.api.mvc.{Action, Controller}
 import scheduler.{ComponentQueue, SchedulerThread}
 
@@ -62,6 +63,8 @@ class SchedulingController(schedulingThread:SchedulerThread,db:DbModule , networ
           })
           Logger.info("Stop request processed.. ")
         }
-        Ok(DefaultRequestFormat.getEmptySuccessResponse())
-      }
+      val simObj = db.getSimulationObject(id)
+
+      Ok(DefaultRequestFormat.getSuccessResponse(Json.obj("sttime"->simObj.startTime,"ettime"->simObj.endTime)))
+  }
 }

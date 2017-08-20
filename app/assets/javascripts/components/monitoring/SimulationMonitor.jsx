@@ -110,6 +110,40 @@ class SimulationMonitor extends React.Component {
            ,groups:grps
        });
     }
+
+    getSimulationTimeData(){
+        if(this.props.isSimulationComplete)
+        return (
+            <div>
+                <tr>
+                    <td>
+                       Start Time
+                    </td>
+                    <td>
+                        {(new Date(this.props.simulationTime.sttime)).toLocaleString()}
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        End Time
+                    </td>
+                    <td>
+                        {(new Date(this.props.simulationTime.ettime)).toLocaleString()}
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Difference
+                    </td>
+                    <td>
+                        {(this.props.simulationTime.ettime-this.props.simulationTime.sttime)/(60000)}
+                    </td>
+                </tr>
+            </div>
+        );
+        else return <div></div>;
+    }
+
     render() {
         var counter=3;
         var arr = [];
@@ -129,7 +163,7 @@ class SimulationMonitor extends React.Component {
             height:'500px',
             showMajorLabels: true,
             showCurrentTime: true,
-            zoomMin: 0,
+            zoomMin: 10,
             zoomMax:315360000000000,
             zoomable:true,
             moveable:true,
@@ -176,6 +210,10 @@ class SimulationMonitor extends React.Component {
                                     {this.props.completedComponents.length}
                                 </td>
                             </tr>
+
+                            {this.getSimulationTimeData()}
+
+
 
                             <tr>
                                 <td className="rightAlign pull-right">
@@ -234,6 +272,7 @@ function mapStateToProps(state) {
         ,completedComponents:state.simulation.completedComponents
         ,response:state.simulation.response
         ,isSimulationComplete:state.simulation.isSimulationComplete
+        ,simulationTime:state.simulation.simulationTime
     };
 }
 

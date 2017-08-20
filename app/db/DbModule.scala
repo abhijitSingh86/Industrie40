@@ -22,7 +22,7 @@ trait DbModule {
 
   def componentHeartBeatUpdateAsync(componentId:Int,simulationId:Int):Future[Boolean]
 
-  def getSimulation(simulationId:Int):Simulation
+  def getCompleteSimulationObject(simulationId:Int):Simulation
 
   def getAllSimulation():List[Simulation]
 
@@ -85,6 +85,8 @@ trait DbModule {
 
   def addComponentTimeMap(simulationId:Int,componentToAssemblyTransTime: List[ComponentToAssemblyTransTime]):Unit
   def getComponentTimeMap(simulationId:Int): List[ComponentToAssemblyTransTime]
+
+  def getSimulationObject(id:Int):Simulation
 }
 
 class SlickModuleImplementation(cache:CacheApi) extends DbModule {
@@ -94,6 +96,10 @@ class SlickModuleImplementation(cache:CacheApi) extends DbModule {
     with ComponentDaoRepo
     with OperationDaoRepo
     with DBComponent =>
+
+  def getSimulationObject(id:Int):Simulation ={
+    simulation.getSimulationById(id)
+  }
 
   def getAssemblyTimeMap(simulationId:Int):List[AssemblyTransportTime] = {
     cache.getOrElse[List[AssemblyTransportTime]](s"assemblyTT${simulationId}") {
@@ -210,7 +216,7 @@ class SlickModuleImplementation(cache:CacheApi) extends DbModule {
   }
 
 
-  def getSimulation(simulationId:Int):Simulation = {
+  def getCompleteSimulationObject(simulationId:Int):Simulation = {
 
     val sim = simulation.getSimulationById(simulationId)
     val comps = simulation.getAllComponentIdsBySimulationId(simulationId).map(component.selectByComponentId(_,cache)).flatten
