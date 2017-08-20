@@ -24,7 +24,17 @@ class ComponentController(db:DbModule) extends Controller {
     val sequence= (json.get \ "sequence").get.as[Int]
     val failureWaitTime= (json.get \ "failureWaitTime").get.as[Int]
     db.updateComponentProcessingInfo(simulationId,componentId,assemblyId,sequence , operationId,failureWaitTime) match {
-      case true => Ok(DefaultRequestFormat.getEmptySuccessResponse())
+      case true => {
+
+        //Add to next scheduling
+        db.getComponentWithProcessingInfo(componentId,simulationId ) match{
+          case Some(x)  =>
+          {
+            ComponentQueue.push(x)
+          }
+        }
+        Ok(DefaultRequestFormat.getEmptySuccessResponse())
+      }
       case false => Ok(DefaultRequestFormat.getValidationErrorResponse(
         List(("ComponentProcessingInfo","Component Processing record not found"))))
     }
@@ -93,6 +103,10 @@ class ComponentController(db:DbModule) extends Controller {
     //get Component DAO
     val componentId = (json.get \ "componentId").get.as[Int]
     val simulationId = (json.get \ "simulationId").get.as[Int]
+
+    if(ComponentQueue.requestQueue.filter(_.id == componentId).size >0){
+      Ok(DefaultRequestFormat.getEmptySuccessResponse())
+    }
     //check for init id and url params
     db.getComponentWithProcessingInfo(componentId,simulationId ) match{
       case Some(x)  =>

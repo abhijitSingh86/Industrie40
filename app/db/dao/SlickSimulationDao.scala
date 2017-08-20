@@ -72,7 +72,7 @@ trait SlickSimulationDaoRepo extends SimulationDaoRepo{
 
   def getSimulationById(simulationId: Int): models.Simulation = {
     Await.result(db.run(simulations.filter(_.id === simulationId).result.headOption), Duration.Inf) match {
-      case Some(x: Tables.SimulationRow) => new models.Simulation(x.id, x.name, x.desc.getOrElse(""))
+      case Some(x: Tables.SimulationRow) => new models.Simulation(x.id, x.name, x.desc.getOrElse(""),x.starttime.getOrElse(0l),x.endtime.getOrElse(0l))
     }
   }
 

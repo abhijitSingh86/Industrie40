@@ -44,7 +44,7 @@ class SimulationController(database:DbModule) extends Controller {
 
   }
   def getSimulation(id:Int) = Action{
-    Ok(ResponseFactory.make(SimulationJson(database.getSimulation(id))))
+    Ok(ResponseFactory.make(SimulationJson(database.getCompleteSimulationObject(id))))
   }
 
   def getShellScriptStructure(simualtion:Simulation):JsObject = {
@@ -131,7 +131,7 @@ class SimulationController(database:DbModule) extends Controller {
         println(f)
     }
 
-    Ok(DefaultRequestFormat.getSuccessResponse(getShellScriptStructure(database.getSimulation(simulationId))))
+    Ok(DefaultRequestFormat.getSuccessResponse(getShellScriptStructure(database.getCompleteSimulationObject(simulationId))))
   }
 
 //  def updateSimulation() = Action.async{

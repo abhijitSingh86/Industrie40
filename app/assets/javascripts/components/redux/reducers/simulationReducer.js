@@ -9,6 +9,9 @@ const initialState = {
     ,components:[]
     ,assemblies:[]
     ,isSimulationComplete:false
+    ,simulationTime:{
+        sttime:0,ettime:0
+    }
 }
 
 export default function simulationReducer(state = initialState,action){
@@ -21,8 +24,8 @@ export default function simulationReducer(state = initialState,action){
         }
 
         case STOP_SIMULATION : {
-            var response = action.payload.response === true ? "Stopped Successfully" : "Error Stopping:"+action.payload.response
-            return Object.assign({},state,{response:response})
+            var response = action.payload.response.ettime !=0 ? "Stopped Successfully" : "Error Stopping:"+action.payload.response
+            return Object.assign({},state,{response:response , simulationTime:action.payload.response})
         }
 
         case CHANGE_COMPLETION_COUNT : {
