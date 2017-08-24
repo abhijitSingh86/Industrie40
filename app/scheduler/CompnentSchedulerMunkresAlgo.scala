@@ -7,6 +7,8 @@ import scala.collection.immutable.ListMap
 import scala.collection.mutable
 
 class CompnentSchedulerMunkresAlgo(scheduleDbHandler:SchedulerAssignmentHandler)  extends Scheduler{
+  val NA_VALUE:Int = 99998
+
   /**
     * Function will take the component and assemblies and schedule them with Interval timing greedy algorithm.
     * Return will be the list of components which are not scheduled by the algorithm this is possible in case of
@@ -16,98 +18,50 @@ class CompnentSchedulerMunkresAlgo(scheduleDbHandler:SchedulerAssignmentHandler)
     * @param assemblies
     * @return Scheduled Components Ids
     */
-  override def scheduleComponents(components: List[Component], assemblies: List[Assembly]) = {
+  override def scheduleComponents(components: List[Component], assemblies: List[Assembly]):List[Int] = {
     //create cost Matrix
-    var availableResourceMap = getAvailableResourceMap(assemblies)
-    val unBalancedCostMatrix = components.map(x=>{
-      x.getCurrentProcessingStepOptions().distinct.flatMap(y=>{
-        assemblies.map(z=>{
-          if(z.totalOperations.filter(_.operation.id == y.id).size > 0){
-            ComponentQueue.getTransportTime(x,z)
-          }else
-            99998
-        })
+    val unBalancedCostMatrix = assemblies.map(as=>{
 
-      }).toArray
-    })
+      components.map(cmp=>{
+        val processings = cmp.getCurrentProcessingStepOptions().distinct.map(_.id)
+        if(as.totalOperations.filter(op => processings.contains(op.operation.id)).size >0){
+          ComponentQueue.getTransportTime(cmp,as)
+        }else
+          NA_VALUE
+              }).toArray
 
+    }).toArray
 
+    //Check exception condition where no requirements can be fulfilled
+    if(unBalancedCostMatrix.flatten.filterNot(_ == NA_VALUE).size ==0){
+      //Returning as no requirement is there to fulfill
+      return List()
+    }
 
     //send to Munkres Impl class for calculation
-  val algoObj =new  MunkresAlgorithmImpl(unBalancedCostMatrix.toArray)
+  val algoObj =new  MunkresAlgorithmImpl(unBalancedCostMatrix)
     val assignmentMatrix:Array[Array[Int]] = algoObj.getAssignmentmatrix
     //assign the scheduling if any
     val scheduledComponent = mutable.ArrayBuffer[Int]()
-    assignmentMatrix.map(row=>{
-      row.map(col=>{
-        if(col == 1){
-          val component:Component
-          val operation:Operation
-          val assembly:Assembly
-          scheduleDbHandler.assign(component,operation,assembly)
-          scheduledComponent += component.id
+
+    assignmentMatrix.zipWithIndex.foreach{case (ele,index) =>{
+        ele.zipWithIndex.foreach{
+          case (c,ind) => {
+            if(c==1){
+              val component:Component =  components(ind)
+              val assembly:Assembly = assemblies(index)
+              val processings = component.getCurrentProcessingStepOptions().distinct
+              val operation:Operation = assembly.totalOperations.filter(op=> processings.contains(op.operation))(0).operation
+              scheduleDbHandler.assign(component,operation,assembly)
+              scheduledComponent += component.id
+            }
+          }
         }
-      })
-    })
+    }}
 
     //return the assined list
-
     scheduledComponent.toList
   }
 
-  private def getRequiredOperationMap(components: List[Component]):Map[Operation, List[Component]] = {
 
-    val requiredOperationMap = new mutable.HashMap[Operation, List[Component]]()
-
-    @tailrec
-    def processComponents(opMap: mutable.HashMap[Operation, List[Component]], count: Int): Unit = {
-      if (count < components.size) {
-        //retrieve the assembly's total operation
-        val component = components(count)
-        if (!component.isComplete()) {
-          component.getCurrentProcessingStepOptions().map(x => {
-            //if the operation is not in allocated operation, put it into a map for scheduling
-            opMap.contains(x) match {
-              case true => opMap += (x -> (opMap.get(x).get :+ component))
-              case false => opMap += (x -> List(component))
-            }
-          })
-        }
-        processComponents(opMap, count + 1)
-      }
-    }
-
-    //start the tail recursion
-    processComponents(requiredOperationMap, 0)
-    //return the operation map while make unique list for same operation requirement. Will help to minimize the loops
-    requiredOperationMap.map(x=> (x._1 -> x._2.distinct)).toMap[Operation,List[Component]]
-  }
-
-
-  private def getAvailableResourceMap(assemblies: List[Assembly]) :Map[Operation,List[Assembly]]= {
-
-    val availableOperationMap = new mutable.HashMap[Operation, List[Assembly]]()
-
-    @tailrec
-    def processAssemblies(opMap: mutable.HashMap[Operation, List[Assembly]], count: Int): Unit = {
-      if (count < assemblies.size) {
-        //retrieve the assembly's total operation
-        val assembly = assemblies(count)
-        assembly.totalOperations.map(x=>{
-          opMap.contains(x.operation) match {
-            case true => opMap += (x.operation -> (opMap.get(x.operation).get :+ assembly))
-            case false => opMap += (x.operation -> List(assembly))
-          }
-        })
-        processAssemblies(opMap, count + 1)
-      }
-    }
-
-    //start the tail recursion
-    processAssemblies(availableOperationMap, 0)
-    //return the operation map
-    availableOperationMap.map(x=>{
-      x._1 -> x._2.sortWith(_.totalOperations.size<_.totalOperations.size)
-    })toMap
-  }
 }

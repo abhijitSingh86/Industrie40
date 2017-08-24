@@ -25,11 +25,13 @@ list.sortWith(_ < _)
 
 val did1 = 1502475975562l-1502475509103l
 val did2 = 1503231823633l-1503231382838l
+val did3 = 1503532558166l-1503532118549l
 val did = 1502481012013l-1502480568788l
 
 val f = (did/(1000f))/(60f)
 val f1 = (did1/(1000f))/(60f)
 val f2 = (did2/(1000f))/(60f)
+val f3 = (did3/(1000f))/(60f)
 
 f1-f
 val st = Calendar.getInstance().setTimeInMillis(1502192176025l)

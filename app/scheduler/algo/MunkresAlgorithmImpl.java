@@ -4,7 +4,7 @@ import java.util.Arrays;
 
 public class MunkresAlgorithmImpl {
     public int MAX_VALUE = 99999;
-    public int NA_VALUE = 99998;
+    public static int NA_VALUE = 99998;
 
 
     int[][] costArr ;
@@ -12,26 +12,55 @@ public class MunkresAlgorithmImpl {
     int cRows ;
     int cCols ;
 
-    int rowCover[] =new int[cRows];
-    int colCover[] =new int[cCols];
-    int maskMatrix[][] =new int[cRows][cCols];
-    int path[][] =new int[cRows][cCols];
-
+    int rowCover[] ;
+    int colCover[] ;
+    int maskMatrix[][] ;
+    int path[][] ;
+    int onlyNaRowsCount = 0;
+    int step6to4Counter = 0;
+    public static void main(String[] args) {
+        int[][] costArr = {{18,NA_VALUE,NA_VALUE},{20,NA_VALUE,NA_VALUE},{NA_VALUE,NA_VALUE,NA_VALUE}};
+        new MunkresAlgorithmImpl(costArr );
+    }
     public MunkresAlgorithmImpl(int[][] costArr){
-        this.costArr = costArr;//getBalancedCostArray(costArr);
+        this.costArr = costArr;
+        //getBalancedCostArray(costArr);
+        this.costArr = costArr;
         cRows = costArr.length;
         cCols = costArr[0].length;
-        start();
-    }
+        rowCover =new int[cRows];
+        colCover =new int[cCols];
+        maskMatrix =new int[cRows][cCols];
+        path =new int[cRows][cCols];
 
-    private int[][] getBalancedCostArray(int[][] costArr) {
-        return new int[0][];
+        start();
     }
 
     public int[][] getAssignmentmatrix(){
         return maskMatrix;
     }
+    private int[][] getBalancedCostArray(int[][] costArr) {
 
+        int max=-1;
+        for (int i = 0; i < costArr.length; i++) {
+            if(max<costArr[i].length){
+                max = costArr[i].length;
+            }
+        }
+
+        if(max !=-1){
+            int[][] cost = new int[costArr.length][max];
+
+            for (int i = 0; i < costArr.length; i++) {
+                for (int j = 0; j < max; j++) {
+
+//                    cost[i][j] =
+                }
+            }
+        }
+
+        return new int[0][];
+    }
     public void printCovers(){
         for (int j = 0; j < rowCover.length; j++) {
             System.out.format("%5d ",rowCover[j]);
@@ -42,6 +71,7 @@ public class MunkresAlgorithmImpl {
         }
         System.out.println("***********************************");
     }
+
 
     public void printMatrix(int[][] mat){
         for (int i = 0; i < mat.length; i++) {
@@ -74,10 +104,10 @@ public class MunkresAlgorithmImpl {
                     step = performStep1();
                     break;
                 case 2:
-                    step = createMaskMatrix();
+                    step = createMaskMatrix_Step2();
                     break;
                 case 3:
-                    step = checkForSolution();
+                    step = checkForSolution_Step3();
                     break;
                 case 4:
                     step = recalculateForSolution_Step4();
@@ -86,7 +116,7 @@ public class MunkresAlgorithmImpl {
                     step = reShuffelTheMaskMatrix_Step5();
                     break;
                 case 6:
-                    step = makeUncoveredZero_step6();
+                    step = makeUncoveredZero_Step6();
                     break;
                 case 7:
                     done=true;
@@ -104,7 +134,7 @@ public class MunkresAlgorithmImpl {
 
     private int reShuffelTheMaskMatrix_Step5() {
         boolean done = false;
-
+        step6to4Counter = 0;
         int path_count = 1;
         path[path_count-1][0] = forStep5.row;
         path[path_count-1][1] = forStep5.col;
@@ -175,7 +205,7 @@ public class MunkresAlgorithmImpl {
         }
     }
 
-    private int makeUncoveredZero_step6() {
+    private int makeUncoveredZero_Step6() {
         //find minimum from the uncovered matrix
 
         int min = MAX_VALUE;
@@ -199,7 +229,7 @@ public class MunkresAlgorithmImpl {
                 }
             }
         }
-
+        step6to4Counter+=1;
         return 4;
     }
 
@@ -215,6 +245,12 @@ public class MunkresAlgorithmImpl {
     Position forStep5=null;
 
     private int recalculateForSolution_Step4() {
+//
+        if(step6to4Counter >=2){
+            //It means it have reached a stage where whole creation is not working because of NA values.
+            return 3;
+        }
+
         boolean done = false;
         while(!done){
             Position pos = null;
@@ -254,18 +290,37 @@ public class MunkresAlgorithmImpl {
         return 6;
     }
 
-    private int checkForSolution() {
+    private int checkForSolution_Step3() {
 
         int colCount = 0;
+        int onlyNaRowsCount =0 ;
+        int finishCounterForAllOneReq = 0;
         for (int i = 0; i < costArr.length; i++) {
+            int na=0;
             for (int j = 0; j < costArr[i].length; j++) {
                 if(maskMatrix[i][j]==1) {
                     colCover[j] = 1;
                     colCount++;
                 }
+
+                if(costArr[i][j] == NA_VALUE || costArr[i][j] == 0){
+                    finishCounterForAllOneReq+=1;
+                }
+                if(NA_VALUE == costArr[i][j]){
+                    na +=1;// costArr[i][j];
+                }
             }
+            if(na == costArr[i].length){
+                onlyNaRowsCount+=1;
+            }
+
         }
 
+        if(finishCounterForAllOneReq == costArr.length*costArr[0].length){
+            return 7;
+        }
+
+        colCount += onlyNaRowsCount;
         if(colCount >= costArr.length || colCount >= costArr[0].length)
             return 7;
 
@@ -273,7 +328,7 @@ public class MunkresAlgorithmImpl {
     }
 
 
-    private int createMaskMatrix() {
+    private int createMaskMatrix_Step2() {
 
 
 
@@ -296,13 +351,18 @@ public class MunkresAlgorithmImpl {
     private int performStep1() {
 
         //find the minimum in the row and substract from the whole row
+        //also set if there is any ONLY NA rows
+
         for (int i = 0; i < costArr.length; i++) {
             int minVal=MAX_VALUE;
             for (int j = 0; j < costArr[i].length; j++) {
                 if(minVal>costArr[i][j] && costArr[i][j] !=-1){
                     minVal = costArr[i][j];
                 }
+
             }
+
+
 
             if(minVal != MAX_VALUE){
                 for (int j = 0; j < costArr[i].length; j++) {

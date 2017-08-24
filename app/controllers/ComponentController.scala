@@ -26,11 +26,13 @@ class ComponentController(db:DbModule) extends Controller {
     db.updateComponentProcessingInfo(simulationId,componentId,assemblyId,sequence , operationId,failureWaitTime) match {
       case true => {
 
+
         //Add to next scheduling
         db.getComponentWithProcessingInfo(componentId,simulationId ) match{
           case Some(x)  =>
           {
-            ComponentQueue.push(x)
+            if(!x.isComplete())
+              ComponentQueue.push(x)
           }
         }
         Ok(DefaultRequestFormat.getEmptySuccessResponse())
