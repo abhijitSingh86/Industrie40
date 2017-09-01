@@ -1,5 +1,3 @@
-CREATE DATABASE  IF NOT EXISTS `dikscheduling` /*!40100 DEFAULT CHARACTER SET latin1 */;
-USE `dikscheduling`;
 -- MySQL dump 10.13  Distrib 5.7.19, for Linux (x86_64)
 --
 -- Host: localhost    Database: dikscheduling
@@ -384,4 +382,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-08-27 12:38:38
+-- Dump completed on 2017-09-01 11:53:24
