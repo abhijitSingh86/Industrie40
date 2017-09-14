@@ -74,13 +74,7 @@ export function updateComponentCompletionCount(obj){
         payload:obj
     }
 }
-export function getSimulation(id){
-   const req = axios.get('/simulation/' + id);
-    return {
-        type:GET_SIMULATION_WITH_ID,
-        payload:req
-    }
-}
+
 
 
 function parseResponse(res){

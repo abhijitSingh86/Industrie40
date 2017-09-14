@@ -15,7 +15,11 @@ object ComponentQueue {
   val logger = Logger(this.getClass())
   val requestQueue:mutable.LinkedHashSet[Component] = new mutable.LinkedHashSet[Component]()
   private var simulationId =0
-var failTime=0
+
+  var ghostUrl:String=""
+
+
+  var failTime=0
 
   def setComponentTT(l:List[ComponentToAssemblyTransTime])={
     componentTT = l

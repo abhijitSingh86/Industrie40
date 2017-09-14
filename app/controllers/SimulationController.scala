@@ -4,6 +4,7 @@ import db.DbModule
 import db.generatedtable.Tables
 import json._
 import models._
+import network.NetworkProxy
 import play.api.Logger
 import play.api.mvc.{Action, AnyContent, Controller, Request}
 import scheduler.ComponentQueue
@@ -17,7 +18,7 @@ import scala.util.Try
 
 import play.api.libs.json._
 
-class SimulationController(database:DbModule) extends Controller {
+class SimulationController(database:DbModule,networkproxy:NetworkProxy) extends Controller {
 
 
   def getAllSimulations() = Action {
@@ -44,7 +45,10 @@ class SimulationController(database:DbModule) extends Controller {
 
   }
   def getSimulation(id:Int) = Action{
-    Ok(ResponseFactory.make(SimulationJson(database.getCompleteSimulationObject(id))))
+    //start the Ghost loading
+    val sim = database.getCompleteSimulationObject(id)
+    networkproxy.sendStartToGhostApp(sim)
+    Ok(ResponseFactory.make(SimulationJson(sim)))
   }
 
   def getShellScriptStructure(simualtion:Simulation):JsObject = {

@@ -1,10 +1,11 @@
 package network
 
-import models.{Assembly, Operation}
+import models.{Assembly, Operation, Simulation}
 import play.api.Logger
 import play.api.libs.json.Json
 import play.api.libs.ws._
 import play.api.mvc.Results
+import scheduler.ComponentQueue
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
@@ -21,6 +22,22 @@ class NetworkProxy(ws:WSClient) {
   val assemblyFailureHook = "/receiveFailure"
   val assemblyFinishHook = "/receiveSimFinish"
 
+  //Ghost App hooks
+  val ghostStartHook = "/simulationStart"
+  val ghostStopHook = "/simulationStop"
+
+  def sendStartToGhostApp(simulation:Simulation): Unit ={
+    val ghostAppUrl = ComponentQueue.ghostUrl
+
+    val data =Json.obj("id"->simulation.id,"name"->simulation.name,"components"->simulation.components.map(_.id),"assemblies"->simulation.assemblies.map(_.id))
+    val req = Await.result(ws.url(ghostAppUrl+ghostStartHook).post(data), Duration.Inf)
+  }
+
+  def sendStopToGhostApp(): Unit ={
+    val ghostAppUrl = ComponentQueue.ghostUrl
+    val data =Json.obj()
+    val req = Await.result(ws.url(ghostAppUrl+ghostStopHook).post(data), Duration.Inf)
+  }
 
   def sendAssemblyDetails(url: String, assembly: Assembly, assemblyUrls: Map[Int, String],operationId:Int,transportTime:Int) = {
       //send http request using assemblies details

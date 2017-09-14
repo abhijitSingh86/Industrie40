@@ -43,7 +43,7 @@ class MyComponents(context:Context) extends BuiltInComponentsFromContext(context
 //    with SlickOperationDao with MySqlDBComponent
   lazy val schedulingController = new controllers.SchedulingController(schedulerThread,dbModule,networkProxy)
 
-  lazy val simulationCOntrolller = new controllers.SimulationController(dbModule) with SlickSimulationDaoRepo with MySqlDBComponent
+  lazy val simulationCOntrolller = new controllers.SimulationController(dbModule,networkProxy) with SlickSimulationDaoRepo with MySqlDBComponent
 
   lazy val assets = new controllers.Assets(httpErrorHandler)
 

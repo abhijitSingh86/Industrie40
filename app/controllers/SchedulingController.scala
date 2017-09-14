@@ -61,10 +61,18 @@ class SchedulingController(schedulingThread:SchedulerThread,db:DbModule , networ
           db.getAllAssemblyUrlBySimulationId(ComponentQueue.getSimulationId()).map(x=>{
             networkProxy.sendFinishNotificationToAssembly(x._2)
           })
+
+          networkProxy.sendStopToGhostApp()
           Logger.info("Stop request processed.. ")
         }
       val simObj = db.getSimulationObject(id)
 
       Ok(DefaultRequestFormat.getSuccessResponse(Json.obj("sttime"->simObj.startTime,"ettime"->simObj.endTime)))
+  }
+
+
+  def ghostPing(url:String,port:Int) = Action {
+    ComponentQueue.ghostUrl = "http://"+url+":"+port;
+    Ok("pong")
   }
 }
