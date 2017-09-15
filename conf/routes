@@ -24,7 +24,7 @@ GET           /assemblyStatus/:simId/:asmId         controllers.Index.assemblyRu
 
 POST          /simulation                           controllers.SimulationController.addSimulation
 GET           /simulation                           controllers.SimulationController.getAllSimulations
-GET           /simulation/:id                       controllers.SimulationController.getSimulation(id:Int)
+GET           /simulation/:id/:mode                 controllers.SimulationController.getSimulation(id:Int,mode:String)
 DELETE        /simulation/:id                       controllers.SimulationController.deleteSimulation(id:Int)
 POST          /simualtion/:id/clear                 controllers.SimulationController.startAgain(id:Int)
 POST          /simulation/:id/runningstatus         controllers.SimulationController.simulationRunningStatus(id:Int)

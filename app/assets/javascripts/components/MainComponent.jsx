@@ -14,14 +14,14 @@ class MainComponent extends React.Component {
     }
 
 
-    changeMainMode(simulationId) {
-        console.log("change Recieved with "+simulationId);
-       this.props.actions.changeMainMode(simulationId);
+    changeMainMode(simulationId,mode) {
+        console.log("change Recieved with "+simulationId+" mode: "+mode);
+       this.props.actions.changeMainMode(simulationId,mode);
     }
 
     getPanelForDisplay() {
         if (this.props.monitor === false) {
-            return <Registration changeHandler={this.changeMainMode}/>
+            return <Registration changeHandler={this.changeMainMode} simulationMonitorError={this.props.simulationMonitorError}/>
         } else {
             return (
                     <SimulationMonitor/>
@@ -42,7 +42,8 @@ class MainComponent extends React.Component {
 function mapStateToProps(state) {
     return {
         simulationId: state.mainMode.simulationId,
-        monitor:state.mainMode.monitor
+        monitor:state.mainMode.monitor,
+        simulationMonitorError:state.mainMode.simulationMonitorError
     };
 }
 

@@ -54,7 +54,7 @@ class StartPage extends React.Component {
                 _this.setState({
                     response: "Previous run data cleared successfully."
                 });
-                _this.props.changeHandler(_this.state.selectedSimulationId)
+                _this.props.changeHandler(_this.state.selectedSimulationId,"start");
 
             }).catch(function (error) {
                 _this.setState({
@@ -70,19 +70,7 @@ class StartPage extends React.Component {
                 selectedSimulationName:"Please Select a simulation First."
             })
         }else {
-            var key = this.state.selectedSimulationId;
-            // var _this = this;
-            // axios.post('/simualtion/'+key+'/clear').then(function (response) {
-            //     _this.setState({
-            //         response: "Previous run data cleared successfully."
-            //     });
-                this.props.changeHandler(this.state.selectedSimulationId)
-
-            // }).catch(function (error) {
-            //     _this.setState({
-            //         response: "Error while clearing previous simulation data. \n " + error
-            //     });
-            // })
+                this.props.changeHandler(this.state.selectedSimulationId,"view");
         }
     }
 
@@ -128,6 +116,12 @@ class StartPage extends React.Component {
         this.props.changeHandler(this.state.selectedSimulationId)
     }
     render() {
+        var er="";
+        if(this.props.simulationMonitorError != undefined){
+            er= this.props.simulationMonitorError;
+        }else{
+            er=this.state.response;
+        }
         var rows = this.createSimulationIdDropDown();
         return (
             <div>
@@ -136,7 +130,7 @@ class StartPage extends React.Component {
                         <label> Upload Json Data File</label>
                         <input type="file" onChange={this.handleFileChange}/>
                     </li>
-                    <li>{this.state.response}
+                    <li>{er}
                         <table><tbody><tr>
                         <td>
                             <DropdownButton  title="Select Simulation" onSelect={this.handleSelect} >

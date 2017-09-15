@@ -139,10 +139,10 @@ export function stopSimulation(id){
     }
 }
 
-export function changeMainMode(id)  {
+export function changeMainMode(id,mode)  {
 
    return function(dispatch) {
-       axios.get('/simulation/' + id).then(function(res){
+       axios.get("/simulation/"+id+"/"+mode).then(function(res){
            var action = {
                type: CHANGE_MAIN_MODE,
                payload: {
@@ -152,10 +152,18 @@ export function changeMainMode(id)  {
                }
            };
            dispatch(action);
-       })
-           // .catch(function(e){
-           // console.log("error in ChangeMain Mode async call"+e)
-       // });
+       }).catch(function(e){
+           console.log("error in ChangeMain Mode async call"+e.response.data);
+           var action = {
+               type: CHANGE_MAIN_MODE,
+               payload: {
+                   simulationId: id,
+                   monitor: false,
+                   error:e.response.data
+               }
+           };
+           dispatch(action);
+       });
    }
 
 }

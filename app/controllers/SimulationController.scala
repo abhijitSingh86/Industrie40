@@ -6,7 +6,7 @@ import json._
 import models._
 import network.NetworkProxy
 import play.api.Logger
-import play.api.mvc.{Action, AnyContent, Controller, Request}
+import play.api.mvc._
 import scheduler.ComponentQueue
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -44,11 +44,27 @@ class SimulationController(database:DbModule,networkproxy:NetworkProxy) extends 
       )
 
   }
-  def getSimulation(id:Int) = Action{
+  def getSimulation(id:Int,mode:String) = Action{
+
+
+
+    var response:Option[Result]=None
     //start the Ghost loading
+    if(mode.equalsIgnoreCase("start") ){
+      if(!ComponentQueue.isGhostOnline()){
+      response=  Some(BadRequest("Background Ghost app is not running. Not able to start the Simulation monitoring."))
+      }
+    }
+  if(!response.isDefined) {
     val sim = database.getCompleteSimulationObject(id)
-    networkproxy.sendStartToGhostApp(sim)
-    Ok(ResponseFactory.make(SimulationJson(sim)))
+    response = Some(Ok(ResponseFactory.make(SimulationJson(sim))))
+
+    if (mode.equalsIgnoreCase("start")) {
+      networkproxy.sendStartToGhostApp(sim)
+    }
+  }
+
+    response.get
   }
 
   def getShellScriptStructure(simualtion:Simulation):JsObject = {

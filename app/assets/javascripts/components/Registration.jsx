@@ -65,7 +65,8 @@ var Registration = React.createClass({
         fieldValues={fieldValues}
         nextStep={this.nextStep}
         saveValues={this.saveValues}
-        changeHandler={this.props.changeHandler}/>
+        changeHandler={this.props.changeHandler}
+        simulationMonitorError={this.props.simulationMonitorError}/>
 
       case 1:
         return <SimulationForm fieldValues={fieldValues}

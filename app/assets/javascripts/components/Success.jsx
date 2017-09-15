@@ -62,7 +62,7 @@ class SubmittedValue extends React.Component{
     startSimulationMonitor(){
         var content = JSON.parse(this.props.content);
         console.log("calling change handler to display monintor mode"+content.s)
-        this.props.changeHandler(content.s)
+        this.props.changeHandler(content.s,'start')
     }
 
     render(){

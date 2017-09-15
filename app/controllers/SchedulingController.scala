@@ -1,5 +1,7 @@
 package controllers
 
+import java.util.Calendar
+
 import actor.FailureActor.{SetSimulation, Start, Stop}
 import actor.FailureGeneratorActor
 import akka.actor.{ActorSystem, Props}
@@ -72,7 +74,8 @@ class SchedulingController(schedulingThread:SchedulerThread,db:DbModule , networ
 
 
   def ghostPing(url:String,port:Int) = Action {
-    ComponentQueue.ghostUrl = "http://"+url+":"+port;
+    ComponentQueue.ghostSyncTime = Calendar.getInstance().getTimeInMillis
+    ComponentQueue.ghostUrl = "http://"+url+":"+port
     Ok("pong")
   }
 }
