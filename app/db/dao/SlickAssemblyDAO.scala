@@ -1,6 +1,8 @@
 package db.dao
 
-import db.DBComponent
+import java.util.Calendar
+
+import db.{DBComponent, generatedtable}
 import db.generatedtable.Tables
 import db.generatedtable.Tables.AssemblyOperationMappingRow
 import models.{AssemblyOperation, AssemblyOperationStatus, BusyOperationStatus, FreeOperationStatus}
@@ -29,6 +31,26 @@ trait SlickAssemblyDaoRepo extends AssemblyDaoRepo {
     private lazy val assemblyOperationMapping = Tables.AssemblyOperationMapping
     private lazy val simulationAssemblyMapping = Tables.Simulationassemblymap
     private lazy val componentProcessingState = Tables.ComponentProcessingState
+
+    private lazy val assemblyFailureData = Tables.Assemblyfailuredata
+
+    def addAssemblyFailureEntry(simulationId:Int,assemblyId:Int,duration:Int):Long = {
+      val stdate = Calendar.getInstance().getTimeInMillis
+      val query = assemblyFailureData += new Tables.AssemblyfailuredataRow(simulationId,assemblyId,Some(duration),stdate,Some(stdate + duration*1000))
+      Await.result(db.run(query),Duration.Inf)
+      stdate
+    }
+
+    def addEndTimeInAssemblyFailureEntry(simulationId:Int,assemblyId:Int,stdate:Long) = {
+      val query =for{x <- assemblyFailureData if(x.simulationid === simulationId && x.assemblyid === assemblyId && x.starttime === stdate)} yield x.endtime
+      val ettime = Calendar.getInstance().getTimeInMillis
+      Await.result(db.run(query.update(Some(ettime))),Duration.Inf)
+    }
+
+    def getAssemblyFailureEntries(simulationId:Int):Future[Seq[Tables.AssemblyfailuredataRow]] = {
+      val query = assemblyFailureData.filter(_.simulationid === simulationId)
+     db.run(query.result)
+    }
 
 
     def selectAssemblyNameMapBySimulationId(simulationId: Int , cache: CacheApi): Map[Int,String] = {
@@ -112,6 +134,11 @@ trait SlickAssemblyDaoRepo extends AssemblyDaoRepo {
         case a if a > 0 => true
         case _ => false
       }
+    }
+
+    def clearFailureData(simulationId: Int): Future[Boolean] = {
+      val query = assemblyFailureData.filter(_.simulationid === simulationId).delete
+      db.run(query).map(x=>true)
     }
 
     def assemblyHeartBeatUpdateAsync(assemblyId: Int, simulationId: Int): Future[Boolean] = {

@@ -16,6 +16,12 @@ import scala.concurrent.duration.Duration
 trait DbModule {
 
 
+  def addAssemblyFailureEntry(simulationId:Int,assemblyId:Int,duration:Int):Long
+
+  def addEndTimeInAssemblyFailureEntry(simulationId:Int,assemblyId:Int,stdate:Long)
+
+  def getAssemblyFailureEntries(simulationId:Int):Future[Seq[Tables.AssemblyfailuredataRow]]
+
   def saveJsoninDatabaseforClone(simulationId:Int,jsondata:String):Unit
 
   def getJsonFromCloneDatabase(simulationId:Int):String
@@ -101,6 +107,19 @@ class SlickModuleImplementation(cache:CacheApi) extends DbModule {
     with ComponentDaoRepo
     with OperationDaoRepo
     with DBComponent =>
+
+
+  def addAssemblyFailureEntry(simulationId:Int,assemblyId:Int,duration:Int):Long={
+    assembly.addAssemblyFailureEntry(simulationId,assemblyId,duration)
+  }
+
+  def addEndTimeInAssemblyFailureEntry(simulationId:Int,assemblyId:Int,stdate:Long) ={
+    assembly.addEndTimeInAssemblyFailureEntry(simulationId,assemblyId,stdate)
+  }
+
+  def getAssemblyFailureEntries(simulationId:Int):Future[Seq[Tables.AssemblyfailuredataRow]] = {
+    assembly.getAssemblyFailureEntries(simulationId)
+  }
 
 
   def saveJsoninDatabaseforClone(simulationId:Int,jsondata:String): Unit ={
@@ -191,6 +210,7 @@ class SlickModuleImplementation(cache:CacheApi) extends DbModule {
     val flags = for{
       c <- component.clearComponentProcessingDetailsAsync(simulationId)
       a <- assembly.clearBusyOperationAsync(simulationId)
+      af <- assembly.clearFailureData(simulationId)
     }yield (c,a)
     flags map{
       case (true,_) => true

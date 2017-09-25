@@ -122,12 +122,21 @@ trait AssemblyDaoRepo{
 
   trait AssemblyDao {
 
+    def addAssemblyFailureEntry(simulationId:Int,assemblyId:Int,duration:Int):Long
+
+    def addEndTimeInAssemblyFailureEntry(simulationId:Int,assemblyId:Int,stdate:Long)
+
+    def getAssemblyFailureEntries(simulationId:Int):Future[Seq[Tables.AssemblyfailuredataRow]]
+
+
+
     def selectAssemblyNameMapBySimulationId(simulationId: Int , cache: CacheApi): Map[Int,String]
 
     def getProcessingInfo(assemblyId:Int,simulationId:Int):Future[Seq[Tables.ComponentProcessingStateRow]]
 
     def assemblyHeartBeatUpdateAsync(assemblyId: Int, simulationId: Int):Future[Boolean]
 
+    def clearFailureData(simulationId: Int): Future[Boolean]
     def clearBusyOperationAsync(simulationId:Int):Future[Boolean]
 
     def updateAssemblyOperationStatus(assemblyId:Int, operationId:Int, status:String,cache:CacheApi):Boolean

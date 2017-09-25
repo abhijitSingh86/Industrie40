@@ -67,6 +67,7 @@ class SimulationController(database:DbModule,networkproxy:NetworkProxy) extends 
 
   def getAssemblyTimelineDetails(simulationid:Int) = Action.async {
     val rows = database.getComponentProcessingInfoForSimulation(simulationid)
+    val failureDetails = database.getAssemblyFailureEntries(simulationid)
     val anameMap = database.getAssemblyNameMapForSimulation(simulationid)
 
     /*
@@ -75,12 +76,22 @@ class SimulationController(database:DbModule,networkproxy:NetworkProxy) extends 
                     "content": con, "group": y.name
      */
 
+    val failuregroupDetails = failureDetails.map(_.map(x=>{
+      Json.obj("start"->new Date(x.starttime) , "end"->new Date(x.endtime.getOrElse(0l)) , "group"-> anameMap.get(x.assemblyid).get ,
+        "content" -> s"under failure for ${x.failureduration}")
+    }))
+
     val groupDetails = rows.map(_.map(x=>{
       Json.obj("start"->new Date(x.startTime) , "end"->new Date(x.endTime.getOrElse(0l)) , "group"-> anameMap.get(x.assemblyid).get ,
       "content" -> s"${x.componentid} with ${x.status}")
     }))
 
-    groupDetails.map(x=> Ok(Json.obj("groups"-> anameMap.map(vv=>Json.obj("id"->vv._2)) , "data" -> x)))
+    val finaldataList = for{
+      f <-  failuregroupDetails
+      g <- groupDetails
+    }yield (f ++ g)
+
+    finaldataList.map(x=> Ok(Json.obj("groups"-> anameMap.map(vv=>Json.obj("id"->vv._2)) , "data" -> x)))
 
   }
 

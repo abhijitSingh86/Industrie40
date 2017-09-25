@@ -14,7 +14,7 @@ trait Tables {
   import slick.jdbc.{GetResult => GR}
 
   /** DDL for all tables. Call .create to execute. */
-  lazy val schema: profile.SchemaDescription = Array(Assembly.schema, AssemblyOperationMapping.schema, AssemblyState.schema, Component.schema, ComponentOperationMapping.schema, ComponentProcessingState.schema, ComponentState.schema, Operation.schema, Simulation.schema, Simulationa2atransporttime.schema, Simulationassemblymap.schema, Simulationc2atransporttime.schema, SimulationComponentMapping.schema, Simulationjson.schema).reduceLeft(_ ++ _)
+  lazy val schema: profile.SchemaDescription = Array(Assembly.schema, Assemblyfailuredata.schema, AssemblyOperationMapping.schema, AssemblyState.schema, Component.schema, ComponentOperationMapping.schema, ComponentProcessingState.schema, ComponentState.schema, Operation.schema, Simulation.schema, Simulationa2atransporttime.schema, Simulationassemblymap.schema, Simulationc2atransporttime.schema, SimulationComponentMapping.schema, Simulationjson.schema).reduceLeft(_ ++ _)
   @deprecated("Use .schema instead of .ddl", "3.0")
   def ddl = schema
 
@@ -52,6 +52,46 @@ trait Tables {
   }
   /** Collection-like TableQuery object for table Assembly */
   lazy val Assembly = new TableQuery(tag => new Assembly(tag))
+
+  /** Entity class storing rows of table Assemblyfailuredata
+    *  @param simulationid Database column simulationid SqlType(INT)
+    *  @param assemblyid Database column assemblyid SqlType(INT)
+    *  @param failureduration Database column failureduration SqlType(INT), Default(None)
+    *  @param starttime Database column starttime SqlType(BIGINT)
+    *  @param endtime Database column endtime SqlType(BIGINT), Default(None) */
+  case class AssemblyfailuredataRow(simulationid: Int, assemblyid: Int, failureduration: Option[Int] = None, starttime: Long, endtime: Option[Long] = None)
+  /** GetResult implicit for fetching AssemblyfailuredataRow objects using plain SQL queries */
+  implicit def GetResultAssemblyfailuredataRow(implicit e0: GR[Int], e1: GR[Option[Int]], e2: GR[Long], e3: GR[Option[Long]]): GR[AssemblyfailuredataRow] = GR{
+    prs => import prs._
+      AssemblyfailuredataRow.tupled((<<[Int], <<[Int], <<?[Int], <<[Long], <<?[Long]))
+  }
+  /** Table description of table assemblyFailureData. Objects of this class serve as prototypes for rows in queries. */
+  class Assemblyfailuredata(_tableTag: Tag) extends Table[AssemblyfailuredataRow](_tableTag, "assemblyFailureData") {
+    def * = (simulationid, assemblyid, failureduration, starttime, endtime) <> (AssemblyfailuredataRow.tupled, AssemblyfailuredataRow.unapply)
+    /** Maps whole row to an option. Useful for outer joins. */
+    def ? = (Rep.Some(simulationid), Rep.Some(assemblyid), failureduration, Rep.Some(starttime), endtime).shaped.<>({r=>import r._; _1.map(_=> AssemblyfailuredataRow.tupled((_1.get, _2.get, _3, _4.get, _5)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+
+    /** Database column simulationid SqlType(INT) */
+    val simulationid: Rep[Int] = column[Int]("simulationid")
+    /** Database column assemblyid SqlType(INT) */
+    val assemblyid: Rep[Int] = column[Int]("assemblyid")
+    /** Database column failureduration SqlType(INT), Default(None) */
+    val failureduration: Rep[Option[Int]] = column[Option[Int]]("failureduration", O.Default(None))
+    /** Database column starttime SqlType(BIGINT) */
+    val starttime: Rep[Long] = column[Long]("starttime")
+    /** Database column endtime SqlType(BIGINT), Default(None) */
+    val endtime: Rep[Option[Long]] = column[Option[Long]]("endtime", O.Default(None))
+
+    /** Primary key of Assemblyfailuredata (database name assemblyFailureData_PK) */
+    val pk = primaryKey("assemblyFailureData_PK", (simulationid, assemblyid, starttime))
+
+    /** Foreign key referencing Assembly (database name fk_assemblyFailureData_1) */
+    lazy val assemblyFk = foreignKey("fk_assemblyFailureData_1", assemblyid, Assembly)(r => r.id, onUpdate=ForeignKeyAction.NoAction, onDelete=ForeignKeyAction.NoAction)
+    /** Foreign key referencing Simulation (database name fk_assemblyFailureData_2) */
+    lazy val simulationFk = foreignKey("fk_assemblyFailureData_2", simulationid, Simulation)(r => r.id, onUpdate=ForeignKeyAction.Cascade, onDelete=ForeignKeyAction.Cascade)
+  }
+  /** Collection-like TableQuery object for table Assemblyfailuredata */
+  lazy val Assemblyfailuredata = new TableQuery(tag => new Assemblyfailuredata(tag))
 
   /** Entity class storing rows of table AssemblyOperationMapping
     *  @param assemblyId Database column assembly_id SqlType(INT)

@@ -49,6 +49,7 @@ class FailureGeneratorActor(networkProxy:NetworkProxy,db:DbModule) extends Actor
   var isStopReceived = false
   var failedAssembly:Option[Assembly] =None
 
+  var starttime:Long = 0
   var counter=0
   val scheduleAssignmentDbHandler = new ScheduleAssignmentDbHandler(db)
   val failureEvaluationHandler = new ScheduleAssignmentFailureEvaluationHandler(networkProxy,db)
@@ -84,7 +85,13 @@ class FailureGeneratorActor(networkProxy:NetworkProxy,db:DbModule) extends Actor
     }
     case x:IntroduceFailure=>{
       log.info("Introduce Failure Called ")
-      ComponentQueue.failedAssemblyId = -1
+
+
+      if(ComponentQueue.failedAssemblyId != -1){
+       // db.addEndTimeInAssemblyFailureEntry(simulationId,ComponentQueue.failedAssemblyId,starttime)
+        ComponentQueue.failedAssemblyId = -1
+      }
+
       if(!isStopReceived && x.counter  == counter){
         counter = counter +1
         log.info("Introduce Failure Called starting the process")
@@ -103,6 +110,9 @@ class FailureGeneratorActor(networkProxy:NetworkProxy,db:DbModule) extends Actor
 //          val componentAction = "wait"
           ComponentQueue.failTime=failureTime
           ComponentQueue.failedAssemblyId = assembly.id
+
+          starttime = db.addAssemblyFailureEntry(simulationId,assembly.id,failureTime)
+
           val assemblies = db.getAllAssembliesForSimulation(ComponentQueue.getSimulationId())
           //fetch the component Object
           val compTup = db.fetchInProgressComponentOnAssembly(assembly.id,ComponentQueue.getSimulationId())
