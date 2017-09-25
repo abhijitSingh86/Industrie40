@@ -6,9 +6,6 @@ export const CHANGE_MAIN_MODE='CHANGE_MAIN_MODE';
 export const START_SIMULATION = 'START_SIMULATION';
 export const STOP_SIMULATION = 'STOP_SIMULATION';
 export const CHANGE_COMPLETION_COUNT='CHANGE_COMPLETION_COUNT';
-export const GET_ASSEMBLY_RUNNING_STATUS = 'GET_ASSEMBLY_RUNNING_STATUS'
-
-export const GET_COMPONENT_RUNNING_STATUS = 'GET_COMPONENT_RUNNING_STATUS';
 export const GET_SIMULATION_RUNNING_STATUS = 'GET_SIMULATION_RUNNING_STATUS';
 
 
@@ -30,51 +27,6 @@ export function getSimulationRunningStatus(simulationId){
         // })
     }
 }
-
-export function getComponentRunningStatus(componentId,simulationId){
-    return function(dispatch){
-        axios.get('/componentStatus/' + simulationId+ '/' + componentId).then(function (response) {
-
-            var action ={
-                type:GET_COMPONENT_RUNNING_STATUS,
-                payload:response.data
-            }
-            dispatch(action);
-        })
-
-            // .catch(function (error) {
-            // _this.setState({
-            //     error: "Error while Starting Simulation. \n " + error
-            // });
-        // })
-    }
-}
-
-export function getAssemblyRunningStatus(assemblyId,simulationId){
-    return function(dispatch){
-        axios.get('/assemblyStatus/'+simulationId+'/'+assemblyId).then(function(response){
-            console.log(response.data);
-            var action = {
-                type:GET_ASSEMBLY_RUNNING_STATUS,
-                payload:response.data
-            };
-
-            dispatch(action);
-        });
-    };
-    // return ({
-    //     type: GET_ASSEMBLY_RUNNING_STATUS,
-    //     payload: obj
-    // });
-}
-
-export function updateComponentCompletionCount(obj){
-    return {
-        type:CHANGE_COMPLETION_COUNT,
-        payload:obj
-    }
-}
-
 
 
 function parseResponse(res){
@@ -112,15 +64,16 @@ export function startSimulation(id){
     }
 }
 
-export function stopSimulation(id){
+export function stopSimulation(id , mode){
 
     return function(dispatch) {
-        axios.post('/stop/' + id).then(function (response) {
+        axios.post('/stop/' + id+'/'+mode).then(function (response) {
             var action = {
                 type: STOP_SIMULATION,
                 payload: {
                     simulationId: id,
                     response: parseResponse(response.data)
+                    ,mode:mode
                 }
             };
             dispatch(action);
@@ -130,6 +83,7 @@ export function stopSimulation(id){
                 payload: {
                     simulationId: id,
                     response: error
+                    ,mode:mode
                 }
             };
             dispatch(action);
@@ -148,6 +102,7 @@ export function changeMainMode(id,mode)  {
                payload: {
                    simulationId: id,
                    monitor: true,
+                   mode:mode,
                    simulationObj: res.data.body
                }
            };
@@ -159,6 +114,7 @@ export function changeMainMode(id,mode)  {
                payload: {
                    simulationId: id,
                    monitor: false,
+                   mode:mode,
                    error:e.response.data
                }
            };

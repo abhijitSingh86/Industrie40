@@ -71,7 +71,7 @@ class TransportTime extends React.Component{
             });
 
         }else{
-            e.target.value = 0
+            e.target.value = ""
         }
 
 
@@ -144,10 +144,12 @@ class TransportTime extends React.Component{
                 {dataA2C}
                 {dataA2A}
 
+                <ui>
                 <li className="form-footer">
                     <button className="btn -default pull-center" onClick={this.props.previousStep}>Back</button>
                     <button className="btn -primary pull-right" onClick={this.nextStep}>Save &amp; Continue</button>
                 </li>
+                </ui>
             </div>
         )
     }

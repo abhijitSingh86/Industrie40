@@ -16,6 +16,7 @@ class StartPage extends React.Component {
         this.handleSelect = this.handleSelect.bind(this);
         this.createSimulationIdDropDown = this.createSimulationIdDropDown.bind(this);
         this.view_simulation = this.view_simulation.bind(this);
+        this.clone_simulation = this.clone_simulation.bind(this);
     }
 
     createSimulationIdDropDown(){
@@ -50,7 +51,7 @@ class StartPage extends React.Component {
         }else {
             var key = this.state.selectedSimulationId;
             var _this = this;
-            axios.post('/simualtion/'+key+'/clear').then(function (response) {
+            axios.post('/simulation/'+key+'/clear').then(function (response) {
                 _this.setState({
                     response: "Previous run data cleared successfully."
                 });
@@ -61,6 +62,33 @@ class StartPage extends React.Component {
                     response: "Error while clearing previous simulation data. \n " + error
                 });
             })
+        }
+    }
+
+    clone_simulation(){
+        if(this.state.selectedSimulationId == undefined){
+            this.setState({
+                selectedSimulationName:"Please Select a simulation First."
+            })
+        }else {
+
+            var key = this.state.selectedSimulationId;
+            var _this = this;
+            axios.get('/simulation/'+key+'/clone').then(function (response) {
+                _this.setState({
+                    response: "Previous json data retrieved successfully."
+                });
+                console.log(response);
+                console.log(response.data);
+                _this.props.saveValues(response.data);
+                _this.props.nextStep();
+
+            }).catch(function (error) {
+                _this.setState({
+                    response: "Error retrieving previous simulation data. \n " + error
+                });
+            })
+
         }
     }
 
@@ -94,10 +122,6 @@ class StartPage extends React.Component {
                 body: null
             });
         })
-    }
-
-    componentWillUnmount() {
-        // this.serverRequest1.abort();
     }
 
     handleFileChange(e) {
@@ -138,6 +162,9 @@ class StartPage extends React.Component {
                             </DropdownButton>{this.state.selectedSimulationName}
                         </td>
                         <td className="pull-right">
+                            <Button  bsStyle="primary" onClick={this.clone_simulation}>
+                                Clone
+                            </Button>
                             <Button  bsStyle="primary" onClick={this.view_simulation}>
                                View
                             </Button>
@@ -149,7 +176,7 @@ class StartPage extends React.Component {
 
                     </li>
                     <li className="form-footer">
-                        <button className="btn -primary pull-right" onClick={this.nextStep}>Save &amp; Continue</button>
+                        <button className="btn -primary pull-right" onClick={this.nextStep}>Create New Simulation</button>
 
                     </li>
                 </ul>

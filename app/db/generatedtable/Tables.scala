@@ -1,4 +1,5 @@
 package db.generatedtable
+// AUTO-GENERATED Slick data model
 /** Stand-alone Slick data model for immediate use */
 object Tables extends {
   val profile = slick.driver.MySQLDriver
@@ -13,7 +14,7 @@ trait Tables {
   import slick.jdbc.{GetResult => GR}
 
   /** DDL for all tables. Call .create to execute. */
-  lazy val schema: profile.SchemaDescription = Array(Assembly.schema, AssemblyOperationMapping.schema, AssemblyState.schema, Component.schema, ComponentOperationMapping.schema, ComponentProcessingState.schema, ComponentState.schema, Operation.schema, Simulation.schema, Simulationa2atransporttime.schema, Simulationassemblymap.schema, Simulationc2atransporttime.schema, SimulationComponentMapping.schema).reduceLeft(_ ++ _)
+  lazy val schema: profile.SchemaDescription = Array(Assembly.schema, AssemblyOperationMapping.schema, AssemblyState.schema, Component.schema, ComponentOperationMapping.schema, ComponentProcessingState.schema, ComponentState.schema, Operation.schema, Simulation.schema, Simulationa2atransporttime.schema, Simulationassemblymap.schema, Simulationc2atransporttime.schema, SimulationComponentMapping.schema, Simulationjson.schema).reduceLeft(_ ++ _)
   @deprecated("Use .schema instead of .ddl", "3.0")
   def ddl = schema
 
@@ -427,4 +428,30 @@ trait Tables {
   }
   /** Collection-like TableQuery object for table SimulationComponentMapping */
   lazy val SimulationComponentMapping = new TableQuery(tag => new SimulationComponentMapping(tag))
+
+  /** Entity class storing rows of table Simulationjson
+    *  @param simulationid Database column simulationId SqlType(INT), PrimaryKey
+    *  @param jsondata Database column jsonData SqlType(VARCHAR), Length(20000,true), Default(None) */
+  case class SimulationjsonRow(simulationid: Int, jsondata: Option[String] = None)
+  /** GetResult implicit for fetching SimulationjsonRow objects using plain SQL queries */
+  implicit def GetResultSimulationjsonRow(implicit e0: GR[Int], e1: GR[Option[String]]): GR[SimulationjsonRow] = GR{
+    prs => import prs._
+      SimulationjsonRow.tupled((<<[Int], <<?[String]))
+  }
+  /** Table description of table simulationJson. Objects of this class serve as prototypes for rows in queries. */
+  class Simulationjson(_tableTag: Tag) extends Table[SimulationjsonRow](_tableTag, "simulationJson") {
+    def * = (simulationid, jsondata) <> (SimulationjsonRow.tupled, SimulationjsonRow.unapply)
+    /** Maps whole row to an option. Useful for outer joins. */
+    def ? = (Rep.Some(simulationid), jsondata).shaped.<>({r=>import r._; _1.map(_=> SimulationjsonRow.tupled((_1.get, _2)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+
+    /** Database column simulationId SqlType(INT), PrimaryKey */
+    val simulationid: Rep[Int] = column[Int]("simulationId", O.PrimaryKey)
+    /** Database column jsonData SqlType(VARCHAR), Length(20000,true), Default(None) */
+    val jsondata: Rep[Option[String]] = column[Option[String]]("jsonData", O.Length(20000,varying=true), O.Default(None))
+
+    /** Foreign key referencing Simulation (database name fk_simulationJson_1) */
+    lazy val simulationFk = foreignKey("fk_simulationJson_1", simulationid, Simulation)(r => r.id, onUpdate=ForeignKeyAction.Cascade, onDelete=ForeignKeyAction.Cascade)
+  }
+  /** Collection-like TableQuery object for table Simulationjson */
+  lazy val Simulationjson = new TableQuery(tag => new Simulationjson(tag))
 }

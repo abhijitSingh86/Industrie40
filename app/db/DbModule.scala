@@ -16,6 +16,10 @@ import scala.concurrent.duration.Duration
 trait DbModule {
 
 
+  def saveJsoninDatabaseforClone(simulationId:Int,jsondata:String):Unit
+
+  def getJsonFromCloneDatabase(simulationId:Int):String
+
   def updateComponentProcessingInfoInFailureScenarion(simulationId: Int, componentId: Int, assemblyId: Int, sequence: Int, operationId: Int ):Boolean
 
   def updateSimulationEndTime(simulationId:Int):Boolean
@@ -86,6 +90,7 @@ trait DbModule {
   def addComponentTimeMap(simulationId:Int,componentToAssemblyTransTime: List[ComponentToAssemblyTransTime]):Unit
   def getComponentTimeMap(simulationId:Int): List[ComponentToAssemblyTransTime]
 
+  def getAssemblyNameMapForSimulation(simulationid:Int):Map[Int,String]
   def getSimulationObject(id:Int):Simulation
 }
 
@@ -96,6 +101,19 @@ class SlickModuleImplementation(cache:CacheApi) extends DbModule {
     with ComponentDaoRepo
     with OperationDaoRepo
     with DBComponent =>
+
+
+  def saveJsoninDatabaseforClone(simulationId:Int,jsondata:String): Unit ={
+    simulation.saveJsoninDatabaseforClone(simulationId,jsondata)
+  }
+
+  def getJsonFromCloneDatabase(simulationId:Int):String ={
+    simulation.getJsonFromCloneDatabase(simulationId)
+  }
+
+  def getAssemblyNameMapForSimulation(simulationid:Int):Map[Int,String] = {
+    assembly.selectAssemblyNameMapBySimulationId(simulationid,cache)
+  }
 
   def getSimulationObject(id:Int):Simulation ={
     simulation.getSimulationById(id)

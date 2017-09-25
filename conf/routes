@@ -4,7 +4,7 @@
 
 # Home page
 POST           /start/:id                           controllers.SchedulingController.start(id:Int)
-POST           /stop/:id                            controllers.SchedulingController.stop(id:Int)
+POST           /stop/:id/:mode                      controllers.SchedulingController.stop(id:Int,mode:String)
 POST           /ghostping/:url/:port                controllers.SchedulingController.ghostPing(url:String,port:Int)
 
 GET           /                                     controllers.Index.index
@@ -24,10 +24,12 @@ GET           /assemblyStatus/:simId/:asmId         controllers.Index.assemblyRu
 
 POST          /simulation                           controllers.SimulationController.addSimulation
 GET           /simulation                           controllers.SimulationController.getAllSimulations
-GET           /simulation/:id/:mode                 controllers.SimulationController.getSimulation(id:Int,mode:String)
 DELETE        /simulation/:id                       controllers.SimulationController.deleteSimulation(id:Int)
-POST          /simualtion/:id/clear                 controllers.SimulationController.startAgain(id:Int)
+POST          /simulation/:id/clear                 controllers.SimulationController.startAgain(id:Int)
 POST          /simulation/:id/runningstatus         controllers.SimulationController.simulationRunningStatus(id:Int)
+GET          /simulation/:id/clone                 controllers.SimulationController.getCloneData(id:Int)
+GET           /simulation/:id/assemblytimeline      controllers.SimulationController.getAssemblyTimelineDetails(id:Int)
+GET           /simulation/:id/:mode                 controllers.SimulationController.getSimulation(id:Int,mode:String)
 
 
 # Map static resources from the /public folder to the /assets URL path

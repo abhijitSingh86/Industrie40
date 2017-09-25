@@ -4,6 +4,7 @@ import controllers.ApiResponse
 import db.{DBComponent, generatedtable}
 import db.generatedtable.Tables
 import db.generatedtable.Tables.{SimulationComponentMappingRow, SimulationassemblymapRow}
+import json.SimulationJson
 import models.{AssemblyTransportTime, ComponentToAssemblyTransTime}
 
 import scala.concurrent.Await
@@ -31,6 +32,18 @@ trait SlickSimulationDaoRepo extends SimulationDaoRepo{
 
     private lazy val simulationComponentTT = Tables.Simulationc2atransporttime
 
+    private lazy val simulationJsonTT  = Tables.Simulationjson
+
+    def saveJsoninDatabaseforClone(simulationId:Int,jsondata:String): Unit ={
+          Await.result(db.run(simulationJsonTT += new generatedtable.Tables.SimulationjsonRow(simulationId,Some(jsondata))),Duration.Inf)
+    }
+
+    def getJsonFromCloneDatabase(simulationId:Int):String = {
+      Await.result(db.run(simulationJsonTT.filter(_.simulationid === simulationId).result.headOption), Duration.Inf) match {
+        case Some(x: Tables.SimulationjsonRow) => x.jsondata.getOrElse("")
+        case None => ""
+      }
+    }
 
     def addAssemblyTimeMap(simulationId:Int,assemblyTransTime: List[AssemblyTransportTime]):Unit={
       assemblyTransTime.map(x=>{

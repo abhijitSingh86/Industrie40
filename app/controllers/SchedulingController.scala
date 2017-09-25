@@ -12,7 +12,7 @@ import network.NetworkProxy
 import play.api.Logger
 import play.api.libs.json.Json
 import play.api.mvc.{Action, Controller}
-import scheduler.{ComponentQueue, SchedulerThread}
+import scheduler.{ApplicationLevelData, ComponentQueue, SchedulerThread}
 
 import scala.util.Try
 
@@ -53,9 +53,9 @@ class SchedulingController(schedulingThread:SchedulerThread,db:DbModule , networ
 
 
 
-  def stop(id:Int) = Action {
+  def stop(id:Int,mode:String) = Action {
         Logger.info("Stop request recieved..")
-        if(schedulingThread !=null){
+        if(schedulingThread !=null && mode != "view"){
           schedulingThread.endExecution()
           db.updateSimulationEndTime(id)
           ComponentQueue.popAll()
@@ -74,8 +74,8 @@ class SchedulingController(schedulingThread:SchedulerThread,db:DbModule , networ
 
 
   def ghostPing(url:String,port:Int) = Action {
-    ComponentQueue.ghostSyncTime = Calendar.getInstance().getTimeInMillis
-    ComponentQueue.ghostUrl = "http://"+url+":"+port
+    ApplicationLevelData.ghostSyncTime = Calendar.getInstance().getTimeInMillis
+    ApplicationLevelData.ghostUrl = "http://"+url+":"+port
     Ok("pong")
   }
 }

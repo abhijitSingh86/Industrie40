@@ -20,6 +20,7 @@ export default function mainModeReducer(state = initialState,action){
                         simulationId:action.payload.simulationId,
                         monitor:action.payload.monitor,
                         simulationMonitorError:action.payload.error
+                        ,mode:action.payload.mode
                     }    );
             }else{
                 var state = Object.assign({},state,
@@ -27,6 +28,7 @@ export default function mainModeReducer(state = initialState,action){
                         simulationId:action.payload.simulationId,
                         monitor:action.payload.monitor,
                         simulationObj:action.payload.simulationObj
+                        ,mode:action.payload.mode
                     });
             }
             return state;

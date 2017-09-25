@@ -18,11 +18,7 @@ object ComponentQueue {
   val requestQueue:mutable.LinkedHashSet[Component] = new mutable.LinkedHashSet[Component]()
   private var simulationId =0
 
-  def isGhostOnline():Boolean = {
-    (Calendar.getInstance().getTimeInMillis -  ghostSyncTime ) < 1200
-  }
-  var ghostSyncTime:Long =0l
-  var ghostUrl:String=""
+
 
 
   var failTime=0

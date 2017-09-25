@@ -1,5 +1,7 @@
 package controllers
 
+import java.util.Date
+
 import db.DbModule
 import db.generatedtable.Tables
 import json._
@@ -7,7 +9,7 @@ import models._
 import network.NetworkProxy
 import play.api.Logger
 import play.api.mvc._
-import scheduler.ComponentQueue
+import scheduler.{ApplicationLevelData, ComponentQueue}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -45,13 +47,10 @@ class SimulationController(database:DbModule,networkproxy:NetworkProxy) extends 
 
   }
   def getSimulation(id:Int,mode:String) = Action{
-
-
-
     var response:Option[Result]=None
     //start the Ghost loading
     if(mode.equalsIgnoreCase("start") ){
-      if(!ComponentQueue.isGhostOnline()){
+      if(!ApplicationLevelData.isGhostOnline()){
       response=  Some(BadRequest("Background Ghost app is not running. Not able to start the Simulation monitoring."))
       }
     }
@@ -63,8 +62,26 @@ class SimulationController(database:DbModule,networkproxy:NetworkProxy) extends 
       networkproxy.sendStartToGhostApp(sim)
     }
   }
-
     response.get
+  }
+
+  def getAssemblyTimelineDetails(simulationid:Int) = Action.async {
+    val rows = database.getComponentProcessingInfoForSimulation(simulationid)
+    val anameMap = database.getAssemblyNameMapForSimulation(simulationid)
+
+    /*
+    {
+                    "start": new Date(x.startTime), "end": new Date(x.endTime),  // end is optional
+                    "content": con, "group": y.name
+     */
+
+    val groupDetails = rows.map(_.map(x=>{
+      Json.obj("start"->new Date(x.startTime) , "end"->new Date(x.endTime.getOrElse(0l)) , "group"-> anameMap.get(x.assemblyid).get ,
+      "content" -> s"${x.componentid} with ${x.status}")
+    }))
+
+    groupDetails.map(x=> Ok(Json.obj("groups"-> anameMap.map(vv=>Json.obj("id"->vv._2)) , "data" -> x)))
+
   }
 
   def getShellScriptStructure(simualtion:Simulation):JsObject = {
@@ -146,11 +163,14 @@ class SimulationController(database:DbModule,networkproxy:NetworkProxy) extends 
         })
 
         database.addComponentTimeMap(simulationId,componentTT)
+
+        //save json data in database for cloning purpose
+
+        database.saveJsoninDatabaseforClone(simulationId,Json.stringify(json))
       }
       case f:JsError =>
         println(f)
     }
-
     Ok(DefaultRequestFormat.getSuccessResponse(getShellScriptStructure(database.getCompleteSimulationObject(simulationId))))
   }
 
@@ -165,6 +185,11 @@ class SimulationController(database:DbModule,networkproxy:NetworkProxy) extends 
 //      }
 //  }
 
+
+
+  def getCloneData(simulationId:Int) = Action {
+    Ok(database.getJsonFromCloneDatabase(simulationId))
+  }
 
   def jsonExtractor(request:Request[AnyContent]):Future[Simulation] = {
 

@@ -27,6 +27,8 @@ trait SimulationDaoRepo{
 
   trait SimulationDao{
 
+    def saveJsoninDatabaseforClone(simulationId:Int,jsondata:String): Unit
+    def getJsonFromCloneDatabase(simulationId:Int):String
     def getAssemblyTimeMap(simulationId:Int):List[AssemblyTransportTime]
 
     def getComponentTimeMap(simulationId:Int):List[ComponentToAssemblyTransTime]
