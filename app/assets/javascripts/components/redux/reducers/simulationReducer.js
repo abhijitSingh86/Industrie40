@@ -25,7 +25,7 @@ export default function simulationReducer(state = initialState,action){
 
         case STOP_SIMULATION : {
             if(action.payload.mode != "view"){
-                var response = action.payload.response.ettime !=0 ? "Stopped Successfully" : "Error Stopping:"+action.payload.response
+                var response = action.payload.response.ettime !=0 ? "Stopped Successfully" : "Stopped in progress Simulation"
             }
             return Object.assign({},state,{response:response , simulationTime:action.payload.response})
         }
