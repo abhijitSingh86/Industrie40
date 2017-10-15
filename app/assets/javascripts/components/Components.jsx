@@ -7,7 +7,9 @@ var Components = React.createClass({
   getInitialState(){
     this.localComponentCounter = this.props.fieldValues.componentCounter;
     return {
-      componentArr:this.props.fieldValues.components
+      componentArr:this.props.fieldValues.components,
+        opSeqArr:[],
+        rowCount:0
     }
   },
 
@@ -74,17 +76,15 @@ var Components = React.createClass({
   render: function() {
     //populate Select Div Instances
     var rows = [];
-    if(this.state.opCount > 0){
       var display = this.state.rowCount>0 ?'block':'none';
 
-      for(var i=0;i<this.state.rowCount;i++)
+      for(var i=0;i<this.state.opSeqArr.length;i++)
         rows.push(<SelectDiv fieldValues={this.props.fieldValues}
                              count={this.state.opCount}
                              id={i}
                              selectArr={this.state.opSeqArr[i]}
                              propagateSelectChange = {this.handleSelectChange}
                              style={{display}} />);
-    }
 
 
     return (
@@ -104,6 +104,12 @@ var Components = React.createClass({
             <input type="text" ref={(o)=>{this.inputComponentCount=o}} onChange = {this.handleComponentCOuntInputChange} />
           </li>
           {rows}
+
+          <li>
+            <label>Custom Sequence Json</label>
+            <input type="text" ref={(o)=>{this.inputCustomSequence=o}} onBlur= {this.handleInputCustomSequenceJson} />
+          </li>
+
           <button onClick={this.handleOperationsSequenceAddClick} style={{display}}>Add</button>
 
           <li className="form-footer">
@@ -119,6 +125,64 @@ var Components = React.createClass({
       </div>
     )
   },
+    handleInputCustomSequenceJson(e){
+    var value = e.target.value;
+    if(value !== ""){
+        this.setState({
+            rowCount:0,
+            opCount:0,
+            opSeqArr:[]
+        });
+        this.inputOperationCount.value = 0;
+    }else{
+      return;
+    }
+        try{
+            var json = JSON.parse(value)
+
+
+            //setting the context
+            var count =0
+            if(json.length>0)
+                count = json[0].length;
+
+            var rowCount = json.length;
+
+            this.inputOperationCount.value = count;
+
+
+            var opSeqArr=[];
+            for(var i=0;i<json.length;i++){
+                  var defaultSelectArr=[];
+                  for(var j=0;j<count;j++){
+                    var ops = this.props.fieldValues.operations;
+                    var flag=false;
+                      for(var k=0;k<ops.length;k++) {
+
+                        if(ops[k].label === json[i][j]) {
+                            defaultSelectArr[j] = ops[k];
+                            flag=true;
+                            break;
+                        }
+                      }
+                      if(!flag) {
+                          defaultSelectArr[j] = ops[j % ops.length];
+                      }
+                  }
+                  opSeqArr[i]=defaultSelectArr;
+              }
+              console.log(opSeqArr);
+            this.setState({
+                rowCount:rowCount,
+                opCount:count,
+                opSeqArr:opSeqArr
+            })
+        }catch(e){
+          console.log(e);
+          console.log("into component.jsx");
+          this.inputCustomSequence.value = "{'':'Please enter correct Json Value'}"
+        }
+    },
     handleComponentCOuntInputChange(e){
         var value = e.target.value;
         if(!isNaN(value) && value != ""){

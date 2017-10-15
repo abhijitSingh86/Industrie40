@@ -5,6 +5,7 @@ var CustomSelect = require('./CustomSelect')
 class SelectDiv extends React.Component{
   constructor(props){
     super(props);
+    console.log(this.props.selectArr);
     this.state = {
       valueArr:this.props.selectArr
     };

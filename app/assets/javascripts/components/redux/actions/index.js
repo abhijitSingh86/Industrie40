@@ -95,6 +95,8 @@ export function stopSimulation(id , mode){
 
 export function changeMainMode(id,mode)  {
 
+    console.log("in idex.js changeMainMode")
+    console.log(mode);
    return function(dispatch) {
        axios.get("/simulation/"+id+"/"+mode).then(function(res){
            var action = {
@@ -108,17 +110,17 @@ export function changeMainMode(id,mode)  {
            };
            dispatch(action);
        }).catch(function(e){
-           console.log("error in ChangeMain Mode async call"+e.response.data);
+           console.log("error in ChangeMain Mode async call"+e.response+" : "+id+" : "+mode);
            var action = {
                type: CHANGE_MAIN_MODE,
                payload: {
                    simulationId: id,
                    monitor: false,
                    mode:mode,
-                   error:e.response.data
+                   error:e.response
                }
            };
-           dispatch(action);
+          dispatch(action);
        });
    }
 

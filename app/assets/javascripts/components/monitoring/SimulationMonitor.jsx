@@ -5,6 +5,8 @@ import AssemblyState from "./AssemblyState";
 import {connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import * as Actions from '../redux/actions';
+import ComponentOverviewTab from "./ComponentOverviewTab"
+
 var axios = require('axios');
 
 import Timeline from 'react-visjs-timeline'
@@ -306,6 +308,9 @@ class SimulationMonitor extends React.Component {
                     <AssemblyState data={this.props.simulation.assemblies}
                                    simulationId={this.props.simulation.simulationId}
                                    />
+                </Tab>
+                <Tab eventKey="4" title="Component Overview">
+                    <ComponentOverviewTab/>
                 </Tab>
 
             </Tabs>
