@@ -81,7 +81,8 @@ class StartPage extends React.Component {
                 console.log(response);
                 console.log(response.data);
                 _this.props.saveValues(response.data);
-                _this.props.nextStep();
+                _this.props.changeMode();
+
 
             }).catch(function (error) {
                 _this.setState({
@@ -103,8 +104,10 @@ class StartPage extends React.Component {
     }
 
     nextStep() {
+
         this.props.saveValues(fileJson);
-        this.props.nextStep();
+        this.props.changeMode();
+
     }
 
     componentDidMount() {
@@ -130,6 +133,7 @@ class StartPage extends React.Component {
         reader.onload = function () {
             var dataURL = reader.result;
             fileJson = JSON.parse(dataURL)
+
             console.log(dataURL)
         };
         console.log(file);
@@ -189,4 +193,4 @@ class StartPage extends React.Component {
 
 }
 
-module.exports = StartPage
+export default StartPage

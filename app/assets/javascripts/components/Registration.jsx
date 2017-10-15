@@ -6,25 +6,13 @@ import Components  from  './Components'
 import Assembly from './Assembly'
 import Success       from './Success'
 import OperationForm  from './OperationForm'
-import assign        from 'object-assign'
-import StartPage from './StartPage'
+
 import TransportTime from './TransportTime'
 
 
 // Idealy, these form values would be saved in another
 // sort of persistence, like a Store via Flux pattern
-var fieldValues = {
-  simulationName     : null,
-  simulationDesc    : null,
-  operations : [{id:0,label:"fixed in Registration omdule"}],
-  components      : [],
-  assemblies   : [],
-  operationCounter:1,
-  componentCounter:0,
-  assemblyCounter:0,
-    assemblyTT:[],
-    componentTT:[]
-}
+
 
 var Registration = React.createClass({
   getInitialState: function() {
@@ -34,9 +22,7 @@ var Registration = React.createClass({
   },
 
   saveValues: function(field_value) {
-    return function() {
-      fieldValues = assign({}, fieldValues, field_value)
-    }.bind(this)()
+    this.props.saveValues(field_value);
   },
 
   nextStep: function() {
@@ -61,40 +47,33 @@ var Registration = React.createClass({
 
   showStep: function() {
     switch (this.state.step) {
-      case 0: return <StartPage
-        fieldValues={fieldValues}
-        nextStep={this.nextStep}
-        saveValues={this.saveValues}
-        changeHandler={this.props.changeHandler}
-        simulationMonitorError={this.props.simulationMonitorError}/>
-
-      case 1:
-        return <SimulationForm fieldValues={fieldValues}
+      case 0:
+        return <SimulationForm fieldValues={this.props.fieldValues}
                               nextStep={this.nextStep}
                               previousStep={this.previousStep}
                               saveValues={this.saveValues} />
-      case 2:
-        return <OperationForm fieldValues={fieldValues}
+      case 1:
+        return <OperationForm fieldValues={this.props.fieldValues}
                              nextStep={this.nextStep}
                              previousStep={this.previousStep}
                              saveValues={this.saveValues} />
-      case 3:
-        return <Components fieldValues={fieldValues}
+      case 2:
+        return <Components fieldValues={this.props.fieldValues}
                              previousStep={this.previousStep}
                              saveValues={this.saveValues}
                            nextStep={this.nextStep}/>
-      case 4:
-        return <Assembly fieldValues={fieldValues}
+      case 3:
+        return <Assembly fieldValues={this.props.fieldValues}
                          previousStep={this.previousStep}
                          saveValues={this.saveValues}
                          nextStep={this.nextStep}/>
-        case 5:
-          return <TransportTime fieldValues={fieldValues}
+        case 4:
+          return <TransportTime fieldValues={this.props.fieldValues}
                                 nextStep={this.nextStep}
                                 previousStep={this.previousStep}
                                 saveValues={this.saveValues} />
-        case 6:
-        return <Success fieldValues={fieldValues}
+        case 5:
+        return <Success fieldValues={this.props.fieldValues}
                         previousStep={this.previousStep}
                         changeHandler={this.props.changeHandler}/>
     }

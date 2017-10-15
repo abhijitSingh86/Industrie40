@@ -3,6 +3,7 @@ import {CHANGE_MAIN_MODE} from '../actions'
 
 const initialState = {
         monitor:false
+    ,pagemode:"reset"
 }
 
 export default function mainModeReducer(state = initialState,action){
@@ -12,6 +13,13 @@ export default function mainModeReducer(state = initialState,action){
     // console.log(action);
 
     switch(action.type){
+        case "MODE":
+            var state = Object.assign({},state,
+                {
+                    pagemode:action.payload
+                });
+            return state;
+
         case CHANGE_MAIN_MODE:
             console.log("Ch mode st");
             if(action.payload.error){
@@ -21,6 +29,7 @@ export default function mainModeReducer(state = initialState,action){
                         monitor:action.payload.monitor,
                         simulationMonitorError:action.payload.error
                         ,mode:action.payload.mode
+                        ,pagemode:action.payload.pagemode
                     }    );
             }else{
                 var state = Object.assign({},state,
@@ -29,6 +38,7 @@ export default function mainModeReducer(state = initialState,action){
                         monitor:action.payload.monitor,
                         simulationObj:action.payload.simulationObj
                         ,mode:action.payload.mode
+                        ,pagemode:action.payload.pagemode
                     });
             }
             return state;

@@ -28,6 +28,16 @@ export function getSimulationRunningStatus(simulationId){
     }
 }
 
+export function recordRunningMode(mode){
+
+    return function(dispatch){
+            var action ={
+                type:"MODE",
+                payload:mode
+            }
+            dispatch(action);
+    }
+}
 
 function parseResponse(res){
     if(res.responseType === "successEmpty"){
@@ -98,30 +108,47 @@ export function changeMainMode(id,mode)  {
     console.log("in idex.js changeMainMode")
     console.log(mode);
    return function(dispatch) {
-       axios.get("/simulation/"+id+"/"+mode).then(function(res){
-           var action = {
-               type: CHANGE_MAIN_MODE,
-               payload: {
-                   simulationId: id,
-                   monitor: true,
-                   mode:mode,
-                   simulationObj: res.data.body
-               }
-           };
-           dispatch(action);
-       }).catch(function(e){
-           console.log("error in ChangeMain Mode async call"+e.response+" : "+id+" : "+mode);
+
+       if(mode === "reset"){
            var action = {
                type: CHANGE_MAIN_MODE,
                payload: {
                    simulationId: id,
                    monitor: false,
-                   mode:mode,
-                   error:e.response
+                   pagemode:mode,
+                   error:"Home button Clicked"
                }
            };
-          dispatch(action);
-       });
+           dispatch(action);
+       }else {
+
+           axios.get("/simulation/" + id + "/" + mode).then(function (res) {
+               var action = {
+                   type: CHANGE_MAIN_MODE,
+                   payload: {
+                       simulationId: id,
+                       monitor: true,
+                       mode: mode,
+                       pagemode:"monitor",
+                       simulationObj: res.data.body
+                   }
+               };
+               dispatch(action);
+           }).catch(function (e) {
+               console.log("error in ChangeMain Mode async call" + e.response + " : " + id + " : " + mode);
+               var action = {
+                   type: CHANGE_MAIN_MODE,
+                   payload: {
+                       simulationId: id,
+                       monitor: false,
+                       mode: mode,
+                       pagemode:"reset",
+                       error: e.response.data
+                   }
+               };
+               dispatch(action);
+           });
+       }
    }
 
 }
