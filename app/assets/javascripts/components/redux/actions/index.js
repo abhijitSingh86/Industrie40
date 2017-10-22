@@ -1,5 +1,6 @@
 `use strict`
 var axios = require('axios');
+export * from './registrationaction';
 export const GET_SIMULATIONS = 'GET_SIMULATIONS';
 export const GET_SIMULATION_WITH_ID = 'GET_SIMULATION_WITH_ID';
 export const CHANGE_MAIN_MODE='CHANGE_MAIN_MODE';
@@ -8,6 +9,7 @@ export const STOP_SIMULATION = 'STOP_SIMULATION';
 export const CHANGE_COMPLETION_COUNT='CHANGE_COMPLETION_COUNT';
 export const GET_SIMULATION_RUNNING_STATUS = 'GET_SIMULATION_RUNNING_STATUS';
 
+export const RESET_REGISTRATION_DETAILS = "RESET_REGISTRATION_DETAILS";
 
 export function getSimulationRunningStatus(simulationId){
     return function(dispatch){
@@ -25,7 +27,7 @@ export function getSimulationRunningStatus(simulationId){
         //     error: "Error while Starting Simulation. \n " + error
         // });
         // })
-    }
+    };
 }
 
 export function recordRunningMode(mode){

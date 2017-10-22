@@ -1,7 +1,9 @@
 var React = require('react')
 var AssemblyOperationInput =require("./AssemblyOperationInput")
 var CustomAssemblyTable = require("./CustomAssemblyTable");
-
+import {connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import * as Actions from './redux/actions/registrationaction';
 
 
 
@@ -120,7 +122,7 @@ var Assembly = React.createClass({
           <li className="li">{inputRow}</li>
           <li className="form-footer">
             <button className="btn -default pull-left" onClick={this.add}>Add</button>
-            <button className="btn -default pull-center" onClick={this.props.previousStep}>Back</button>
+            <button className="btn -default pull-center" onClick={this.props.actions.decrementStep}>Back</button>
             <button className="btn -primary pull-right" onClick={this.nextStep}>Save &amp; Continue</button>
 
           </li>
@@ -164,7 +166,7 @@ var Assembly = React.createClass({
     arr.push(data);
     var localAssemblyCounter = this.state.localAssemblyCounter+1;
 
-    this.props.saveValues({
+    this.props.actions.saveAssemblyFormData({
       assemblies: arr,
       assemblyCounter:localAssemblyCounter
     });
@@ -187,9 +189,21 @@ var Assembly = React.createClass({
       assemblies : this.state.assemblyArr
       ,assemblyCounter :this.state.localAssemblyCounter
     }
-    this.props.saveValues(data)
-    this.props.nextStep()
+    this.props.actions.saveAssemblyFormData(data);
+    this.props.actions.incrementStep();
   }
 })
 
-module.exports = Assembly
+
+function mapStateToProps(state) {
+    return {
+        fieldValues:state.registration.fieldValues
+    };
+}
+
+function mapDispatchToProps(dispatch) {
+    return {
+        actions: bindActionCreators(Actions, dispatch)
+    };
+}
+export default connect(mapStateToProps,mapDispatchToProps)(Assembly);

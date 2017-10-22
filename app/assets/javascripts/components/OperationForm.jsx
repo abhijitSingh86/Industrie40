@@ -1,26 +1,27 @@
 var React                   = require('react')
-var getRadioOrCheckboxValue = require('../lib/radiobox-value')
 var CustomTable  = require('./CustomTable')
+import {connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import * as Actions from './redux/actions/registrationaction';
 
 
-
-var OperationForm = React.createClass({
+class OperationForm extends React.Component{
 
 
   componentWillMount(){
     this.localOperationCounter = this.props.fieldValues.operationCounter;
-  },
+  }
   componentWillReceiveProps(nextProps){
     this.localOperationCounter=nextProps.fieldValues.operationCounter;
-  },
-getInitialState:function(){
-  this.localOperationCounter=this.props.fieldValues.operationCounter;
-
-  return {
+  }
+  constructor(props){
+    super(props);
+    this.localOperationCounter=this.props.fieldValues.operationCounter;
+    this.state = {
     operationArr : this.props.fieldValues.operations
-  };
-},
-  render: function() {
+    };
+  }
+  render() {
     return (
       <div>
         <h2>Operation Details</h2>
@@ -31,25 +32,24 @@ getInitialState:function(){
                    />
           </li>
           <li className="form-footer">
-            <button className="btn -default pull-left" onClick={this.add}>Add</button>
-            <button className="btn -default pull-center" onClick={this.props.previousStep}>Back</button>
-            <button className="btn -primary pull-right" onClick={this.nextStep}>Save &amp; Continue</button>
+            <button className="btn -default pull-left" onClick={this.add.bind(this)}>Add</button>
+            <button className="btn -default pull-center" onClick={this.props.actions.decrementStep}>Back</button>
+            <button className="btn -primary pull-right" onClick={this.nextStep.bind(this)}>Save &amp; Continue</button>
           </li>
         </ul>
-        <CustomTable data={this.state.operationArr} editrow={this.edit}/>
+        <CustomTable data={this.state.operationArr} editrow={this.edit.bind(this)}/>
 
       </div>
     )
-  },
-  edit:function(c){
+  }
+  edit(c){
       var arr = this.state.operationArr;
       var removedoperation = this.remove(arr,c);
-      // console.log(removedoperation.label)
     this.operationName.value = removedoperation.label;
       this.setState({
         operationArr:arr
       })  ;
-  },
+  }
   remove(arr, id) {
     for(var i = arr.length; i--;) {
       if(arr[i].id === id) {
@@ -58,9 +58,9 @@ getInitialState:function(){
         return val;
       }
     }
-  },
+  }
 
-  add:function(){
+  add(){
     var aArr = this.state.operationArr;
     aArr.push(
         {
@@ -83,17 +83,30 @@ getInitialState:function(){
       operations : this.state.operationArr
       ,operationCounter :this.localOperationCounter
     };
-    this.props.saveValues(data);
+    this.props.actions.saveOperationFormData(data);
 
-  },
-  nextStep: function() {
+  }
+  nextStep() {
     var data = {
       operations : this.state.operationArr
       ,operationCounter :this.localOperationCounter
     };
-    this.props.saveValues(data);
-    this.props.nextStep();
+    this.props.actions.saveOperationFormData(data);
+    this.props.actions.incrementStep();
   }
-})
+}
 
-module.exports = OperationForm
+
+
+function mapStateToProps(state) {
+    return {
+        fieldValues:state.registration.fieldValues
+    };
+}
+
+function mapDispatchToProps(dispatch) {
+    return {
+        actions: bindActionCreators(Actions, dispatch)
+    };
+}
+export default connect(mapStateToProps,mapDispatchToProps)(OperationForm);

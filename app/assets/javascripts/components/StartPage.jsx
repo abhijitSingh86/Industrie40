@@ -80,8 +80,7 @@ class StartPage extends React.Component {
                 });
                 console.log(response);
                 console.log(response.data);
-                _this.props.saveValues(response.data);
-                _this.props.changeMode();
+                _this.props.changeMode(response.data);
 
 
             }).catch(function (error) {
@@ -104,10 +103,7 @@ class StartPage extends React.Component {
     }
 
     nextStep() {
-
-        this.props.saveValues(fileJson);
-        this.props.changeMode();
-
+            this.props.changeMode(this.props.fieldValues);
     }
 
     componentDidMount() {
@@ -130,10 +126,10 @@ class StartPage extends React.Component {
     handleFileChange(e) {
         var file = e.target.files[0];
         var reader = new FileReader();
-        reader.onload = function () {
+        reader.onload =  ()=> {
             var dataURL = reader.result;
             fileJson = JSON.parse(dataURL)
-
+            this.props.changeMode(fileJson);
             console.log(dataURL)
         };
         console.log(file);

@@ -15,54 +15,33 @@ class MainComponent extends React.Component {
         super(props);
         this.changeMainMode = this.changeMainMode.bind(this);
         this.getPanelForDisplay = this.getPanelForDisplay.bind(this);
-        this.saveValues = this.saveValues.bind(this);
         this.changeToRegistrationMode = this.changeToRegistrationMode.bind(this);
         // this.changeMainMode = this.changeMainMode.bind(this);
         this.state = {
             modal:false,
-            fieldValues : {
-                simulationName     : null,
-                simulationDesc    : null,
-                operations : [{id:0,label:"fixed in Registration omdule"}],
-                components      : [],
-                assemblies   : [],
-                operationCounter:1,
-                componentCounter:0,
-                assemblyCounter:0,
-                assemblyTT:[],
-                componentTT:[]
-            }
         }
     }
 
-    saveValues(field_value) {
-       this.setState({
-           fieldValues: assign({}, this.state.fieldValues, field_value)
-       });
-    }
+
 
     changeMainMode(simulationId,mode) {
-        // this.props.actions.recordRunningMode("monitor")
         console.log("change Recieved with "+simulationId+" mode: "+mode);
        this.props.actions.changeMainMode(simulationId,mode);
     }
 
-    changeToRegistrationMode(){
+    changeToRegistrationMode(fieldvalues){
         console.log("In change registration module");
-        //this.saveValues(fieldvalues)
+        this.props.actions.saveFieldValueData(fieldvalues);
         this.props.actions.recordRunningMode("registration")
     }
 
     getPanelForDisplay() {
         console.log("page mode is "+this.props.pagemode);
-
-
-
         if(this.props.pagemode === "registration"){
             return <Registration changeHandler={this.changeMainMode}
                                  simulationMonitorError={this.props.simulationMonitorError}
-                                 fieldValues={this.state.fieldValues}
-                                 saveValues={this.saveValues}/>
+
+                               />
         } else if(this.props.pagemode === "monitor") {
             return (
                     <SimulationMonitor/>
@@ -72,7 +51,8 @@ class MainComponent extends React.Component {
                 changeMode={this.changeToRegistrationMode}
                 changeHandler={this.changeMainMode}
                 simulationMonitorError={this.props.simulationMonitorError}
-                saveValues={this.saveValues}/>
+                fieldValues={this.props.fieldValues}
+                />
         }
     }
 
@@ -141,6 +121,7 @@ function mapStateToProps(state) {
         pagemode:state.mainMode.pagemode,
         status:state.mainMode.mode,
         simulationMonitorError:state.mainMode.simulationMonitorError
+        ,fieldValues:state.registration.fieldValues
     };
 }
 

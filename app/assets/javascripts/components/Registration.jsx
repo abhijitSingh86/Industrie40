@@ -6,92 +6,64 @@ import Components  from  './Components'
 import Assembly from './Assembly'
 import Success       from './Success'
 import OperationForm  from './OperationForm'
-
 import TransportTime from './TransportTime'
+import {connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import * as Actions from './redux/actions';
+
+class Registration extends React.Component{
+
+  constructor(props){
+    super(props);
+  }
 
 
-// Idealy, these form values would be saved in another
-// sort of persistence, like a Store via Flux pattern
 
 
-var Registration = React.createClass({
-  getInitialState: function() {
-    return {
-      step : 0
-    }
-  },
-
-  saveValues: function(field_value) {
-    this.props.saveValues(field_value);
-  },
-
-  nextStep: function() {
-    this.setState({
-      step : this.state.step + 1
-    })
-  },
-
-  previousStep: function() {
-    this.setState({
-      step : this.state.step - 1
-    })
-  },
-
-  submitRegistration: function() {
-    // Handle via ajax submitting the user data, upon
-    // success return this.nextStop(). If it fails,
-    // show the user the error but don't advance
-
-    this.nextStep()
-  },
-
-  showStep: function() {
-    switch (this.state.step) {
+  showStep() {
+    switch (this.props.step) {
       case 0:
-        return <SimulationForm fieldValues={this.props.fieldValues}
-                              nextStep={this.nextStep}
-                              previousStep={this.previousStep}
-                              saveValues={this.saveValues} />
+        return <SimulationForm />
       case 1:
-        return <OperationForm fieldValues={this.props.fieldValues}
-                             nextStep={this.nextStep}
-                             previousStep={this.previousStep}
-                             saveValues={this.saveValues} />
+        return <OperationForm />
       case 2:
-        return <Components fieldValues={this.props.fieldValues}
-                             previousStep={this.previousStep}
-                             saveValues={this.saveValues}
-                           nextStep={this.nextStep}/>
+        return <Components />
       case 3:
-        return <Assembly fieldValues={this.props.fieldValues}
-                         previousStep={this.previousStep}
-                         saveValues={this.saveValues}
-                         nextStep={this.nextStep}/>
+        return <Assembly />
         case 4:
-          return <TransportTime fieldValues={this.props.fieldValues}
-                                nextStep={this.nextStep}
-                                previousStep={this.previousStep}
-                                saveValues={this.saveValues} />
+          return <TransportTime />
         case 5:
-        return <Success fieldValues={this.props.fieldValues}
-                        previousStep={this.previousStep}
-                        changeHandler={this.props.changeHandler}/>
+        return <Success changeHandler={this.props.changeHandler}/>
     }
-  },
+  }
 
-  render: function() {
+  render() {
     var style = {
-      width : (this.state.step / 5 * 100) + '%'
+      width : (this.props.step / 5 * 100) + '%'
     }
 
     return (
       <div>
-        <span className="progress-step">Step {this.state.step}</span>
+        <span className="progress-step">Step {this.props.step}</span>
         <progress className="progress" style={style}></progress>
         {this.showStep()}
       </div>
     )
   }
-})
+}
 
-export default Registration
+
+function mapStateToProps(state) {
+    return {
+       step:state.registration.step
+    };
+}
+
+function mapDispatchToProps(dispatch) {
+    return {
+        actions: bindActionCreators(Actions, dispatch)
+    };
+}
+
+
+export default connect(mapStateToProps,mapDispatchToProps)(Registration);

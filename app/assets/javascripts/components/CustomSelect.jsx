@@ -4,18 +4,15 @@ var React = require('react');
 
 class CustomSelect extends React.Component{
 
-  componentWillMount(){
-    this.props.saveHandler(this.props.id,this.props.focusId);
-  }
   constructor(props){
     super(props);
-    this.state = {
-      value:this.props.focusId
-    }
     this.handleChange = this.handleChange.bind(this);
+      this.state = {
+          value:this.props.focusId
+      };
   }
   handleChange(e) {
-    this.props.saveHandler(this.props.id,e.target.value);
+    this.props.saveHandler(this.props.index,e.target.value);
     this.setState({
       value:e.target.value
     });
@@ -27,7 +24,7 @@ class CustomSelect extends React.Component{
     });
 
     return (
-      <select value={this.state.value} onChange = {this.handleChange}>
+      <select value={this.props.focusId} onChange = {this.handleChange}>
         {rows}
       </select>
     );
