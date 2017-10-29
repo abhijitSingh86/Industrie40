@@ -2,6 +2,7 @@ package controllers
 
 import javax.inject.Inject
 
+import data.OnlineData
 import db.DbModule
 import db.generatedtable.Tables
 import json.{ComponentWithSchedulingInfo, DefaultRequestFormat, ResponseFactory, SimulationJson}
@@ -10,7 +11,7 @@ import play.api.Logger
 import play.api.libs.json._
 import play.api.libs.ws.WSClient
 import play.api.mvc.{Action, Controller}
-import scheduler.SchedulerThread
+import scheduler.{ComponentQueue, SchedulerThread}
 
 import scala.collection.mutable
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -65,7 +66,7 @@ class Index @Inject()(ws:WSClient,db:DbModule)  extends Controller{
 
     assembly match{
       case Some(obj) => {
-        db.getAssemblyRunningStatus(asmId,simId).map(x=>
+        db.getAssemblyRunningStatus(asmId,simId ,ComponentQueue.getSimulationVersionId() ).map(x=>
           Ok(makeAssemblyResponse(x , componentNameMap))
         )
       }
@@ -91,17 +92,10 @@ class Index @Inject()(ws:WSClient,db:DbModule)  extends Controller{
     val assemblyId = (json.get \ "assemblyId").get.as[Int]
     val simulationId = (json.get \ "simulationId").get.as[Int]
     //check for init id and url params
-    db.assemblyHeartBeatUpdateAsync(assemblyId,simulationId ) map{
-      case x:Boolean  =>
-      {
-        //        println(s"*************************HeartBeat for cmpId:${componentId} simId:${simulationId}")
-        //return OK response
-        Ok(DefaultRequestFormat.getEmptySuccessResponse())
-      }
-      case _ =>
-        Ok(DefaultRequestFormat.getValidationErrorResponse(List(("Heart Beat update",s"Heart beat update failed for " +
-          s"assemblyId:${assemblyId} simId:${simulationId}"))))
-    }
+    OnlineData.updateAssemblyOnlineState(assemblyId)
+    Future.successful(Ok(DefaultRequestFormat.getEmptySuccessResponse()))
+
+//    Future.successful(Ok("Heart update done"))
   }
 
   def initAssemblyRequest() = Action { implicit request =>

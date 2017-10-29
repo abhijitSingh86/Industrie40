@@ -11,9 +11,35 @@ export const GET_SIMULATION_RUNNING_STATUS = 'GET_SIMULATION_RUNNING_STATUS';
 
 export const RESET_REGISTRATION_DETAILS = "RESET_REGISTRATION_DETAILS";
 
+export const SIMULATION_ONLINE_CHECK = 'SIMULATION_ONLINE_CHECK';
+
+export function simulationLoadingCheck(){
+    return function(dispatch) {
+        axios.get('/simulation/onlinecheck').then(function (response) {
+            var action = {
+                type: SIMULATION_ONLINE_CHECK,
+                payload: {
+                    isLoadingComplete:response.data.body.isLoadingComplete
+                }
+            };
+            dispatch(action);
+        }).catch(function (error) {
+            var action = {
+                type: SIMULATION_ONLINE_CHECK,
+                payload: {
+                    response: error
+                }
+            };
+            dispatch(action);
+        })
+    }
+}
+
+
+
 export function getSimulationRunningStatus(simulationId){
     return function(dispatch){
-        axios.post('/simulation/' + simulationId+ '/runningstatus').then(function (response) {
+        axios.post('/simulation/' + simulationId+'/runningstatus').then(function (response) {
 
             var action ={
                 type:GET_SIMULATION_RUNNING_STATUS,
@@ -49,10 +75,10 @@ function parseResponse(res){
     }
 
 }
-export function startSimulation(id){
+export function startSimulation(id,versionId){
 
     return function(dispatch) {
-        axios.post('/start/' + id).then(function (response) {
+        axios.post('/start/' + id +'/'+versionId).then(function (response) {
                 var action = {
                     type: START_SIMULATION,
                     payload: {
@@ -75,6 +101,8 @@ export function startSimulation(id){
 
     }
 }
+
+
 
 export function stopSimulation(id , mode){
 

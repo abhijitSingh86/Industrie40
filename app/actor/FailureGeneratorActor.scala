@@ -111,11 +111,11 @@ class FailureGeneratorActor(networkProxy:NetworkProxy,db:DbModule) extends Actor
           ComponentQueue.failTime=failureTime
           ComponentQueue.failedAssemblyId = assembly.id
 
-          starttime = db.addAssemblyFailureEntry(simulationId,assembly.id,failureTime)
+          starttime = db.addAssemblyFailureEntry(simulationId,ComponentQueue.getSimulationVersionId() , assembly.id,failureTime)
 
           val assemblies = db.getAllAssembliesForSimulation(ComponentQueue.getSimulationId())
           //fetch the component Object
-          val compTup = db.fetchInProgressComponentOnAssembly(assembly.id,ComponentQueue.getSimulationId())
+          val compTup = db.fetchInProgressComponentOnAssembly(assembly.id,ComponentQueue.getSimulationId(),ComponentQueue.getSimulationVersionId() )
             compTup._1.map(com =>{
 
             val filteredBusyAssemblies = assemblies.filterNot(x=>{

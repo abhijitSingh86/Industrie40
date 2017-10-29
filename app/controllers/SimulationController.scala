@@ -2,6 +2,7 @@ package controllers
 
 import java.util.Date
 
+import data.OnlineData
 import db.DbModule
 import db.generatedtable.Tables
 import json._
@@ -30,7 +31,7 @@ class SimulationController(database:DbModule,networkproxy:NetworkProxy) extends 
   }
 
   def simulationRunningStatus(simulationId:Int) = Action.async {
-    val componentProcessingRows = database.getComponentProcessingInfoForSimulation(simulationId)
+    val componentProcessingRows = database.getComponentProcessingInfoForSimulation(simulationId , ComponentQueue.getSimulationVersionId())
 
     componentProcessingRows.map(rows => {
         val asmIds = rows.map(_.assemblyid).distinct
@@ -39,35 +40,40 @@ class SimulationController(database:DbModule,networkproxy:NetworkProxy) extends 
 
       val compIds = rows.map(_.componentid).distinct
       val componentMap: Map[Int, Component] = compIds.map(id => (id ->
-                database.getComponentById(id,simulationId, rows.filter(_.componentid == id)))).toMap
+                database.getComponentById(id, simulationId,ComponentQueue.getSimulationVersionId(), rows.filter(_.componentid == id)))).toMap
 
       Ok(ResponseFactory.make(ProcessingStatus(componentMap,assemblyMap)))
       }
       )
 
   }
+
+
+
   def getSimulation(id:Int,mode:String) = Action{
+    //All code loading for the
     var response:Option[Result]=None
     //start the Ghost loading
     if(mode.equalsIgnoreCase("start") ){
       if(!ApplicationLevelData.isGhostOnline()){
-      response=  Some(BadRequest("Background Ghost app is not running. Not able to start the Simulation monitoring."))
+        response=  Some(BadRequest("Background Ghost app is not running. Not able to start the Simulation monitoring."))
       }
     }
-  if(!response.isDefined) {
-    val sim = database.getCompleteSimulationObject(id)
-    response = Some(Ok(ResponseFactory.make(SimulationJson(sim))))
+    if(!response.isDefined) {
+      val sim = database.getCompleteSimulationObject(id)
+      response = Some(Ok(ResponseFactory.make(SimulationJson(sim))))
 
-    if (mode.equalsIgnoreCase("start")) {
-      networkproxy.sendStartToGhostApp(sim)
+      if (mode.equalsIgnoreCase("start")) {
+        OnlineData.setTotalComponentCount(sim.components.size+sim.assemblies.size);
+        networkproxy.sendStartToGhostApp(sim)
+      }
     }
-  }
     response.get
   }
 
   def getAssemblyTimelineDetails(simulationid:Int) = Action.async {
-    val rows = database.getComponentProcessingInfoForSimulation(simulationid)
-    val failureDetails = database.getAssemblyFailureEntries(simulationid)
+    val rows = database.getComponentProcessingInfoForSimulation(simulationid,ComponentQueue.getSimulationVersionId())
+    val failureDetails = database.getAssemblyFailureEntries(simulationid,ComponentQueue.getSimulationVersionId())
     val anameMap = database.getAssemblyNameMapForSimulation(simulationid)
 
     /*
@@ -107,12 +113,12 @@ class SimulationController(database:DbModule,networkproxy:NetworkProxy) extends 
     val simulationId = Try(id)//Try((json.get \ "simulationId").get.as[Int])
     simulationId.isSuccess match{
       case true =>
-        ComponentQueue.updateSimulationId(simulationId.get)
-        database.clearPreviousSimulationProcessingDetails(simulationId.get) map{
-          case _ =>
+        database.incrementSimulationVersionDetails(simulationId.get) map{
+          case version:Int => {
+            ComponentQueue.updateSimulationId(simulationId.get,version)
             Ok(DefaultRequestFormat.getEmptySuccessResponse())
+          }
         }
-
       case _=> Future.successful(Ok("simulation Id is not found in Json"))
     }
   }
@@ -182,7 +188,10 @@ class SimulationController(database:DbModule,networkproxy:NetworkProxy) extends 
       case f:JsError =>
         println(f)
     }
-    Ok(DefaultRequestFormat.getSuccessResponse(getShellScriptStructure(database.getCompleteSimulationObject(simulationId))))
+
+    val jsonRes = Json.obj("s"->Json.obj("id" -> simulationId,"versionId"->1))
+
+    Ok(DefaultRequestFormat.getSuccessResponse(jsonRes))
   }
 
 //  def updateSimulation() = Action.async{
@@ -202,21 +211,5 @@ class SimulationController(database:DbModule,networkproxy:NetworkProxy) extends 
     Ok(database.getJsonFromCloneDatabase(simulationId))
   }
 
-  def jsonExtractor(request:Request[AnyContent]):Future[Simulation] = {
-
-    val json = request.body.asJson
-
-    //Extracting Simulation
-
-    val name= (json.get \ "simulationName").get.as[String]
-    val desc= (json.get \ "simulationDesc").get.as[String]
-
-    val simulation = new Simulation(id=0,name=name,desc = desc)
-    //Extracting Operations
-    
-
-
-   Future.successful(new Simulation(id=0,name=name,desc = desc))
-  }
 
 }

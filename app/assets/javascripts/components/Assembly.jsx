@@ -151,8 +151,9 @@ var Assembly = React.createClass({
           var fcount = 0 ;
           var ftime=0
         if(this.state.isFailed){
-        fcount=  parseInt(this.fcount.value);
-            ftime = parseInt(this.ftime.value);
+            fcount=  isNaN(parseInt(this.fcount.value))  ?0:  parseInt(this.fcount.value) ;
+            ftime = isNaN(parseInt(this.ftime.value)) ?0:  parseInt(this.ftime.value);
+            console.log(isNaN(this.fcount.value)+":"+fcount+":"+ftime+":"+isNaN(this.ftime.value));
         }
     var data = {
       id:this.state.localAssemblyCounter,

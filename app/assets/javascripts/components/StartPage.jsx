@@ -1,7 +1,9 @@
 var React = require('react')
 var axios = require('axios');
 import {DropdownButton,MenuItem,Button} from 'react-bootstrap';
-
+import {connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import * as Actions from './redux/actions';
 var fileJson = {};
 class StartPage extends React.Component {
 
@@ -55,7 +57,8 @@ class StartPage extends React.Component {
                 _this.setState({
                     response: "Previous run data cleared successfully."
                 });
-                _this.props.changeHandler(_this.state.selectedSimulationId,"start");
+
+                _this.props.actions.changeMainMode(_this.state.selectedSimulationId,'start');
 
             }).catch(function (error) {
                 _this.setState({
@@ -80,7 +83,8 @@ class StartPage extends React.Component {
                 });
                 console.log(response);
                 console.log(response.data);
-                _this.props.changeMode(response.data);
+                _this.props.actions.saveFieldValueData(response.data);
+                _this.props.actions.recordRunningMode("registration")
 
 
             }).catch(function (error) {
@@ -98,12 +102,13 @@ class StartPage extends React.Component {
                 selectedSimulationName:"Please Select a simulation First."
             })
         }else {
-                this.props.changeHandler(this.state.selectedSimulationId,"view");
+            this.props.actions.changeMainMode(this.props.simulationId,'view');
         }
     }
 
     nextStep() {
-            this.props.changeMode(this.props.fieldValues);
+        this.props.actions.saveFieldValueData(this.props.fieldValues);
+        this.props.actions.recordRunningMode("registration")
     }
 
     componentDidMount() {
@@ -129,7 +134,8 @@ class StartPage extends React.Component {
         reader.onload =  ()=> {
             var dataURL = reader.result;
             fileJson = JSON.parse(dataURL)
-            this.props.changeMode(fileJson);
+            this.props.actions.saveFieldValueData(fileJson);
+            this.props.actions.recordRunningMode("registration")
             console.log(dataURL)
         };
         console.log(file);
@@ -137,7 +143,7 @@ class StartPage extends React.Component {
     }
 
     startSimulationMonitor(){
-        this.props.changeHandler(this.state.selectedSimulationId)
+        this.props.actions.changeMainMode(this.props.simulationId,'start');
     }
     render() {
         var er="";
@@ -189,4 +195,17 @@ class StartPage extends React.Component {
 
 }
 
-export default StartPage
+function mapStateToProps(state) {
+    return {
+        fieldValues:state.registration.fieldValues
+    };
+}
+
+function mapDispatchToProps(dispatch) {
+    return {
+        actions: bindActionCreators(Actions, dispatch)
+    };
+}
+
+
+export default connect(mapStateToProps,mapDispatchToProps)(StartPage);

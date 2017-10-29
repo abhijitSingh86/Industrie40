@@ -16,21 +16,20 @@ import scala.concurrent.duration.Duration
 trait DbModule {
 
 
-  def addAssemblyFailureEntry(simulationId:Int,assemblyId:Int,duration:Int):Long
+  def addAssemblyFailureEntry(simulationId:Int,simulationVersionId:Int,assemblyId:Int,duration:Int):Long
 
-  def addEndTimeInAssemblyFailureEntry(simulationId:Int,assemblyId:Int,stdate:Long)
+  def addEndTimeInAssemblyFailureEntry(simulationId:Int,simulationVersionId:Int,assemblyId:Int,stdate:Long)
 
-  def getAssemblyFailureEntries(simulationId:Int):Future[Seq[Tables.AssemblyfailuredataRow]]
+  def getAssemblyFailureEntries(simulationId:Int,simulationVersionId:Int):Future[Seq[Tables.AssemblyfailuredataRow]]
 
   def saveJsoninDatabaseforClone(simulationId:Int,jsondata:String):Unit
 
   def getJsonFromCloneDatabase(simulationId:Int):String
 
-  def updateComponentProcessingInfoInFailureScenarion(simulationId: Int, componentId: Int, assemblyId: Int, sequence: Int, operationId: Int ):Boolean
+  def updateComponentProcessingInfoInFailureScenarion(simulationId: Int,simulationVersionId:Int, componentId: Int, assemblyId: Int, sequence: Int, operationId: Int ):Boolean
 
   def updateSimulationEndTime(simulationId:Int):Boolean
 
-  def componentHeartBeatUpdateAsync(componentId:Int,simulationId:Int):Future[Boolean]
 
   def getCompleteSimulationObject(simulationId:Int):Simulation
 
@@ -58,7 +57,7 @@ trait DbModule {
 
   def addComponent(c:Component):Int
 
-  def getComponentWithProcessingInfo(componentId:Int,simulationId:Int):Option[Component]
+  def getComponentWithProcessingInfo(componentId:Int,simulationId:Int,simulationVersionId:Int):Option[Component]
 
   def addComponentsToSimulation(simulationId:Int,componentsId:List[Int])
 
@@ -66,26 +65,25 @@ trait DbModule {
 
   def addAssembly(a:Assembly):Int
 
-  def fetchInProgressComponentOnAssembly(assemblyId:Int,simulationid:Int):(Option[Component],Long)
+  def fetchInProgressComponentOnAssembly(assemblyId:Int,simulationid:Int,simulationVersionId:Int):(Option[Component],Long)
 
-  def addComponentProcessingInfo(simId:Int,cmpId:Int,assemblyId:Int,sequence:Int,opId:Int , operationTime:Int):Boolean
+  def addComponentProcessingInfo(simId:Int,simulationVersionId:Int,cmpId:Int,assemblyId:Int,sequence:Int,opId:Int , operationTime:Int):Boolean
 
   def updateAssemblyOperationStatus(assemblyId:Int, operationId:Int, status:String):Boolean
 
-  def updateComponentProcessingInfo(simulationId: Int, componentId: Int, assemblyId: Int, sequence: Int, operationId: Int, failureWaitTime: Int):Boolean
+  def updateComponentProcessingInfo(simulationId: Int,simulationVersionId:Int, componentId: Int, assemblyId: Int, sequence: Int, operationId: Int, failureWaitTime: Int):Boolean
 
-  def clearPreviousSimulationProcessingDetails(simulationId:Int):Future[Boolean]
+  def incrementSimulationVersionDetails(simulationId:Int):Future[Int]
 
-  def assemblyHeartBeatUpdateAsync(assemblyId:Int, simulationId:Int):Future[Boolean]
 
-  def getAssemblyRunningStatus(assemblyId:Int,simulationId:Int):Future[Seq[Tables.ComponentProcessingStateRow]]
+  def getAssemblyRunningStatus(assemblyId:Int,simulationId:Int ,simulationVersionId:Int):Future[Seq[Tables.ComponentProcessingStateRow]]
 
   def getComponentNameMapBySimulationId(simulationId:Int):Map[Int,String]
 
-  def getComponentProcessingInfoForSimulation(simulationId: Int)
+  def getComponentProcessingInfoForSimulation(simulationId: Int , simulationVersionId:Int)
   :Future[Seq[Tables.ComponentProcessingStateRow]]
 
-  def getComponentById(componentId:Int ,simulationId:Int, processingRecords:Seq[Tables.ComponentProcessingStateRow]):Component
+  def getComponentById(componentId:Int ,simulationId:Int,simulationVersionId:Int, processingRecords:Seq[Tables.ComponentProcessingStateRow]):Component
 
   def updateSimulationStartTime(simulationId:Int):Boolean
 
@@ -109,16 +107,16 @@ class SlickModuleImplementation(cache:CacheApi) extends DbModule {
     with DBComponent =>
 
 
-  def addAssemblyFailureEntry(simulationId:Int,assemblyId:Int,duration:Int):Long={
-    assembly.addAssemblyFailureEntry(simulationId,assemblyId,duration)
+  def addAssemblyFailureEntry(simulationId:Int,simulationVersionId:Int,assemblyId:Int,duration:Int):Long={
+    assembly.addAssemblyFailureEntry(simulationId,simulationVersionId:Int,assemblyId,duration)
   }
 
-  def addEndTimeInAssemblyFailureEntry(simulationId:Int,assemblyId:Int,stdate:Long) ={
-    assembly.addEndTimeInAssemblyFailureEntry(simulationId,assemblyId,stdate)
+  def addEndTimeInAssemblyFailureEntry(simulationId:Int,simulationVersionId:Int,assemblyId:Int,stdate:Long) ={
+    assembly.addEndTimeInAssemblyFailureEntry(simulationId,simulationVersionId:Int,assemblyId,stdate)
   }
 
-  def getAssemblyFailureEntries(simulationId:Int):Future[Seq[Tables.AssemblyfailuredataRow]] = {
-    assembly.getAssemblyFailureEntries(simulationId)
+  def getAssemblyFailureEntries(simulationId:Int,simulationVersionId:Int):Future[Seq[Tables.AssemblyfailuredataRow]] = {
+    assembly.getAssemblyFailureEntries(simulationId,simulationVersionId)
   }
 
 
@@ -158,10 +156,10 @@ class SlickModuleImplementation(cache:CacheApi) extends DbModule {
     simulation.addComponentTimeMap(simulationId,componentToAssemblyTransTime)
   }
 
-  def fetchInProgressComponentOnAssembly(assemblyId:Int,simulationid:Int):(Option[Component],Long) ={
+  def fetchInProgressComponentOnAssembly(assemblyId:Int,simulationid:Int,simulationVersionId:Int):(Option[Component],Long) ={
     val assemblyNameMap = assembly.selectAssemblyNameMapBySimulationId(simulationid,cache)
     val comps =Await.result(
-      component.getComponentProcessingInfoForSimulation(simulationid,cache,assemblyNameMap).map(x=>
+      component.getComponentProcessingInfoForSimulation(simulationid,simulationVersionId , cache,assemblyNameMap).map(x=>
       x.filter(y=> y.assemblyid == assemblyId && y.status.equalsIgnoreCase(InProgressProcessingStatus.text) && y.simulationid == simulationid))
       , Duration.Inf)
 
@@ -169,7 +167,7 @@ class SlickModuleImplementation(cache:CacheApi) extends DbModule {
       case 1 =>{
         val row = comps(0)
         val etl = (System.currentTimeMillis() - row.startTime)
-        ((component.selectByComponentSimulationId(row.componentid,simulationid,cache,assemblyNameMap)) , etl)
+        ((component.selectByComponentSimulationId(row.componentid,simulationid,simulationVersionId ,cache,assemblyNameMap)) , etl)
 
       }
       case _ => (None,0)
@@ -188,65 +186,56 @@ class SlickModuleImplementation(cache:CacheApi) extends DbModule {
     simulation.updateStartTime(simulationId , stTime)
   }
 
-  def getComponentById(componentId:Int ,simulationId:Int, processingRecords:Seq[Tables.ComponentProcessingStateRow]):Component={
+  def getComponentById(componentId:Int ,simulationId:Int,simulationVersionId:Int, processingRecords:Seq[Tables.ComponentProcessingStateRow]):Component={
     val assemblyNameMap = assembly.selectAssemblyNameMapBySimulationId(simulationId,cache)
     component.selectByComponentId(componentId,cache,assemblyNameMap,processingRecords)
   }
-  def getComponentProcessingInfoForSimulation(simulationId: Int)
+  def getComponentProcessingInfoForSimulation(simulationId: Int,simulationVersionId:Int)
   :Future[Seq[Tables.ComponentProcessingStateRow]] ={
     val assemblyNameMap = assembly.selectAssemblyNameMapBySimulationId(simulationId,cache)
-    component.getComponentProcessingInfoForSimulation(simulationId, cache, assemblyNameMap)
+    component.getComponentProcessingInfoForSimulation(simulationId,simulationVersionId, cache, assemblyNameMap)
   }
 
   def getComponentNameMapBySimulationId(simulationId:Int):Map[Int,String] ={
     component.selectComponentNameMapBySimulationId(simulationId,cache)
   }
 
-  def getAssemblyRunningStatus(assemblyId:Int,simulationId:Int):Future[Seq[Tables.ComponentProcessingStateRow]] ={
-    assembly.getProcessingInfo(assemblyId,simulationId)
+  def getAssemblyRunningStatus(assemblyId:Int,simulationId:Int,simulationVersionId:Int):Future[Seq[Tables.ComponentProcessingStateRow]] ={
+    assembly.getProcessingInfo(assemblyId,simulationId,simulationVersionId)
   }
 
-  def clearPreviousSimulationProcessingDetails(simulationId:Int):Future[Boolean]={
+  def incrementSimulationVersionDetails(simulationId:Int):Future[Int]={
     val flags = for{
-      c <- component.clearComponentProcessingDetailsAsync(simulationId)
+      s <- simulation.incrementAndGetTheVersion(simulationId)
       a <- assembly.clearBusyOperationAsync(simulationId)
-      af <- assembly.clearFailureData(simulationId)
-    }yield (c,a)
-    flags map{
-      case (true,_) => true
-      case (_,true) => true
-      case _ => false
-    }
+
+    }yield (s)
+
+    flags
+
   }
 
-  def componentHeartBeatUpdateAsync(componentId:Int,simulationId:Int):Future[Boolean] = {
-    component.componentHeartBeatUpdateAsync(componentId,simulationId)
-  }
 
-  def assemblyHeartBeatUpdateAsync(assemblyId:Int, simulationId:Int):Future[Boolean] = {
-    assembly.assemblyHeartBeatUpdateAsync(assemblyId,simulationId)
-  }
-
-  def getComponentWithProcessingInfo(componentId:Int,simulationId:Int):Option[Component] = {
+  def getComponentWithProcessingInfo(componentId:Int,simulationId:Int,simulationVersionId:Int):Option[Component] = {
     val assemblyNameMap = assembly.selectAssemblyNameMapBySimulationId(simulationId,cache)
-    component.selectByComponentSimulationId(componentId,simulationId,cache , assemblyNameMap)
+    component.selectByComponentSimulationId(componentId,simulationId,simulationVersionId , cache , assemblyNameMap)
   }
 
   def updateAssemblyOperationStatus(assemblyId: Int, operationId: Int, status: String): Boolean= {
     assembly.updateAssemblyOperationStatus(assemblyId, operationId, status,cache)
   }
 
-  def updateComponentProcessingInfoInFailureScenarion(simulationId: Int, componentId: Int, assemblyId: Int, sequence: Int, operationId: Int)={
+  def updateComponentProcessingInfoInFailureScenarion(simulationId: Int,simulationVersionId:Int, componentId: Int, assemblyId: Int, sequence: Int, operationId: Int)={
     assembly.updateAssemblyOperationStatus(assemblyId,operationId,FreeOperationStatus.text,cache)
-    component.updateComponentProcessingInfoForFailure(simulationId,componentId,assemblyId,sequence,operationId)
+    component.updateComponentProcessingInfoForFailure(simulationId,simulationVersionId , componentId,assemblyId,sequence,operationId)
   }
-  def updateComponentProcessingInfo(simulationId: Int, componentId: Int, assemblyId: Int, sequence: Int, operationId: Int, failureWaitTime: Int) :Boolean ={
+  def updateComponentProcessingInfo(simulationId: Int,simulationVersionId:Int, componentId: Int, assemblyId: Int, sequence: Int, operationId: Int, failureWaitTime: Int) :Boolean ={
     assembly.updateAssemblyOperationStatus(assemblyId,operationId,FreeOperationStatus.text,cache)
 
-    component.updateComponentProcessingInfo(simulationId,componentId,assemblyId,sequence,operationId , FinishedProcessingStatus,failureWaitTime)
+    component.updateComponentProcessingInfo(simulationId,simulationVersionId,componentId,assemblyId,sequence,operationId , FinishedProcessingStatus,failureWaitTime)
   }
-  def addComponentProcessingInfo(simId:Int,cmpId:Int,assemblyId:Int,sequence:Int,opId:Int , operationTime:Int):Boolean={
-    component.addComponentProcessingInfo(simId,cmpId,assemblyId,sequence,opId,operationTime)
+  def addComponentProcessingInfo(simId:Int,simulationVersionId:Int,cmpId:Int,assemblyId:Int,sequence:Int,opId:Int , operationTime:Int):Boolean={
+    component.addComponentProcessingInfo(simId,simulationVersionId,cmpId,assemblyId,sequence,opId,operationTime)
   }
 
   def getAllSimulation():List[Simulation] = {
@@ -287,7 +276,7 @@ class SlickModuleImplementation(cache:CacheApi) extends DbModule {
 
 
   def addSimulation(name:String,desc:String):Int = {
-    simulation.add(new Simulation(id=0,name = name,desc = desc))
+    simulation.add(new Simulation(id=0,name = name,desc = desc , 1))
   }
 
   def getAssemblyMappedToSimulationId(assemblyId:Int, simulationId:Int):Option[Assembly]={

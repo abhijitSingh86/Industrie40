@@ -13,11 +13,12 @@ import {RESET_REGISTRATION_DETAILS} from '../actions/index'
 
 
 const initialState = {
-    step:2,
+    step:5,
     renderSuccess:false,
     responseMessage:"",
     isError:false,
     simulationId:-1,
+    simulationVersionId:-1,
     fieldValues:{
         simulationName     : "sim",
         simulationDesc    : "hit and try",
@@ -50,7 +51,8 @@ export default function registration(state = initialState ,action){
                 responseMessage :"success",
                 isError:false,
                 renderSuccess:true,
-                simulationId:action.payload.body.s,
+                simulationId:action.payload.body.s.id,
+                simulationVersionId:action.payload.body.s.versionId,
                 fieldValues:initialState.fieldValues
             });
 

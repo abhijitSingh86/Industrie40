@@ -60,7 +60,7 @@ class ScheduleCommand(dbModule : DbModule,scheduler:Scheduler,proxy: NetworkProx
 
 
   def sendScheduleInformationToComponent(simulationId: Int, components: List[Component]) = {
-    val updatedCmps = components.map(x=> dbModule.getComponentWithProcessingInfo(x.id,simulationId)).flatten
+    val updatedCmps = components.map(x=> dbModule.getComponentWithProcessingInfo(x.id,simulationId,ComponentQueue.getSimulationVersionId() )).flatten
     val urls = dbModule.getAllComponentUrlBySimulationId(simulationId).toMap
     val assemblyUrls =dbModule.getAllAssemblyUrlBySimulationId(simulationId).toMap
 

@@ -27,8 +27,12 @@ trait SimulationDaoRepo{
 
   trait SimulationDao{
 
+    def incrementAndGetTheVersion(simulationId:Int):Future[Int]
+
     def saveJsoninDatabaseforClone(simulationId:Int,jsondata:String): Unit
+
     def getJsonFromCloneDatabase(simulationId:Int):String
+
     def getAssemblyTimeMap(simulationId:Int):List[AssemblyTransportTime]
 
     def getComponentTimeMap(simulationId:Int):List[ComponentToAssemblyTransTime]
@@ -80,7 +84,7 @@ trait ComponentDaoRepo {
   def component: ComponentDao
 
   trait ComponentDao {
-    def updateComponentProcessingInfo(simulationId: Int, componentId: Int, assemblyId: Int, sequence: Int, operationId: Int, status: ComponentProcessingStatus, failureWaitTime: Int): Boolean
+    def updateComponentProcessingInfo(simulationId: Int,simulationVersionId:Int, componentId: Int, assemblyId: Int, sequence: Int, operationId: Int, status: ComponentProcessingStatus, failureWaitTime: Int): Boolean
 
     def add(component: models.Component): Int
 
@@ -99,19 +103,19 @@ trait ComponentDaoRepo {
     def selectByComponentId(componentId: Int,cache:CacheApi,assemblyNameMap:Map[Int,String],
                             processingRecords:Seq[Tables.ComponentProcessingStateRow]): models.Component
 
-    def selectByComponentSimulationId(componentId: Int, simulationId:Int,cache:CacheApi,assemblyNameMap:Map[Int,String])
+    def selectByComponentSimulationId(componentId: Int, simulationId:Int,simulationVersionId:Int,cache:CacheApi,assemblyNameMap:Map[Int,String])
     :Option[models.Component]
 
-    def addComponentProcessingInfo(simId:Int,cmpId:Int,assemblyId:Int,sequence:Int,opId:Int  , operationTime:Int):Boolean
+    def addComponentProcessingInfo(simId:Int,simulationVersionId:Int,cmpId:Int,assemblyId:Int,sequence:Int,opId:Int  , operationTime:Int):Boolean
 
-    def updateComponentProcessingInfoForFailure(simId:Int,cmpId:Int,assemblyId:Int,sequence:Int,opId:Int):Boolean
+    def updateComponentProcessingInfoForFailure(simId:Int,simulationVersionId:Int,cmpId:Int,assemblyId:Int,sequence:Int,opId:Int):Boolean
 
-    def componentHeartBeatUpdateAsync(componentId:Int,simulationId:Int):Future[Boolean]
+//    def componentHeartBeatUpdateAsync(componentId:Int,simulationId:Int):Future[Boolean]
 
     def clearComponentProcessingDetailsAsync(simulationId:Int):Future[Boolean]
 
 
-    def getComponentProcessingInfoForSimulation(simulationId: Int, cache: CacheApi, assemblyNameMap:Map[Int,String]):
+    def getComponentProcessingInfoForSimulation(simulationId: Int,simulationVersionId:Int, cache: CacheApi, assemblyNameMap:Map[Int,String]):
     Future[Seq[Tables.ComponentProcessingStateRow]]
   }
 
@@ -122,19 +126,19 @@ trait AssemblyDaoRepo{
 
   trait AssemblyDao {
 
-    def addAssemblyFailureEntry(simulationId:Int,assemblyId:Int,duration:Int):Long
+    def addAssemblyFailureEntry(simulationId:Int,simulationVersionId:Int,assemblyId:Int,duration:Int):Long
 
-    def addEndTimeInAssemblyFailureEntry(simulationId:Int,assemblyId:Int,stdate:Long)
+    def addEndTimeInAssemblyFailureEntry(simulationId:Int,simulationVersionId:Int,assemblyId:Int,stdate:Long)
 
-    def getAssemblyFailureEntries(simulationId:Int):Future[Seq[Tables.AssemblyfailuredataRow]]
+    def getAssemblyFailureEntries(simulationId:Int,simulationVersionId:Int):Future[Seq[Tables.AssemblyfailuredataRow]]
 
 
 
     def selectAssemblyNameMapBySimulationId(simulationId: Int , cache: CacheApi): Map[Int,String]
 
-    def getProcessingInfo(assemblyId:Int,simulationId:Int):Future[Seq[Tables.ComponentProcessingStateRow]]
+    def getProcessingInfo(assemblyId:Int,simulationId:Int,simulationVersionId:Int):Future[Seq[Tables.ComponentProcessingStateRow]]
 
-    def assemblyHeartBeatUpdateAsync(assemblyId: Int, simulationId: Int):Future[Boolean]
+//    def assemblyHeartBeatUpdateAsync(assemblyId: Int, simulationId: Int):Future[Boolean]
 
     def clearFailureData(simulationId: Int): Future[Boolean]
     def clearBusyOperationAsync(simulationId:Int):Future[Boolean]

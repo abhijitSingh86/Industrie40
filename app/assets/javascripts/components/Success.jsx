@@ -3,7 +3,7 @@ var React = require('react')
 
 import {connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import * as Actions from './redux/actions/registrationaction';
+import * as Actions from './redux/actions/';
 
 class Success extends React.Component{
     constructor(props){
@@ -21,10 +21,11 @@ class Success extends React.Component{
         <div>
             <ToBeSubmittedValue render={!this.props.renderSuccess} fieldValues={this.props.fieldValues}
                                 previousStep = {this.props.actions.decrementStep} submit={this.submit.bind(this)} />
-            <SubmittedValue render={this.props.renderSuccess} changeHandler={this.props.changeHandler}
+            <SubmittedValue render={this.props.renderSuccess}
                             simulationId={this.props.simulationId}
                             response={this.props.responseMessage}
-                            previousStep = {this.props.actions.decrementStep}/>
+                            previousStep = {this.props.actions.decrementStep}
+                            changeMainMode={this.props.actions.changeMainMode}/>
         </div>
     )
   }
@@ -55,7 +56,8 @@ class SubmittedValue extends React.Component{
         this.startSimulationMonitor = this.startSimulationMonitor.bind(this);
     }
     startSimulationMonitor(){
-        this.props.changeHandler(this.props.simulationId,'start')
+        this.props.changeMainMode(this.props.simulationId,'start');
+        // this.props.changeHandler(this.props.simulationId,'start')
     }
 
     back(){
@@ -104,4 +106,5 @@ function mapDispatchToProps(dispatch) {
         actions: bindActionCreators(Actions, dispatch)
     };
 }
+
 export default connect(mapStateToProps,mapDispatchToProps)(Success);

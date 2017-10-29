@@ -6,6 +6,7 @@ import actor.FailureActor.{SetSimulation, Start, Stop}
 import actor.FailureGeneratorActor
 import akka.actor.{ActorSystem, Props}
 import akka.stream.ActorMaterializer
+import data.OnlineData
 import db.DbModule
 import json.DefaultRequestFormat
 import network.NetworkProxy
@@ -24,13 +25,12 @@ class SchedulingController(schedulingThread:SchedulerThread,db:DbModule , networ
   implicit val system = ActorSystem("Assembly-System")
   implicit val materializer = ActorMaterializer()
   lazy val failureGeneratorActor = system.actorOf(Props(new FailureGeneratorActor(networkProxy,db)) , name="failureActor")
-  def start(id:Int)=Action{ implicit request =>
-    val json =request.body.asJson
+  def start(id:Int,versionId:Int)=Action{ implicit request =>
     val simulationId = Try(id)//Try((json.get \ "simulationId").get.as[Int])
     simulationId.isSuccess match{
       case true =>
         failureGeneratorActor ! SetSimulation(simulationId.get)
-        ComponentQueue.updateSimulationId(simulationId.get)
+        ComponentQueue.updateSimulationId(simulationId.get,versionId)
         //Fetch Transport Time Details
         ComponentQueue.setComponentTT(db.getComponentTimeMap(simulationId.get))
         ComponentQueue.setAssemblyTT(db.getAssemblyTimeMap(simulationId.get))
@@ -51,6 +51,10 @@ class SchedulingController(schedulingThread:SchedulerThread,db:DbModule , networ
     })
   }
 
+  def checkLoading() = Action{
+    val flag = OnlineData.isAllLoaded()
+    Ok(DefaultRequestFormat.getSuccessResponse(Json.obj("isLoadingComplete"-> flag )))
+  }
 
 
   def stop(id:Int,mode:String) = Action {

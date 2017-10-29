@@ -18,7 +18,8 @@ class SimulationMonitor extends React.Component {
         this.state = {
             keyTab2:-1,
             keyTab3:-1,
-            timelineDates:[]
+            timelineDates:[],
+            autoStart:true
         }
         this.start_simulation = this.start_simulation.bind(this);
         this.stop_simulation = this.stop_simulation.bind(this);
@@ -33,7 +34,10 @@ class SimulationMonitor extends React.Component {
 
     doSomething(){
         if(!this.props.isSimulationComplete) {
-            this.props.actions.getSimulationRunningStatus(this.props.simulation.simulationId);
+            if(this.props.isLoadingComplete){
+                this.start_simulation();
+            }
+            this.props.actions.getSimulationRunningStatus(this.props.simulation.simulationId );
         }else {
             this.props.actions.stopSimulation(this.props.simulation.simulationId, this.props.mode);
             this.stopTimer()
@@ -60,13 +64,10 @@ class SimulationMonitor extends React.Component {
         this.stopTimer()
     }
 
-    componentWillReceiveProps(nextProps) {
-    // console.log("Getting new Props");
-    // console.log(nextProps);
-    }
+
 
     start_simulation() {
-        this.props.actions.startSimulation(this.props.simulation.simulationId);
+        this.props.actions.startSimulation(this.props.simulation.simulationId , this.props.simulationVersionId);
     }
 
     stop_simulation() {
@@ -140,7 +141,9 @@ class SimulationMonitor extends React.Component {
     }
 
     getSimulationTimeData(){
-        if(this.props.simulationTime.sttime !=0 && this.props.simulationTime.ettime !=0 ) {
+        if(!this.props.isLoadingComplete){
+            return <LoadingModal interval={1} checkforstatus={this.props.actions.simulationLoadingCheck()}/>;
+        }else if(this.props.simulationTime.sttime !=0 && this.props.simulationTime.ettime !=0 ) {
             return (
                 <div>
                     <tr>
@@ -169,11 +172,23 @@ class SimulationMonitor extends React.Component {
                     </tr>
                 </div>
             );
+        }else if(this.props.simulationTime.sttime ==0 && this.props.simulationTime.ettime ==0 ) {
+            if(this.props.mode == 'view')
+                return <div>No Execution on this Simulation.</div>;
+            else
+                return <div>Execution on this Simulation not started.</div>;
         }
-        else if(this.props.simulationTime.sttime !=0 && this.props.simulationTime.ettime !=0 ) {
-            return <div>No Execution on this Simulation </div>;
-        }
-        else return <div>Simulation was in Progress<img src="/assets/images/dots_2.gif" width="5%" height="3%"/></div>;
+
+        // else{
+        //     return <div>Simulation is in Progress<img src="/assets/images/dots_2.gif" width="5%" height="3%"/></div>;
+        // }
+    }
+
+    handleCheckBox(){
+        const autoStart = this.state.autobind
+        this.setState({
+           autoStart:!autoStart
+        });
     }
 
     render() {
@@ -217,7 +232,7 @@ class SimulationMonitor extends React.Component {
 
         //check the mode and remove if view
         var btns = <div/>;
-        if(this.props.mode != "view") {
+        if(this.props.mode != "view" && (this.props.mode == "start" && this.props.isLoadingComplete && !this.state.autoStart) ) {
             btns = <tr>
                 <td className="rightAlign pull-right">
                     <Button bsStyle="primary" onClick={this.start_simulation}>
@@ -254,6 +269,18 @@ class SimulationMonitor extends React.Component {
                                 <td colSpan={2}>
                                     <p>Simulation Monitoring Panel</p>
                                     {this.props.response}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    Auto Start
+                                </td>
+                                <td>
+                                    <input
+                                        name="autostart"
+                                        type="checkbox"
+                                        checked={this.state.autoStart}
+                                        onChange={this.handleCheckBox.bind(this)} />
                                 </td>
                             </tr>
                             <tr>
@@ -318,6 +345,32 @@ class SimulationMonitor extends React.Component {
     }
 }
 
+class LoadingModal extends React.Component{
+    constructor(props) {
+        super(props);
+    }
+
+
+
+    componentDidMount() {
+     this.interval = setInterval(() => {
+         this.props.checkforstatus();
+        }, this.props.interval*1000);
+    }
+
+    componentWillUnmount() {
+        clearInterval(this.interval);
+    }
+
+    render() {
+        return <div>
+            Waiting for components and assemblies
+            <img src="/assets/images/dots_2.gif" width="5%" height="3%"/>
+        </div>;
+    }
+}
+
+
 function mapStateToProps(state) {
     // console.log("into map state to prop in simulation monitor");
     // console.log(state);
@@ -327,7 +380,9 @@ function mapStateToProps(state) {
         ,response:state.simulation.response
         ,isSimulationComplete:state.simulation.isSimulationComplete
         ,simulationTime:state.simulation.simulationTime
+        ,simulationVersionId:state.mainMode.simulationVersionId
         ,mode:state.mainMode.mode
+        ,isLoadingComplete:state.mainMode.isLoadingComplete
     };
 }
 

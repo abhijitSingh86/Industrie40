@@ -38,17 +38,17 @@ trait SlickComponentDaoRepo extends ComponentDaoRepo {
       }
     }
 
-    def componentHeartBeatUpdateAsync(componentId: Int, simulationId: Int): Future[Boolean] = {
-      val query = for (c <- components if ((c.id === componentId))) yield c.lastActive
-      db.run(query.update(Some(DateTimeUtils.getCurrentTimeStamp()))).map {
-        case 1 => true
-        case _ => false
-      }
-    }
+//    def componentHeartBeatUpdateAsync(componentId: Int, simulationId: Int): Future[Boolean] = {
+//      val query = for (c <- components if ((c.id === componentId))) yield c.lastActive
+//      db.run(query.update(Some(DateTimeUtils.getCurrentTimeStamp()))).map {
+//        case 1 => true
+//        case _ => false
+//      }
+//    }
 
-    def updateComponentProcessingInfoForFailure(simId:Int,cmpId:Int,assemblyId:Int,sequence:Int,opId:Int):Boolean = {
+    def updateComponentProcessingInfoForFailure(simId:Int,simulationVersionId:Int,cmpId:Int,assemblyId:Int,sequence:Int,opId:Int):Boolean = {
       val res = for {c <- componentProcessingState if (c.assemblyid === assemblyId && c.componentid === cmpId &&
-        c.operationid === opId && c.simulationid === simId && c.sequencenum === sequence)} yield (c.endTime , c.status)
+        c.operationid === opId && c.simulationid === simId && c.sequencenum === sequence && c.version === simulationVersionId)} yield (c.endTime , c.status)
 
       Await.result(db.run(res.update((Some(Calendar.getInstance().getTimeInMillis) , FailedProcessingStatus.text))), Duration.Inf) match {
         case 1 => true
@@ -57,9 +57,9 @@ trait SlickComponentDaoRepo extends ComponentDaoRepo {
     }
 
 //    def updateComponentProcessingInfo(simulationId: Int, componentId: Int, assemblyId: Int, sequence: Int, operationId: Int, status: ComponentProcessingStatus, failureWaitTime: Int): Boolean ={
-    def updateComponentProcessingInfo(simId: Int, cmpId: Int, assemblyId: Int, sequence: Int, opId: Int ,status: ComponentProcessingStatus, failureWaitTime: Int): Boolean = {
+    def updateComponentProcessingInfo(simId: Int,simulationVersionId:Int, cmpId: Int, assemblyId: Int, sequence: Int, opId: Int ,status: ComponentProcessingStatus, failureWaitTime: Int): Boolean = {
       val res = for {c <- componentProcessingState if (c.assemblyid === assemblyId && c.componentid === cmpId &&
-        c.operationid === opId && c.simulationid === simId && c.sequencenum === sequence)} yield (c.endTime , c.status ,c.failwaittime)
+        c.operationid === opId && c.simulationid === simId && c.sequencenum === sequence && c.version === simulationVersionId)} yield (c.endTime , c.status ,c.failwaittime)
 
       Await.result(db.run(res.update((Some(Calendar.getInstance().getTimeInMillis) , status.text , Some(failureWaitTime)))), Duration.Inf) match {
         case 1 => true
@@ -67,9 +67,9 @@ trait SlickComponentDaoRepo extends ComponentDaoRepo {
       }
     }
 
-    def addComponentProcessingInfo(simId: Int, cmpId: Int, assemblyId: Int, sequence: Int, opId: Int,operationTime:Int): Boolean = {
+    def addComponentProcessingInfo(simId: Int,simulationVersionId:Int, cmpId: Int, assemblyId: Int, sequence: Int, opId: Int,operationTime:Int): Boolean = {
       val result = db.run(componentProcessingState += new ComponentProcessingStateRow(cmpId, simId, sequence, opId,
-        Calendar.getInstance().getTimeInMillis, None, assemblyId , InProgressProcessingStatus.text,None , actualoperationtime = operationTime))
+        Calendar.getInstance().getTimeInMillis, None, assemblyId , InProgressProcessingStatus.text,None , actualoperationtime = operationTime , simulationVersionId))
 
       Await.result(result, Duration.Inf) match {
         case 1 => true
@@ -170,7 +170,7 @@ trait SlickComponentDaoRepo extends ComponentDaoRepo {
            convertComponentProcessing(cache, assemblyNameMap, processingRecords.sortWith(_.sequencenum > _.sequencenum))
          else
            EmptySchedulingInfo
-         Component(x.id, x.name, processingSequenceList, schedulingInfo , isOnline(x))
+         Component(x.id, x.name, processingSequenceList, schedulingInfo)
        }
       }
     }
@@ -197,11 +197,11 @@ trait SlickComponentDaoRepo extends ComponentDaoRepo {
       }
     }
 
-    def getComponentProcessingInfoForSimulation(simulationId: Int, cache: CacheApi ,assemblyNameMap:Map[Int,String])
+    def getComponentProcessingInfoForSimulation(simulationId: Int,simulationVersionId:Int, cache: CacheApi ,assemblyNameMap:Map[Int,String])
     :Future[Seq[Tables.ComponentProcessingStateRow]] ={
       val q = for{
         cps <- componentProcessingState
-        if cps.simulationid === simulationId.bind
+        if cps.simulationid === simulationId.bind && cps.version === simulationVersionId
       }yield cps
 
       db.run(q.sortBy(_.componentid).result)
@@ -213,11 +213,11 @@ trait SlickComponentDaoRepo extends ComponentDaoRepo {
 //      })
     }
 
-    def createComponentSchedulingInfo(componentId: Int, simulationId: Int, cache: CacheApi ,
+    def createComponentSchedulingInfo(componentId: Int, simulationId: Int,simulationVersionId:Int, cache: CacheApi ,
                                       assemblyNameMap:Map[Int,String]): ComponentSchedulingInfo = {
       //TODO check for sort be descending after some values
       val result = db.run(componentProcessingState.filter(x => (x.componentid === componentId &&
-        x.simulationid === simulationId)).sortBy(_.startTime.desc).result).map(y => convertComponentProcessing(cache, assemblyNameMap, y))
+        x.simulationid === simulationId && x.version  === simulationVersionId)).sortBy(_.startTime.desc).result).map(y => convertComponentProcessing(cache, assemblyNameMap, y))
       Await.result(result, Duration.Inf)
     }
 
@@ -256,9 +256,9 @@ trait SlickComponentDaoRepo extends ComponentDaoRepo {
 
     }
 
-    private def isOnline(x:Tables.ComponentRow):Boolean ={
-      if (x.lastActive.isDefined) x.lastActive.get.after(DateTimeUtils.getOldBySecondsTS(6)) else false
-    }
+//    private def isOnline(x:Tables.ComponentRow):Boolean ={
+//      if (x.lastActive.isDefined) x.lastActive.get.after(DateTimeUtils.getOldBySecondsTS(6)) else false
+//    }
 
 
 //    private def getProcessingInfo(cid:List[Int] , cache:CacheApi) = {
@@ -276,12 +276,12 @@ trait SlickComponentDaoRepo extends ComponentDaoRepo {
     }
 
 
-    def selectByComponentSimulationId(componentId: Int, simulationId: Int, cache: CacheApi,assemblyNameMap:Map[Int,String]): Option[Component] = {
+    def selectByComponentSimulationId(componentId: Int, simulationId: Int, simulationVersionId:Int,cache: CacheApi,assemblyNameMap:Map[Int,String]): Option[Component] = {
       Await.result(db.run(components.filter(_.id === componentId).result.headOption), Duration.Inf) match {
         case Some(x) => {
           val processingSequenceList = getProcessingInfo(componentId,cache)
-          val componentSchedulingInfo: ComponentSchedulingInfo = createComponentSchedulingInfo(componentId, simulationId, cache , assemblyNameMap)
-          Some(Component(x.id, x.name, processingSequenceList, componentSchedulingInfo, isOnline(x)))
+          val componentSchedulingInfo: ComponentSchedulingInfo = createComponentSchedulingInfo(componentId, simulationId,simulationVersionId , cache , assemblyNameMap)
+          Some(Component(x.id, x.name, processingSequenceList, componentSchedulingInfo))
         }
         case _ => None
       }

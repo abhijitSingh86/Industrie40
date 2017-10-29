@@ -1,9 +1,10 @@
-import {CHANGE_MAIN_MODE} from '../actions'
+import {CHANGE_MAIN_MODE , SIMULATION_ONLINE_CHECK} from '../actions'
 
 
 const initialState = {
         monitor:false
     ,pagemode:"reset"
+
 }
 
 export default function mainModeReducer(state = initialState,action){
@@ -13,6 +14,14 @@ export default function mainModeReducer(state = initialState,action){
     // console.log(action);
 
     switch(action.type){
+        case SIMULATION_ONLINE_CHECK :
+
+            var state = Object.assign({},state,
+                {
+                    isLoadingComplete:action.payload.isLoadingComplete
+                });
+            return state;
+
         case "MODE":
             var state = Object.assign({},state,
                 {
@@ -35,10 +44,12 @@ export default function mainModeReducer(state = initialState,action){
                 var state = Object.assign({},state,
                     {
                         simulationId:action.payload.simulationId,
+                        simulationVersionId:action.payload.simulationObj.simulationVersionId,
                         monitor:action.payload.monitor,
                         simulationObj:action.payload.simulationObj
                         ,mode:action.payload.mode
                         ,pagemode:action.payload.pagemode
+                        ,isLoadingComplete:false
                     });
             }
             return state;

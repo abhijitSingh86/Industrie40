@@ -13,33 +13,15 @@ class MainComponent extends React.Component {
 
     constructor(props) {
         super(props);
-        this.changeMainMode = this.changeMainMode.bind(this);
         this.getPanelForDisplay = this.getPanelForDisplay.bind(this);
-        this.changeToRegistrationMode = this.changeToRegistrationMode.bind(this);
-        // this.changeMainMode = this.changeMainMode.bind(this);
         this.state = {
             modal:false,
         }
     }
-
-
-
-    changeMainMode(simulationId,mode) {
-        console.log("change Recieved with "+simulationId+" mode: "+mode);
-       this.props.actions.changeMainMode(simulationId,mode);
-    }
-
-    changeToRegistrationMode(fieldvalues){
-        console.log("In change registration module");
-        this.props.actions.saveFieldValueData(fieldvalues);
-        this.props.actions.recordRunningMode("registration")
-    }
-
     getPanelForDisplay() {
         console.log("page mode is "+this.props.pagemode);
         if(this.props.pagemode === "registration"){
-            return <Registration changeHandler={this.changeMainMode}
-                                 simulationMonitorError={this.props.simulationMonitorError}
+            return <Registration simulationMonitorError={this.props.simulationMonitorError}
 
                                />
         } else if(this.props.pagemode === "monitor") {
@@ -48,10 +30,7 @@ class MainComponent extends React.Component {
                )
         }else{
             return <StartPage
-                changeMode={this.changeToRegistrationMode}
-                changeHandler={this.changeMainMode}
                 simulationMonitorError={this.props.simulationMonitorError}
-                fieldValues={this.props.fieldValues}
                 />
         }
     }

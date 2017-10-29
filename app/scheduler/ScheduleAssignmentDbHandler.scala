@@ -23,7 +23,7 @@ class ScheduleAssignmentDbHandler(db:DbModule) extends SchedulerAssignmentHandle
 
     db.updateAssemblyOperationStatus(assembly.id,op.id,BusyOperationStatus.text)
 
-    db.addComponentProcessingInfo(ComponentQueue.getSimulationId(),cmp.id,assembly.id,cmp.componentSchedulingInfo.sequence,
+    db.addComponentProcessingInfo(ComponentQueue.getSimulationId(),ComponentQueue.getSimulationVersionId() ,cmp.id,assembly.id,cmp.componentSchedulingInfo.sequence,
         op.id ,newTime)
   }
 }

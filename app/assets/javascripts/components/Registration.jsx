@@ -33,7 +33,7 @@ class Registration extends React.Component{
         case 4:
           return <TransportTime />
         case 5:
-        return <Success changeHandler={this.props.changeHandler}/>
+        return <Success/>
     }
   }
 

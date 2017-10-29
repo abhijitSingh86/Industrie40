@@ -17,6 +17,7 @@ object ComponentQueue {
   val logger = Logger(this.getClass())
   val requestQueue:mutable.LinkedHashSet[Component] = new mutable.LinkedHashSet[Component]()
   private var simulationId =0
+  private var versionId=1
 
 
 
@@ -66,9 +67,12 @@ object ComponentQueue {
   }
 
   var failedAssemblyId = -1
-  def updateSimulationId(id:Int): Unit ={
+  def updateSimulationId(id:Int,vId:Int): Unit ={
     simulationId  = id
+    versionId = vId
   }
+
+  def getSimulationVersionId():Int=versionId
   def getSimulationId():Int=simulationId
 
   def push(component:Component): Unit ={
