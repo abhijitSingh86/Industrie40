@@ -1,20 +1,45 @@
 `use strict`
 var axios = require('axios');
+export * from './registrationaction';
 export const GET_SIMULATIONS = 'GET_SIMULATIONS';
 export const GET_SIMULATION_WITH_ID = 'GET_SIMULATION_WITH_ID';
 export const CHANGE_MAIN_MODE='CHANGE_MAIN_MODE';
 export const START_SIMULATION = 'START_SIMULATION';
 export const STOP_SIMULATION = 'STOP_SIMULATION';
 export const CHANGE_COMPLETION_COUNT='CHANGE_COMPLETION_COUNT';
-export const GET_ASSEMBLY_RUNNING_STATUS = 'GET_ASSEMBLY_RUNNING_STATUS'
-
-export const GET_COMPONENT_RUNNING_STATUS = 'GET_COMPONENT_RUNNING_STATUS';
 export const GET_SIMULATION_RUNNING_STATUS = 'GET_SIMULATION_RUNNING_STATUS';
+
+export const RESET_REGISTRATION_DETAILS = "RESET_REGISTRATION_DETAILS";
+
+export const SIMULATION_ONLINE_CHECK = 'SIMULATION_ONLINE_CHECK';
+
+export function simulationLoadingCheck(){
+    return function(dispatch) {
+        axios.get('/simulation/onlinecheck').then(function (response) {
+            var action = {
+                type: SIMULATION_ONLINE_CHECK,
+                payload: {
+                    isLoadingComplete:response.data.body.isLoadingComplete
+                }
+            };
+            dispatch(action);
+        }).catch(function (error) {
+            var action = {
+                type: SIMULATION_ONLINE_CHECK,
+                payload: {
+                    response: error
+                }
+            };
+            dispatch(action);
+        })
+    }
+}
+
 
 
 export function getSimulationRunningStatus(simulationId){
     return function(dispatch){
-        axios.post('/simulation/' + simulationId+ '/runningstatus').then(function (response) {
+        axios.post('/simulation/' + simulationId+'/runningstatus').then(function (response) {
 
             var action ={
                 type:GET_SIMULATION_RUNNING_STATUS,
@@ -28,60 +53,19 @@ export function getSimulationRunningStatus(simulationId){
         //     error: "Error while Starting Simulation. \n " + error
         // });
         // })
-    }
+    };
 }
 
-export function getComponentRunningStatus(componentId,simulationId){
-    return function(dispatch){
-        axios.get('/componentStatus/' + simulationId+ '/' + componentId).then(function (response) {
+export function recordRunningMode(mode){
 
+    return function(dispatch){
             var action ={
-                type:GET_COMPONENT_RUNNING_STATUS,
-                payload:response.data
+                type:"MODE",
+                payload:mode
             }
             dispatch(action);
-        })
-
-            // .catch(function (error) {
-            // _this.setState({
-            //     error: "Error while Starting Simulation. \n " + error
-            // });
-        // })
     }
 }
-
-export function getAssemblyRunningStatus(assemblyId,simulationId){
-    return function(dispatch){
-        axios.get('/assemblyStatus/'+simulationId+'/'+assemblyId).then(function(response){
-            console.log(response.data);
-            var action = {
-                type:GET_ASSEMBLY_RUNNING_STATUS,
-                payload:response.data
-            };
-
-            dispatch(action);
-        });
-    };
-    // return ({
-    //     type: GET_ASSEMBLY_RUNNING_STATUS,
-    //     payload: obj
-    // });
-}
-
-export function updateComponentCompletionCount(obj){
-    return {
-        type:CHANGE_COMPLETION_COUNT,
-        payload:obj
-    }
-}
-export function getSimulation(id){
-   const req = axios.get('/simulation/' + id);
-    return {
-        type:GET_SIMULATION_WITH_ID,
-        payload:req
-    }
-}
-
 
 function parseResponse(res){
     if(res.responseType === "successEmpty"){
@@ -91,10 +75,10 @@ function parseResponse(res){
     }
 
 }
-export function startSimulation(id){
+export function startSimulation(id,versionId){
 
     return function(dispatch) {
-        axios.post('/start/' + id).then(function (response) {
+        axios.post('/start/' + id +'/'+versionId).then(function (response) {
                 var action = {
                     type: START_SIMULATION,
                     payload: {
@@ -118,15 +102,18 @@ export function startSimulation(id){
     }
 }
 
-export function stopSimulation(id){
+
+
+export function stopSimulation(id , mode){
 
     return function(dispatch) {
-        axios.post('/stop/' + id).then(function (response) {
+        axios.post('/stop/' + id+'/'+mode).then(function (response) {
             var action = {
                 type: STOP_SIMULATION,
                 payload: {
                     simulationId: id,
                     response: parseResponse(response.data)
+                    ,mode:mode
                 }
             };
             dispatch(action);
@@ -136,6 +123,7 @@ export function stopSimulation(id){
                 payload: {
                     simulationId: id,
                     response: error
+                    ,mode:mode
                 }
             };
             dispatch(action);
@@ -145,23 +133,52 @@ export function stopSimulation(id){
     }
 }
 
-export function changeMainMode(id)  {
+export function changeMainMode(id,mode)  {
 
+    console.log("in idex.js changeMainMode")
+    console.log(mode);
    return function(dispatch) {
-       axios.get('/simulation/' + id).then(function(res){
+
+       if(mode === "reset"){
            var action = {
                type: CHANGE_MAIN_MODE,
                payload: {
                    simulationId: id,
-                   monitor: true,
-                   simulationObj: res.data.body
+                   monitor: false,
+                   pagemode:mode,
+                   error:"Home button Clicked"
                }
            };
            dispatch(action);
-       })
-           // .catch(function(e){
-           // console.log("error in ChangeMain Mode async call"+e)
-       // });
+       }else {
+
+           axios.get("/simulation/" + id + "/" + mode).then(function (res) {
+               var action = {
+                   type: CHANGE_MAIN_MODE,
+                   payload: {
+                       simulationId: id,
+                       monitor: true,
+                       mode: mode,
+                       pagemode:"monitor",
+                       simulationObj: res.data.body
+                   }
+               };
+               dispatch(action);
+           }).catch(function (e) {
+               console.log("error in ChangeMain Mode async call" + e.response + " : " + id + " : " + mode);
+               var action = {
+                   type: CHANGE_MAIN_MODE,
+                   payload: {
+                       simulationId: id,
+                       monitor: false,
+                       mode: mode,
+                       pagemode:"reset",
+                       error: e.response.data
+                   }
+               };
+               dispatch(action);
+           });
+       }
    }
 
 }

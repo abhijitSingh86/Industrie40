@@ -1,6 +1,8 @@
 package db.dao
 
-import db.DBComponent
+import java.util.Calendar
+
+import db.{DBComponent, generatedtable}
 import db.generatedtable.Tables
 import db.generatedtable.Tables.AssemblyOperationMappingRow
 import models.{AssemblyOperation, AssemblyOperationStatus, BusyOperationStatus, FreeOperationStatus}
@@ -30,6 +32,26 @@ trait SlickAssemblyDaoRepo extends AssemblyDaoRepo {
     private lazy val simulationAssemblyMapping = Tables.Simulationassemblymap
     private lazy val componentProcessingState = Tables.ComponentProcessingState
 
+    private lazy val assemblyFailureData = Tables.Assemblyfailuredata
+
+    def addAssemblyFailureEntry(simulationId:Int,simulationVersionId:Int,assemblyId:Int,duration:Int):Long = {
+      val stdate = Calendar.getInstance().getTimeInMillis
+      val query = assemblyFailureData += new Tables.AssemblyfailuredataRow(simulationId,simulationVersionId,assemblyId,Some(duration),stdate,Some(stdate + duration*1000))
+      Await.result(db.run(query),Duration.Inf)
+      stdate
+    }
+
+    def addEndTimeInAssemblyFailureEntry(simulationId:Int,simulationVersionId:Int,assemblyId:Int,stdate:Long) = {
+      val query =for{x <- assemblyFailureData if(x.simulationid === simulationId && x.version === simulationVersionId && x.assemblyid === assemblyId && x.starttime === stdate)} yield x.endtime
+      val ettime = Calendar.getInstance().getTimeInMillis
+      Await.result(db.run(query.update(Some(ettime))),Duration.Inf)
+    }
+
+    def getAssemblyFailureEntries(simulationId:Int,simulationVersionId:Int):Future[Seq[Tables.AssemblyfailuredataRow]] = {
+      val query = assemblyFailureData.filter(x=> (x.simulationid === simulationId && x.version === simulationVersionId))
+     db.run(query.result)
+    }
+
 
     def selectAssemblyNameMapBySimulationId(simulationId: Int , cache: CacheApi): Map[Int,String] = {
 
@@ -44,8 +66,8 @@ trait SlickAssemblyDaoRepo extends AssemblyDaoRepo {
       }
     }
 
-    def getProcessingInfo(assemblyId:Int,simulationId:Int):Future[Seq[Tables.ComponentProcessingStateRow]] ={
-      val query = componentProcessingState.filter(x=> (x.assemblyid === assemblyId && x.simulationid === simulationId))
+    def getProcessingInfo(assemblyId:Int,simulationId:Int,simulationVersionId:Int):Future[Seq[Tables.ComponentProcessingStateRow]] ={
+      val query = componentProcessingState.filter(x=> (x.assemblyid === assemblyId && x.simulationid === simulationId && x.version === simulationVersionId))
         //for{x <- componentProcessingState if(x.assemblyid === assemblyId && x.simulationid === simulationId)} yield x
       db.run(query.sortBy(_.operationid).result)
     }
@@ -67,7 +89,7 @@ trait SlickAssemblyDaoRepo extends AssemblyDaoRepo {
     }
 
     override def add(assembly: models.Assembly): Int = {
-      val addedId = Await.result(db.run(assemblies returning assemblies.map(_.id) += new Tables.AssemblyRow(0, assembly.name,lastactive = None , failurenumber = Some(assembly.fcount) , failuretime = Some(assembly.ftime) , iffailallowed = Some(assembly.ifFailAllowed))), Duration.Inf)
+      val addedId = Await.result(db.run(assemblies returning assemblies.map(_.id) += new Tables.AssemblyRow(0, assembly.name, failurenumber = Some(assembly.fcount) , failuretime = Some(assembly.ftime) , iffailallowed = Some(assembly.ifFailAllowed))), Duration.Inf)
       addedId match {
         case id: Int => {
           addAssemblyOperationMapping(id, assembly.totalOperations)
@@ -114,13 +136,19 @@ trait SlickAssemblyDaoRepo extends AssemblyDaoRepo {
       }
     }
 
-    def assemblyHeartBeatUpdateAsync(assemblyId: Int, simulationId: Int): Future[Boolean] = {
-      val query = for (c <- assemblies if ((c.id === assemblyId))) yield c.lastactive
-      db.run(query.update(Some(DateTimeUtils.getCurrentTimeStamp()))).map {
-        case 1 => true
-        case _ => false
-      }
+    def clearFailureData(simulationId: Int): Future[Boolean] = {
+      val query = assemblyFailureData.filter(_.simulationid === simulationId).delete
+      db.run(query).map(x=>true)
     }
+
+//    def assemblyHeartBeatUpdateAsync(assemblyId: Int, simulationId: Int): Future[Boolean] = {
+//      val query = for (c <- assemblies if ((c.id === assemblyId))) yield c.lastactive
+//      db.run(query.update(Some(DateTimeUtils.getCurrentTimeStamp()))).map {
+//        case 1 => true
+//        case _ => false
+//      }
+//      Future
+//    }
 
     override def selectBySimulationId(simulationId: Int,cache:CacheApi): List[models.Assembly] = {
       Await.result(db.run(simulationAssemblyMapping.filter(_.simulationId === simulationId).result), Duration.Inf).map(x =>
@@ -139,10 +167,10 @@ trait SlickAssemblyDaoRepo extends AssemblyDaoRepo {
             val operations =Await.result(db.run(assemblyOperationMapping.filter(_.assemblyId === x.id).result), Duration.Inf).map(y =>
               AssemblyOperation(operation.selectByOperationId(y.operationId, cache), y.operationTime, AssemblyOperationStatus(y.status)))
 
-          val isOnline = if (x.lastactive.isDefined) x.lastactive.get.after(DateTimeUtils.getOldBySecondsTS(6)) else false
+//          val isOnline = if (x.lastactive.isDefined) x.lastactive.get.after(DateTimeUtils.getOldBySecondsTS(6)) else false
 
           Some(new models.Assembly(x.id, x.name,x.failurenumber.getOrElse(0),x.failuretime.getOrElse(0), operations.toList,
-            operations.filter(_.status == BusyOperationStatus).toList, x.iffailallowed.getOrElse(false),isOnline))
+            operations.filter(_.status == BusyOperationStatus).toList, x.iffailallowed.getOrElse(false)))
 
         }
         case None => {

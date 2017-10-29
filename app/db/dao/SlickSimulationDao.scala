@@ -4,9 +4,10 @@ import controllers.ApiResponse
 import db.{DBComponent, generatedtable}
 import db.generatedtable.Tables
 import db.generatedtable.Tables.{SimulationComponentMappingRow, SimulationassemblymapRow}
+import json.SimulationJson
 import models.{AssemblyTransportTime, ComponentToAssemblyTransTime}
 
-import scala.concurrent.Await
+import scala.concurrent.{Await, Future}
 import scala.concurrent.duration.Duration
 import scala.concurrent.ExecutionContext.Implicits.global
 /**
@@ -31,6 +32,18 @@ trait SlickSimulationDaoRepo extends SimulationDaoRepo{
 
     private lazy val simulationComponentTT = Tables.Simulationc2atransporttime
 
+    private lazy val simulationJsonTT  = Tables.Simulationjson
+
+    def saveJsoninDatabaseforClone(simulationId:Int,jsondata:String): Unit ={
+          Await.result(db.run(simulationJsonTT += new generatedtable.Tables.SimulationjsonRow(simulationId,Some(jsondata))),Duration.Inf)
+    }
+
+    def getJsonFromCloneDatabase(simulationId:Int):String = {
+      Await.result(db.run(simulationJsonTT.filter(_.simulationid === simulationId).result.headOption), Duration.Inf) match {
+        case Some(x: Tables.SimulationjsonRow) => x.jsondata.getOrElse("")
+        case None => ""
+      }
+    }
 
     def addAssemblyTimeMap(simulationId:Int,assemblyTransTime: List[AssemblyTransportTime]):Unit={
       assemblyTransTime.map(x=>{
@@ -72,13 +85,13 @@ trait SlickSimulationDaoRepo extends SimulationDaoRepo{
 
   def getSimulationById(simulationId: Int): models.Simulation = {
     Await.result(db.run(simulations.filter(_.id === simulationId).result.headOption), Duration.Inf) match {
-      case Some(x: Tables.SimulationRow) => new models.Simulation(x.id, x.name, x.desc.getOrElse(""),x.starttime.getOrElse(0l),x.endtime.getOrElse(0l))
+      case Some(x: Tables.SimulationRow) => new models.Simulation(x.id, x.name, x.desc.getOrElse(""),x.version ,x.starttime.getOrElse(0l),x.endtime.getOrElse(0l))
     }
   }
 
   def selectAllSimulations(): List[models.Simulation] = {
     Await.result(db.run(simulations.result), Duration.Inf) match {
-      case x => x.sortWith(_.id > _.id).map(y => new models.Simulation(y.id, y.name, y.desc.getOrElse(""))).toList
+      case x => x.sortWith(_.id > _.id).map(y => new models.Simulation(y.id, y.name, y.desc.getOrElse("") , y.version)).toList
     }
   }
 
@@ -110,6 +123,14 @@ trait SlickSimulationDaoRepo extends SimulationDaoRepo{
     Await.result(db.run(updateAction), Duration.Inf) == 1
   }
 
+    def incrementAndGetTheVersion(simulationId:Int):Future[Int] = {
+      db.run(simulations.filter(_.id === simulationId).map(_.version).result.head).map(ver =>{
+        val q = for{ x1 <- simulations if x1.id === simulationId} yield x1.version
+        val update = q.update(ver+1)
+        db.run(update)
+        (ver+1)
+      })
+    }
   def addAssemblyUrlToItsMappingEntry(simulationId: Int, assemblyId: Int, url: String): Boolean = {
     val q = for {x <- simulationAssemblyMapping if x.simulationId === simulationId && x.assemblyId === assemblyId} yield x.url
     val updateAction = q.update(Some(url))
@@ -149,7 +170,7 @@ trait SlickSimulationDaoRepo extends SimulationDaoRepo{
   }
 
   def add(simulation: models.Simulation):Int = {
-    val o = db.run(simulations returning simulations.map(_.id) += Tables.SimulationRow(0, simulation.name, Some(simulation.desc)))
+    val o = db.run(simulations returning simulations.map(_.id) += Tables.SimulationRow(0, simulation.name, Some(simulation.desc),None , None,1))
 //    ApiResponse.Async.Right(o)
     Await.result(o,Duration.Inf)
   }

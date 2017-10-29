@@ -48,7 +48,7 @@ class ScheduleAssignmentFailureEvaluationHandler(networkProxy:NetworkProxy,db:Db
 
       logger.info("Schedule Assignment Failure Evaluation handler error started")
 
-      db.updateComponentProcessingInfoInFailureScenarion(ComponentQueue.getSimulationId(),component.id,componentPreviousOperation.assemblyId,
+      db.updateComponentProcessingInfoInFailureScenarion(ComponentQueue.getSimulationId(),ComponentQueue.getSimulationVersionId() ,component.id,componentPreviousOperation.assemblyId,
         component.componentSchedulingInfo.sequence,componentPreviousOperation.operationId)
       logger.info("Schedule Assignment Failure Evaluation handler error failure Db details inserted")
 
@@ -66,7 +66,7 @@ class ScheduleAssignmentFailureEvaluationHandler(networkProxy:NetworkProxy,db:Db
   }
 
   def sendNewScheduleInformationToComponent(simulationId: Int, components: List[Component]) = {
-    val updatedCmps = components.map(x=> db.getComponentWithProcessingInfo(x.id,simulationId)).flatten
+    val updatedCmps = components.map(x=> db.getComponentWithProcessingInfo(x.id,simulationId,ComponentQueue.getSimulationVersionId())).flatten
     val urls = db.getAllComponentUrlBySimulationId(simulationId).toMap
     val assemblyUrls =db.getAllAssemblyUrlBySimulationId(simulationId).toMap
 

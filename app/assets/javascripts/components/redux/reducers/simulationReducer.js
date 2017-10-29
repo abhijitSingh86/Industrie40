@@ -24,7 +24,9 @@ export default function simulationReducer(state = initialState,action){
         }
 
         case STOP_SIMULATION : {
-            var response = action.payload.response.ettime !=0 ? "Stopped Successfully" : "Error Stopping:"+action.payload.response
+            if(action.payload.mode != "view"){
+                var response = action.payload.response.ettime !=0 ? "Stopped Successfully" : "Stopped in progress Simulation"
+            }
             return Object.assign({},state,{response:response , simulationTime:action.payload.response})
         }
 
@@ -34,27 +36,10 @@ export default function simulationReducer(state = initialState,action){
                 {completedComponents:st})
         }
 
-        case GET_COMPONENT_RUNNING_STATUS : {
-            var cmp = action.payload.body;
-            var t = [];
-            state.components.map(x => {
-               if(x.id != cmp.id){
-                   t.push(x);
-               }
-            });
-            t.push(action.payload.body);
-            var list = state.completedComponents
-            if(cmp.isComplete){
-                list = list.concat([cmp]);
-            }
-
-            return Object.assign({},state,{components:t,completedComponents:list})
-        }
-
         case GET_SIMULATION_RUNNING_STATUS : {
             var body = action.payload.body;
             var t = [];
-            state.components.map(x => {
+            body.components.map(x => {
                 if(x.isComplete){
                     t.push(x);
                 }
@@ -64,19 +49,7 @@ export default function simulationReducer(state = initialState,action){
                 isSimulationComplete:simulationCompleteFlag})
         }
 
-        case GET_ASSEMBLY_RUNNING_STATUS : {
-            var asm = action.payload;
-            var t = [];
-            state.assemblies.map(x => {
-                if(x.id != asm.id){
-                    t.push(x);
-                }
-            });
-            t.push(asm);
 
-
-            return Object.assign({},state,{assemblies:t})
-        }
         case GET_SIMULATIONS: return Object.assign({},state,{body:action.payload.data.body});
 
         case GET_SIMULATION_WITH_ID: return Object.assign({},state,{body:action.payload.data.body})

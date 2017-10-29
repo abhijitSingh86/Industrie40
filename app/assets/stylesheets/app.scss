@@ -1,4 +1,4 @@
-// Colors
+ // Colors
 $green  : #3aad91;
 $blue   : #2989c6;
 $grey   : #414141;
@@ -20,6 +20,12 @@ $grey   : #4c5e65;
     zoom: 1;
   }
 }
+
+ // Table for fixed data table
+ Table{
+   width:100%;
+   height:100%;
+ }
 
 // Base Layout Styles
 

@@ -1,5 +1,7 @@
 package scheduler
 
+import java.util.Calendar
+
 import models.{Assembly, AssemblyTransportTime, Component, ComponentToAssemblyTransTime}
 import play.api.Logger
 
@@ -15,7 +17,12 @@ object ComponentQueue {
   val logger = Logger(this.getClass())
   val requestQueue:mutable.LinkedHashSet[Component] = new mutable.LinkedHashSet[Component]()
   private var simulationId =0
-var failTime=0
+  private var versionId=1
+
+
+
+
+  var failTime=0
 
   def setComponentTT(l:List[ComponentToAssemblyTransTime])={
     componentTT = l
@@ -60,9 +67,12 @@ var failTime=0
   }
 
   var failedAssemblyId = -1
-  def updateSimulationId(id:Int): Unit ={
+  def updateSimulationId(id:Int,vId:Int): Unit ={
     simulationId  = id
+    versionId = vId
   }
+
+  def getSimulationVersionId():Int=versionId
   def getSimulationId():Int=simulationId
 
   def push(component:Component): Unit ={

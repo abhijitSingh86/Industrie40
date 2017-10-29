@@ -1,12 +1,16 @@
 package controllers
 
+import java.util.Date
+
+import data.OnlineData
 import db.DbModule
 import db.generatedtable.Tables
 import json._
 import models._
+import network.NetworkProxy
 import play.api.Logger
-import play.api.mvc.{Action, AnyContent, Controller, Request}
-import scheduler.ComponentQueue
+import play.api.mvc._
+import scheduler.{ApplicationLevelData, ComponentQueue}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -17,7 +21,7 @@ import scala.util.Try
 
 import play.api.libs.json._
 
-class SimulationController(database:DbModule) extends Controller {
+class SimulationController(database:DbModule,networkproxy:NetworkProxy) extends Controller {
 
 
   def getAllSimulations() = Action {
@@ -27,7 +31,7 @@ class SimulationController(database:DbModule) extends Controller {
   }
 
   def simulationRunningStatus(simulationId:Int) = Action.async {
-    val componentProcessingRows = database.getComponentProcessingInfoForSimulation(simulationId)
+    val componentProcessingRows = database.getComponentProcessingInfoForSimulation(simulationId , ComponentQueue.getSimulationVersionId())
 
     componentProcessingRows.map(rows => {
         val asmIds = rows.map(_.assemblyid).distinct
@@ -36,15 +40,65 @@ class SimulationController(database:DbModule) extends Controller {
 
       val compIds = rows.map(_.componentid).distinct
       val componentMap: Map[Int, Component] = compIds.map(id => (id ->
-                database.getComponentById(id,simulationId, rows.filter(_.componentid == id)))).toMap
+                database.getComponentById(id, simulationId,ComponentQueue.getSimulationVersionId(), rows.filter(_.componentid == id)))).toMap
 
       Ok(ResponseFactory.make(ProcessingStatus(componentMap,assemblyMap)))
       }
       )
 
   }
-  def getSimulation(id:Int) = Action{
-    Ok(ResponseFactory.make(SimulationJson(database.getCompleteSimulationObject(id))))
+
+
+
+  def getSimulation(id:Int,mode:String) = Action{
+    //All code loading for the
+    var response:Option[Result]=None
+    //start the Ghost loading
+    if(mode.equalsIgnoreCase("start") ){
+      if(!ApplicationLevelData.isGhostOnline()){
+        response=  Some(BadRequest("Background Ghost app is not running. Not able to start the Simulation monitoring."))
+      }
+    }
+    if(!response.isDefined) {
+      val sim = database.getCompleteSimulationObject(id)
+      response = Some(Ok(ResponseFactory.make(SimulationJson(sim))))
+
+      if (mode.equalsIgnoreCase("start")) {
+        OnlineData.setTotalComponentCount(sim.components.size+sim.assemblies.size);
+        networkproxy.sendStartToGhostApp(sim)
+      }
+    }
+    response.get
+  }
+
+  def getAssemblyTimelineDetails(simulationid:Int) = Action.async {
+    val rows = database.getComponentProcessingInfoForSimulation(simulationid,ComponentQueue.getSimulationVersionId())
+    val failureDetails = database.getAssemblyFailureEntries(simulationid,ComponentQueue.getSimulationVersionId())
+    val anameMap = database.getAssemblyNameMapForSimulation(simulationid)
+
+    /*
+    {
+                    "start": new Date(x.startTime), "end": new Date(x.endTime),  // end is optional
+                    "content": con, "group": y.name
+     */
+
+    val failuregroupDetails = failureDetails.map(_.map(x=>{
+      Json.obj("start"->new Date(x.starttime) , "end"->new Date(x.endtime.getOrElse(0l)) , "group"-> anameMap.get(x.assemblyid).get ,
+        "content" -> s"under failure for ${x.failureduration}")
+    }))
+
+    val groupDetails = rows.map(_.map(x=>{
+      Json.obj("start"->new Date(x.startTime) , "end"->new Date(x.endTime.getOrElse(0l)) , "group"-> anameMap.get(x.assemblyid).get ,
+      "content" -> s"${x.componentid} with ${x.status}")
+    }))
+
+    val finaldataList = for{
+      f <-  failuregroupDetails
+      g <- groupDetails
+    }yield (f ++ g)
+
+    finaldataList.map(x=> Ok(Json.obj("groups"-> anameMap.map(vv=>Json.obj("id"->vv._2)) , "data" -> x)))
+
   }
 
   def getShellScriptStructure(simualtion:Simulation):JsObject = {
@@ -59,12 +113,12 @@ class SimulationController(database:DbModule) extends Controller {
     val simulationId = Try(id)//Try((json.get \ "simulationId").get.as[Int])
     simulationId.isSuccess match{
       case true =>
-        ComponentQueue.updateSimulationId(simulationId.get)
-        database.clearPreviousSimulationProcessingDetails(simulationId.get) map{
-          case _ =>
+        database.incrementSimulationVersionDetails(simulationId.get) map{
+          case version:Int => {
+            ComponentQueue.updateSimulationId(simulationId.get,version)
             Ok(DefaultRequestFormat.getEmptySuccessResponse())
+          }
         }
-
       case _=> Future.successful(Ok("simulation Id is not found in Json"))
     }
   }
@@ -126,12 +180,18 @@ class SimulationController(database:DbModule) extends Controller {
         })
 
         database.addComponentTimeMap(simulationId,componentTT)
+
+        //save json data in database for cloning purpose
+
+        database.saveJsoninDatabaseforClone(simulationId,Json.stringify(json))
       }
       case f:JsError =>
         println(f)
     }
 
-    Ok(DefaultRequestFormat.getSuccessResponse(getShellScriptStructure(database.getCompleteSimulationObject(simulationId))))
+    val jsonRes = Json.obj("s"->Json.obj("id" -> simulationId,"versionId"->1))
+
+    Ok(DefaultRequestFormat.getSuccessResponse(jsonRes))
   }
 
 //  def updateSimulation() = Action.async{
@@ -146,21 +206,10 @@ class SimulationController(database:DbModule) extends Controller {
 //  }
 
 
-  def jsonExtractor(request:Request[AnyContent]):Future[Simulation] = {
 
-    val json = request.body.asJson
-
-    //Extracting Simulation
-
-    val name= (json.get \ "simulationName").get.as[String]
-    val desc= (json.get \ "simulationDesc").get.as[String]
-
-    val simulation = new Simulation(id=0,name=name,desc = desc)
-    //Extracting Operations
-    
-
-
-   Future.successful(new Simulation(id=0,name=name,desc = desc))
+  def getCloneData(simulationId:Int) = Action {
+    Ok(database.getJsonFromCloneDatabase(simulationId))
   }
+
 
 }

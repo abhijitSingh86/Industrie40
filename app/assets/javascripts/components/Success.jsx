@@ -1,39 +1,35 @@
 var React = require('react')
-var axios = require('axios')
 
 
+import {connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import * as Actions from './redux/actions/';
 
-var Success = React.createClass({
-    getInitialState(){
-            return {
+class Success extends React.Component{
+    constructor(props){
+        super(props)
+            this.state = {
                 renderSuccess:false
                 ,body :""
             }
-    },
+    }
   submit(){
-      var _this = this;
-      axios.post('/simulation' , this.props.fieldValues).then( function(response){
-          console.log( "entered into success")
-          _this.setState({
-              body:JSON.stringify(response.data.body),
-              renderSuccess: true
-              });
-          console.log( "entered into after success"+_this.state.renderSuccess);
-
-      }).catch(function(error){
-          console.log(error)
-      })
-    console.log("Saving Details Using Ajax Call");
-  },
-  render: function() {
+        this.props.actions.submitDataToServer(this.props.fieldValues);
+  }
+  render() {
     return (
         <div>
-            <ToBeSubmittedValue render={!this.state.renderSuccess} fieldValues={this.props.fieldValues} previousStep = {this.props.previousStep} submit={this.submit} />
-            <SubmittedValue render={this.state.renderSuccess} content={this.state.body} changeHandler={this.props.changeHandler}/>
+            <ToBeSubmittedValue render={!this.props.renderSuccess} fieldValues={this.props.fieldValues}
+                                previousStep = {this.props.actions.decrementStep} submit={this.submit.bind(this)} />
+            <SubmittedValue render={this.props.renderSuccess}
+                            simulationId={this.props.simulationId}
+                            response={this.props.responseMessage}
+                            previousStep = {this.props.actions.decrementStep}
+                            changeMainMode={this.props.actions.changeMainMode}/>
         </div>
     )
   }
-})
+}
 
 class ToBeSubmittedValue extends React.Component{
     render(){
@@ -60,33 +56,29 @@ class SubmittedValue extends React.Component{
         this.startSimulationMonitor = this.startSimulationMonitor.bind(this);
     }
     startSimulationMonitor(){
-        var content = JSON.parse(this.props.content);
-        console.log("calling change handler to display monintor mode"+content.s)
-        this.props.changeHandler(content.s)
+        this.props.changeMainMode(this.props.simulationId,'start');
+        // this.props.changeHandler(this.props.simulationId,'start')
     }
 
+    back(){
+     this.props.previousStep();
+    }
     render(){
-         if(this.props.render) {
-             var content = JSON.parse(this.props.content);
-		var counter=3;
-             var arr = [];
-             for (var i = 0; i < content.c.length; i++) {
-                 arr.push( <div>xterm -hold -e  scala -classpath "*.jar" componentClient.jar -c {content.c[i]} -s {content.s} &</div> );
-		 arr.push( <div>sleep {counter}</div>);
-			// counter =counter + .5;
-             }
-             for (var i = 0; i < content.a.length; i++) {
-                 arr.push( <div>xterm -hold -e scala -classpath "*.jar" assemblyClient.jar -a {content.a[i]} -s {content.s} &</div> );
-		arr.push( <div>sleep {counter}</div>);
-		// counter =counter + .5;
-             }
+         if(this.props.render && this.props.isError) {
+             return  <div>
+                 <p>Error during simulation data entry</p>
+                 <p>{this.props.response}</p>
+                 <p>
+                     <button className="btn -default pull-left" onClick={this.back.bind(this)}>Back</button>
+                 </p>
+             </div>
+         }else if(this.props.render && !this.props.isError){
+
              return (
 
                  <div>
                      <p>Simulation Details stored Successfully</p>
-                     <p>Copy the content below in sh file.</p>
-                     {arr}
-
+                     <p></p>
                      <p>
                          <input type="button" onClick={this.startSimulationMonitor} value="Go to Monitor Mode"/>
                      </p>
@@ -99,4 +91,20 @@ class SubmittedValue extends React.Component{
     }
 }
 
-module.exports = Success
+function mapStateToProps(state) {
+    return {
+        fieldValues:state.registration.fieldValues
+        ,renderSuccess:state.registration.renderSuccess
+        ,responseMessage:state.registration.responseMessage
+        ,simulationId:state.registration.simulationId
+        ,isError:state.registration.isError
+    };
+}
+
+function mapDispatchToProps(dispatch) {
+    return {
+        actions: bindActionCreators(Actions, dispatch)
+    };
+}
+
+export default connect(mapStateToProps,mapDispatchToProps)(Success);

@@ -39,7 +39,7 @@ object ComponentProcessingStatus{
   def unapply(arg: ComponentProcessingStatus): String = arg.text
 }
 case class Component(id: Int, name: String, processingSequences: List[ProcessingSequence] ,
-                      componentSchedulingInfo:SchedulingInfo,isOnline:Boolean =false) {
+                      componentSchedulingInfo:SchedulingInfo) {
 
   def getCurrentOperation() = componentSchedulingInfo.currentProcessing
 

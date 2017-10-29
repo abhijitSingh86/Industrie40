@@ -90,7 +90,6 @@ case class ComponentWithSchedulingInfo(x:Component) extends Response{
   def generate()= {
     Json.obj("id"-> x.id,
       "name"-> x.name,
-      "online"->x.isOnline,
       "isComplete" -> ComponentUtils.isCompleted(x),
       "opCount"->x.processingSequences(0).seq.size,
       "operationDetails" -> x.processingSequences.map(y=>{
@@ -113,6 +112,7 @@ case class SimulationJson(simulation:Simulation) extends Response{
   def generate()={
     Json.obj("simulationId"->simulation.id,
       "simulationName" -> simulation.name,
+      "simulationVersionId" -> simulation.versionId,
       "simulationDesc" -> simulation.desc,
       "components" -> simulation.components.map(x=> {
         Json.obj("id"-> x.id,
@@ -125,7 +125,6 @@ case class SimulationJson(simulation:Simulation) extends Response{
       "assemblies" -> simulation.assemblies.map(x=>{
         Json.obj("id"->x.id,
           "name" -> x.name,
-          "online"->x.isOnline,
           "operationDetails" -> x.totalOperations.map(y=>{
             Json.obj("id"-> y.operation.id,
               "name"-> y.operation.name,

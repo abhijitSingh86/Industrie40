@@ -5,44 +5,47 @@ var CustomSelect = require('./CustomSelect')
 class SelectDiv extends React.Component{
   constructor(props){
     super(props);
-    this.state = {
-      valueArr:this.props.selectArr
-    };
     this.handleValueChange = this.handleValueChange.bind(this);
   }
 
   handleValueChange(id,valueId){
+      console.log("handle Value change in select div");
+      console.log(id);
+      console.log(valueId);
       for(var i=0;i<this.props.fieldValues.operations.length;i++){
-          var op = this.props.fieldValues.operations[i]
-          console.log(op.id == valueId+""+op.id+""+valueId)
-          if(op.id == valueId){
-              var varr = this.state.valueArr;
-              varr[id]=op;
-              console.log("modified value arr")
-              console.log(varr)
-              this.setState({
-                  valueArr:varr
-              });
 
+          var op = this.props.fieldValues.operations[i];
+          console.log(op);
+          console.log("In value change ::"+(valueId == op.id  )+" :: "+op.id+" :: "+valueId);
+          if(valueId == op.id){
+              var varr = this.props.selectArr;
+              varr[id]=op;
+              this.props.propagateSelectChange(this.props.index,varr);
+                break;
           }
       }
-
-      console.log("state value arr")
-      console.log(this.state.valueArr)
-    this.props.propagateSelectChange(this.props.id,this.state.valueArr);
   }
 
+    removeRow(){
+      this.props.removeRow(this.props.index);
+    }
   render(){
-      var rows = [];
-      for(var i=0;i<this.props.count;i++){
-        rows.push(<CustomSelect fieldValues={this.props.fieldValues} focusId={this.state.valueArr[i].id} id={i}
-                                saveHandler = {this.handleValueChange}/>);
+
+        var count=0;
+      var r=  this.props.selectArr.map(function (id) {
+          return <CustomSelect fieldValues={this.props.fieldValues} focusId={id.id} index={count++}
+                               saveHandler = {this.handleValueChange}/>
+
+      },this);
+
+      if(this.props.selectArr.length > 0){
+          r.push(<img src="/assets/images/delete1.ico"  width={30} height={30} onClick={this.removeRow.bind(this)}/>);
       }
 
       return (
         <div>
           Select Operation Sequence
-          {rows}
+          {r}
         </div>
       );
 

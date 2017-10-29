@@ -1,5 +1,8 @@
 import React from 'react'
-import ReactDom from 'react-dom'
+
+import {connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import * as Actions from './redux/actions/registrationaction';
 
 class TransportTime extends React.Component{
 
@@ -71,7 +74,7 @@ class TransportTime extends React.Component{
             });
 
         }else{
-            e.target.value = 0
+            e.target.value = ""
         }
 
 
@@ -132,8 +135,8 @@ class TransportTime extends React.Component{
             assemblyTT : this.state.assemblyTT
             ,componentTT:this.state.componentTT
         }
-        this.props.saveValues(data)
-        this.props.nextStep()
+        this.props.actions.saveTransportFormData(data);
+        this.props.actions.incrementStep();
     }
 
     render(){
@@ -144,13 +147,27 @@ class TransportTime extends React.Component{
                 {dataA2C}
                 {dataA2A}
 
+                <ui>
                 <li className="form-footer">
-                    <button className="btn -default pull-center" onClick={this.props.previousStep}>Back</button>
+                    <button className="btn -default pull-center" onClick={this.props.actions.decrementStep}>Back</button>
                     <button className="btn -primary pull-right" onClick={this.nextStep}>Save &amp; Continue</button>
                 </li>
+                </ui>
             </div>
         )
     }
 }
 
-module.exports = TransportTime
+
+function mapStateToProps(state) {
+    return {
+        fieldValues:state.registration.fieldValues
+    };
+}
+
+function mapDispatchToProps(dispatch) {
+    return {
+        actions: bindActionCreators(Actions, dispatch)
+    };
+}
+export default connect(mapStateToProps,mapDispatchToProps)(TransportTime);

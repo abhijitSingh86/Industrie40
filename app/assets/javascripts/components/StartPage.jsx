@@ -1,7 +1,9 @@
 var React = require('react')
 var axios = require('axios');
 import {DropdownButton,MenuItem,Button} from 'react-bootstrap';
-
+import {connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import * as Actions from './redux/actions';
 var fileJson = {};
 class StartPage extends React.Component {
 
@@ -16,6 +18,7 @@ class StartPage extends React.Component {
         this.handleSelect = this.handleSelect.bind(this);
         this.createSimulationIdDropDown = this.createSimulationIdDropDown.bind(this);
         this.view_simulation = this.view_simulation.bind(this);
+        this.clone_simulation = this.clone_simulation.bind(this);
     }
 
     createSimulationIdDropDown(){
@@ -50,11 +53,12 @@ class StartPage extends React.Component {
         }else {
             var key = this.state.selectedSimulationId;
             var _this = this;
-            axios.post('/simualtion/'+key+'/clear').then(function (response) {
+            axios.post('/simulation/'+key+'/clear').then(function (response) {
                 _this.setState({
                     response: "Previous run data cleared successfully."
                 });
-                _this.props.changeHandler(_this.state.selectedSimulationId)
+
+                _this.props.actions.changeMainMode(_this.state.selectedSimulationId,'start');
 
             }).catch(function (error) {
                 _this.setState({
@@ -64,31 +68,47 @@ class StartPage extends React.Component {
         }
     }
 
+    clone_simulation(){
+        if(this.state.selectedSimulationId == undefined){
+            this.setState({
+                selectedSimulationName:"Please Select a simulation First."
+            })
+        }else {
+
+            var key = this.state.selectedSimulationId;
+            var _this = this;
+            axios.get('/simulation/'+key+'/clone').then(function (response) {
+                _this.setState({
+                    response: "Previous json data retrieved successfully."
+                });
+                console.log(response);
+                console.log(response.data);
+                _this.props.actions.saveFieldValueData(response.data);
+                _this.props.actions.recordRunningMode("registration")
+
+
+            }).catch(function (error) {
+                _this.setState({
+                    response: "Error retrieving previous simulation data. \n " + error
+                });
+            })
+
+        }
+    }
+
     view_simulation(){
         if(this.state.selectedSimulationId == undefined){
             this.setState({
                 selectedSimulationName:"Please Select a simulation First."
             })
         }else {
-            var key = this.state.selectedSimulationId;
-            // var _this = this;
-            // axios.post('/simualtion/'+key+'/clear').then(function (response) {
-            //     _this.setState({
-            //         response: "Previous run data cleared successfully."
-            //     });
-                this.props.changeHandler(this.state.selectedSimulationId)
-
-            // }).catch(function (error) {
-            //     _this.setState({
-            //         response: "Error while clearing previous simulation data. \n " + error
-            //     });
-            // })
+            this.props.actions.changeMainMode(this.props.simulationId,'view');
         }
     }
 
     nextStep() {
-        this.props.saveValues(fileJson);
-        this.props.nextStep();
+        this.props.actions.saveFieldValueData(this.props.fieldValues);
+        this.props.actions.recordRunningMode("registration")
     }
 
     componentDidMount() {
@@ -108,16 +128,14 @@ class StartPage extends React.Component {
         })
     }
 
-    componentWillUnmount() {
-        // this.serverRequest1.abort();
-    }
-
     handleFileChange(e) {
         var file = e.target.files[0];
         var reader = new FileReader();
-        reader.onload = function () {
+        reader.onload =  ()=> {
             var dataURL = reader.result;
             fileJson = JSON.parse(dataURL)
+            this.props.actions.saveFieldValueData(fileJson);
+            this.props.actions.recordRunningMode("registration")
             console.log(dataURL)
         };
         console.log(file);
@@ -125,9 +143,15 @@ class StartPage extends React.Component {
     }
 
     startSimulationMonitor(){
-        this.props.changeHandler(this.state.selectedSimulationId)
+        this.props.actions.changeMainMode(this.props.simulationId,'start');
     }
     render() {
+        var er="";
+        if(this.props.simulationMonitorError != undefined){
+            er= this.props.simulationMonitorError;
+        }else{
+            er=this.state.response;
+        }
         var rows = this.createSimulationIdDropDown();
         return (
             <div>
@@ -136,7 +160,7 @@ class StartPage extends React.Component {
                         <label> Upload Json Data File</label>
                         <input type="file" onChange={this.handleFileChange}/>
                     </li>
-                    <li>{this.state.response}
+                    <li>{er}
                         <table><tbody><tr>
                         <td>
                             <DropdownButton  title="Select Simulation" onSelect={this.handleSelect} >
@@ -144,6 +168,9 @@ class StartPage extends React.Component {
                             </DropdownButton>{this.state.selectedSimulationName}
                         </td>
                         <td className="pull-right">
+                            <Button  bsStyle="primary" onClick={this.clone_simulation}>
+                                Clone
+                            </Button>
                             <Button  bsStyle="primary" onClick={this.view_simulation}>
                                View
                             </Button>
@@ -155,7 +182,7 @@ class StartPage extends React.Component {
 
                     </li>
                     <li className="form-footer">
-                        <button className="btn -primary pull-right" onClick={this.nextStep}>Save &amp; Continue</button>
+                        <button className="btn -primary pull-right" onClick={this.nextStep}>Create New Simulation</button>
 
                     </li>
                 </ul>
@@ -168,4 +195,17 @@ class StartPage extends React.Component {
 
 }
 
-module.exports = StartPage
+function mapStateToProps(state) {
+    return {
+        fieldValues:state.registration.fieldValues
+    };
+}
+
+function mapDispatchToProps(dispatch) {
+    return {
+        actions: bindActionCreators(Actions, dispatch)
+    };
+}
+
+
+export default connect(mapStateToProps,mapDispatchToProps)(StartPage);

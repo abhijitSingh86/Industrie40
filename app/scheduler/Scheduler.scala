@@ -13,7 +13,7 @@ trait Scheduler {
     * unavailable resources.
     * @param components
     * @param assemblies
-    * @return
+    * @return Scheduled Components Ids
     */
   def scheduleComponents(components:List[Component],assemblies:List[Assembly]): List[Int]
 }

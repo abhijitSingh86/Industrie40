@@ -1,13 +1,14 @@
 package controllers
 
+import data.OnlineData
 import db.DbModule
 import json.{ComponentWithSchedulingInfo, DefaultRequestFormat, ResponseFactory}
 import models.Component
 import play.api.libs.json.Json
 import play.api.mvc.{Action, Controller}
 import scheduler.ComponentQueue
-import scala.concurrent.ExecutionContext.Implicits.global
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 /**
@@ -23,14 +24,16 @@ class ComponentController(db:DbModule) extends Controller {
     val operationId = (json.get \ "operationId").get.as[Int]
     val sequence= (json.get \ "sequence").get.as[Int]
     val failureWaitTime= (json.get \ "failureWaitTime").get.as[Int]
-    db.updateComponentProcessingInfo(simulationId,componentId,assemblyId,sequence , operationId,failureWaitTime) match {
+    db.updateComponentProcessingInfo(simulationId,ComponentQueue.getSimulationVersionId() ,componentId,assemblyId,sequence , operationId,failureWaitTime) match {
       case true => {
 
+
         //Add to next scheduling
-        db.getComponentWithProcessingInfo(componentId,simulationId ) match{
+        db.getComponentWithProcessingInfo(componentId,simulationId ,ComponentQueue.getSimulationVersionId()  ) match{
           case Some(x)  =>
           {
-            ComponentQueue.push(x)
+            if(!x.isComplete())
+              ComponentQueue.push(x)
           }
         }
         Ok(DefaultRequestFormat.getEmptySuccessResponse())
@@ -47,7 +50,7 @@ class ComponentController(db:DbModule) extends Controller {
     val assemblyId = (json.get \ "assemblyId").get.as[Int]
     val operationId = (json.get \ "operationId").get.as[Int]
     val sequence= (json.get \ "sequence").get.as[Int]
-    db.updateComponentProcessingInfoInFailureScenarion(simulationId,componentId,assemblyId,sequence , operationId) match {
+    db.updateComponentProcessingInfoInFailureScenarion(simulationId,ComponentQueue.getSimulationVersionId() ,componentId,assemblyId,sequence , operationId) match {
       case true => Ok(DefaultRequestFormat.getEmptySuccessResponse())
       case false => Ok(DefaultRequestFormat.getValidationErrorResponse(
         List(("ComponentProcessingInfo","Component Processing record not found"))))
@@ -63,7 +66,7 @@ class ComponentController(db:DbModule) extends Controller {
 
     val url =(json.get \ "url").get.as[String]
     //check for init id and url params
-    db.getComponentWithProcessingInfo(componentId ,simulationId) match{
+    db.getComponentWithProcessingInfo(componentId ,simulationId,ComponentQueue.getSimulationVersionId() ) match{
       //check if this exist for simulation ID
       case Some(x) =>
       {
@@ -90,7 +93,7 @@ class ComponentController(db:DbModule) extends Controller {
   = Action {
     // get all the details from server
     //make json response
-      val response  = db.getComponentWithProcessingInfo(cmpId,simId) match {
+      val response  = db.getComponentWithProcessingInfo(cmpId,simId , ComponentQueue.getSimulationVersionId() ) match {
         case Some(x:Component) => ResponseFactory.make(ComponentWithSchedulingInfo(x))
         case None => DefaultRequestFormat.getValidationErrorResponse(List(("Data Error","Component Id doesn't Exist")))
       }
@@ -108,7 +111,7 @@ class ComponentController(db:DbModule) extends Controller {
       Ok(DefaultRequestFormat.getEmptySuccessResponse())
     }
     //check for init id and url params
-    db.getComponentWithProcessingInfo(componentId,simulationId ) match{
+    db.getComponentWithProcessingInfo(componentId,simulationId , ComponentQueue.getSimulationVersionId() ) match{
       case Some(x)  =>
       {
         ComponentQueue.push(x)
@@ -127,16 +130,8 @@ class ComponentController(db:DbModule) extends Controller {
     val componentId = (json.get \ "componentId").get.as[Int]
     val simulationId = (json.get \ "simulationId").get.as[Int]
     //check for init id and url params
-    db.componentHeartBeatUpdateAsync(componentId,simulationId ) map{
-      case x:Boolean  =>
-      {
-//        println(s"*************************HeartBeat for cmpId:${componentId} simId:${simulationId}")
-        //return OK response
-        Ok(DefaultRequestFormat.getEmptySuccessResponse())
-      }
-      case _ =>
-        Ok(DefaultRequestFormat.getValidationErrorResponse(List(("Heart Beat update",s"Heart beat update failed for " +
-          s"cmpId:${componentId} simId:${simulationId}"))))
-    }
+    OnlineData.updateComponentOnlineState(componentId);
+    Future.successful(Ok(DefaultRequestFormat.getEmptySuccessResponse()))
   }
 }
+

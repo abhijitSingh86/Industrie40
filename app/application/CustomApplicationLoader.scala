@@ -9,7 +9,7 @@ import play.api.cache.{EhCacheComponents, EhCacheModule}
 import play.api.libs.ws.ahc.AhcWSComponents
 import router.Routes
 import scheduler.commands.ScheduleCommand
-import scheduler.{ComponentScheduler, ScheduleAssignmentDbHandler, SchedulerThread}
+import scheduler.{CompnentSchedulerMunkresAlgo, ComponentScheduler, ScheduleAssignmentDbHandler, SchedulerThread}
 
 /**
   * Created by billa on 10.01.17.
@@ -32,7 +32,7 @@ class MyComponents(context:Context) extends BuiltInComponentsFromContext(context
   lazy val dbModule:DbModule = new SlickModuleImplementation(defaultCacheApi) with SlickSimulationDaoRepo with SlickAssemblyDaoRepo
     with SlickComponentDaoRepo with SlickOperationDaoRepo with MySqlDBComponent
 
-  lazy val command = new ScheduleCommand(dbModule,new ComponentScheduler(new ScheduleAssignmentDbHandler(dbModule)),networkProxy)
+  lazy val command = new ScheduleCommand(dbModule,new CompnentSchedulerMunkresAlgo(new ScheduleAssignmentDbHandler(dbModule)),networkProxy)
 
 
   lazy val schedulerThread = new SchedulerThread(5000,command)
@@ -43,7 +43,7 @@ class MyComponents(context:Context) extends BuiltInComponentsFromContext(context
 //    with SlickOperationDao with MySqlDBComponent
   lazy val schedulingController = new controllers.SchedulingController(schedulerThread,dbModule,networkProxy)
 
-  lazy val simulationCOntrolller = new controllers.SimulationController(dbModule) with SlickSimulationDaoRepo with MySqlDBComponent
+  lazy val simulationCOntrolller = new controllers.SimulationController(dbModule,networkProxy) with SlickSimulationDaoRepo with MySqlDBComponent
 
   lazy val assets = new controllers.Assets(httpErrorHandler)
 

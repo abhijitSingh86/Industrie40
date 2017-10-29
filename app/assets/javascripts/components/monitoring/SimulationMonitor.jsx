@@ -5,6 +5,9 @@ import AssemblyState from "./AssemblyState";
 import {connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import * as Actions from '../redux/actions';
+import ComponentOverviewTab from "./ComponentOverviewTab"
+
+var axios = require('axios');
 
 import Timeline from 'react-visjs-timeline'
 
@@ -15,26 +18,36 @@ class SimulationMonitor extends React.Component {
         this.state = {
             keyTab2:-1,
             keyTab3:-1,
-            timelineDates:[]
+            timelineDates:[],
+            autoStart:true
         }
         this.start_simulation = this.start_simulation.bind(this);
         this.stop_simulation = this.stop_simulation.bind(this);
         this.completedComponentCount = this.completedComponentCount.bind(this);
         this.createTimeLine = this.createTimeLine.bind(this);
         this.getOperationLabel = this.getOperationLabel.bind(this);
+        this.createAssemblytimeline = this.createAssemblytimeline.bind(this);
+        this.createTimeLines = this.createTimeLines.bind(this);
     }
 
 
 
     doSomething(){
         if(!this.props.isSimulationComplete) {
-            this.props.actions.getSimulationRunningStatus(this.props.simulation.simulationId);
-        }else{
-            this.props.actions.stopSimulation(this.props.simulation.simulationId);
+            if(this.props.isLoadingComplete){
+                this.start_simulation();
+            }
+            this.props.actions.getSimulationRunningStatus(this.props.simulation.simulationId );
+        }else {
+            this.props.actions.stopSimulation(this.props.simulation.simulationId, this.props.mode);
             this.stopTimer()
         }
     }
     startTimer() {
+        if(this.props.mode == "view") {
+            this.doSomething();
+            this.props.actions.stopSimulation(this.props.simulation.simulationId, this.props.mode);
+        }
         clearInterval(this.timer);
         this.timer = setInterval(this.doSomething.bind(this), 7000)
     }
@@ -51,17 +64,14 @@ class SimulationMonitor extends React.Component {
         this.stopTimer()
     }
 
-    componentWillReceiveProps(nextProps) {
-    // console.log("Getting new Props");
-    // console.log(nextProps);
-    }
+
 
     start_simulation() {
-        this.props.actions.startSimulation(this.props.simulation.simulationId);
+        this.props.actions.startSimulation(this.props.simulation.simulationId , this.props.simulationVersionId);
     }
 
     stop_simulation() {
-        this.props.actions.stopSimulation(this.props.simulation.simulationId);
+        this.props.actions.stopSimulation(this.props.simulation.simulationId,this.props.mode);
         clearInterval(this.timer)
     }
 
@@ -81,14 +91,33 @@ class SimulationMonitor extends React.Component {
         return "No Label";
     }
 
+    createTimeLines(){
+        this.createAssemblytimeline();
+        this.createTimeLine();
+    }
+    createAssemblytimeline(){
+        var simulationId = this.props.simulation.simulationId;
+
+        var _this = this;
+        axios.get('/simulation/'+simulationId+'/assemblytimeline').then(function (response) {
+            console.log(response.data);
+            console.log(response.data.body);
+            _this.setState({
+                assemblytimeline: response.data
+            });
+
+        }).catch(function (error) {
+            _this.setState({
+                response: "Error retrieving the Assembly Time line data \n " + error
+            });
+        })
+
+    }
+
     createTimeLine(){
         //fetch the details of component processing
 
         var comps = this.props.completedComponents;
-        // var d=[];
-        // comps.map((x) => x.schedulinginfo.pastOperations.forEach((y)=>d.push(y)))
-        //
-        // console.log(d);
         var myVal=[];
         var grps=[];
         comps.map((y)=>{
@@ -112,55 +141,63 @@ class SimulationMonitor extends React.Component {
     }
 
     getSimulationTimeData(){
-        if(this.props.isSimulationComplete)
-        return (
-            <div>
-                <tr>
-                    <td>
-                       Start Time
-                    </td>
-                    <td>
-                        {(new Date(this.props.simulationTime.sttime)).toLocaleString()}
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        End Time
-                    </td>
-                    <td>
-                        {(new Date(this.props.simulationTime.ettime)).toLocaleString()}
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        Difference
-                    </td>
-                    <td>
-                        {(this.props.simulationTime.ettime-this.props.simulationTime.sttime)/(60000)}
-                    </td>
-                </tr>
-            </div>
-        );
-        else return <div></div>;
+        if(!this.props.isLoadingComplete){
+            return <LoadingModal interval={1} checkforstatus={this.props.actions.simulationLoadingCheck()}/>;
+        }else if(this.props.simulationTime.sttime !=0 && this.props.simulationTime.ettime !=0 ) {
+            return (
+                <div>
+                    <tr>
+                        <td>
+                            Start Time
+                        </td>
+                        <td>
+                            {(new Date(this.props.simulationTime.sttime)).toLocaleString()}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            End Time
+                        </td>
+                        <td>
+                            {(new Date(this.props.simulationTime.ettime)).toLocaleString()}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Difference
+                        </td>
+                        <td>
+                            {(this.props.simulationTime.ettime - this.props.simulationTime.sttime) / (60000)}
+                        </td>
+                    </tr>
+                </div>
+            );
+        }else if(this.props.simulationTime.sttime ==0 && this.props.simulationTime.ettime ==0 ) {
+            if(this.props.mode == 'view')
+                return <div>No Execution on this Simulation.</div>;
+            else
+                return <div>Execution on this Simulation not started.</div>;
+        }
+
+        // else{
+        //     return <div>Simulation is in Progress<img src="/assets/images/dots_2.gif" width="5%" height="3%"/></div>;
+        // }
+    }
+
+    handleCheckBox(){
+        const autoStart = this.state.autobind
+        this.setState({
+           autoStart:!autoStart
+        });
     }
 
     render() {
-        var counter=3;
-        var arr = [];
-        for (var i = 0; i < this.props.simulation.components.length; i++) {
-            arr.push( <div>xterm -hold -e script compLog{this.props.simulation.components[i].id} -c " scala -classpath '*.jar' componentClient.jar -c {this.props.simulation.components[i].id} -s {this.props.simulation.simulationId}" &</div> );
-            arr.push( <div>sleep {counter}</div>);
-            // counter =counter + .5;
-        }
-        for (var i = 0; i < this.props.simulation.assemblies.length; i++) {
-            arr.push( <div>xterm -hold -e script assembly{this.props.simulation.assemblies[i].id} -c "scala -classpath '*.jar' assemblyClient.jar -a {this.props.simulation.assemblies[i].id} -s {this.props.simulation.simulationId}" &</div> );
-            arr.push( <div>sleep {counter}</div>);
-            // counter =counter + .5;
-        }
 
+        console.log("Simulation Mode");
+        console.log(this.props.mode);
         const options = {
             width: '100%',
-            height:'500px',
+            maxHeight:'500px',
             showMajorLabels: true,
             showCurrentTime: true,
             zoomMin: 10,
@@ -174,6 +211,54 @@ class SimulationMonitor extends React.Component {
                 }
             }
         }
+
+
+        var assemblytimeLine =<div/>;
+        var componenttimeLine =<div/>;
+
+        if(this.state.assemblytimeline){
+            console.log("got into assembly Timeline");
+            assemblytimeLine =  <div> Assembly Timeline<Timeline
+                options={options}
+                items={this.state.assemblytimeline.data}
+                groups={this.state.assemblytimeline.groups}
+            /></div>;
+            componenttimeLine = <div> Component Timeline <Timeline
+                options={options}
+                items={this.state.timelineDates}
+                groups={this.state.groups}
+            /></div>;
+        }
+
+        //check the mode and remove if view
+        var btns = <div/>;
+        if(this.props.mode != "view" && (this.props.mode == "start" && this.props.isLoadingComplete && !this.state.autoStart) ) {
+            btns = <tr>
+                <td className="rightAlign pull-right">
+                    <Button bsStyle="primary" onClick={this.start_simulation}>
+                        Start
+                    </Button>
+                </td>
+                <td>
+                    <Button bsStyle="primary" onClick={this.stop_simulation}>
+                        Stop
+                    </Button>
+                </td>
+            </tr>;
+        }
+
+        //check if completed or not. If complete then only make the btn visible
+        var timelineBtn = <div/>;
+        if(this.props.simulationTime.ettime !=0) {
+            timelineBtn = <tr>
+                <td className="rightAlign pull-left" colSpan={2}>
+                    <Button bsStyle="primary" onClick={this.createTimeLines}>
+                        Create TimeLines
+                    </Button>
+                </td>
+            </tr>
+        }
+
         return (
             <Tabs >
                 <Tab eventKey="1" title="Simulation">
@@ -184,6 +269,18 @@ class SimulationMonitor extends React.Component {
                                 <td colSpan={2}>
                                     <p>Simulation Monitoring Panel</p>
                                     {this.props.response}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    Auto Start
+                                </td>
+                                <td>
+                                    <input
+                                        name="autostart"
+                                        type="checkbox"
+                                        checked={this.state.autoStart}
+                                        onChange={this.handleCheckBox.bind(this)} />
                                 </td>
                             </tr>
                             <tr>
@@ -210,39 +307,22 @@ class SimulationMonitor extends React.Component {
                                     {this.props.completedComponents.length}
                                 </td>
                             </tr>
-
-                            {this.getSimulationTimeData()}
-
-
-
                             <tr>
-                                <td className="rightAlign pull-right">
-                                    <Button  bsStyle="primary" onClick={this.start_simulation}>
-                                        Start
-                                    </Button>
+                                <td colspan="2">
+                                    {this.getSimulationTimeData()}
                                 </td>
-                            <td >
-                                <Button  bsStyle="primary" onClick={this.stop_simulation}>
-                                    Stop
-                                </Button>
-                            </td>
                             </tr>
-                            <tr>
-                                <td className="rightAlign pull-left" colSpan={2} >
-                                    <Button  bsStyle="primary" onClick={this.createTimeLine}>
-                                        Create TimeLine
-                                    </Button>
 
-                                </td>
 
-                            </tr>
+                            {btns}
+
+                            {timelineBtn}
+
+
                             </tbody>
                         </Table>
-                        <Timeline
-                            options={options}
-                            items={this.state.timelineDates}
-                            groups={this.state.groups}
-                        />
+                        {componenttimeLine}
+                        {assemblytimeLine}
                     </div>
                 </Tab>
                 <Tab eventKey="2" title="Components">
@@ -256,13 +336,40 @@ class SimulationMonitor extends React.Component {
                                    simulationId={this.props.simulation.simulationId}
                                    />
                 </Tab>
-                <Tab eventKey="4" title="Run Script">
-                    {arr}
+                <Tab eventKey="4" title="Component Overview">
+                    <ComponentOverviewTab/>
                 </Tab>
+
             </Tabs>
         );
     }
 }
+
+class LoadingModal extends React.Component{
+    constructor(props) {
+        super(props);
+    }
+
+
+
+    componentDidMount() {
+     this.interval = setInterval(() => {
+         this.props.checkforstatus();
+        }, this.props.interval*1000);
+    }
+
+    componentWillUnmount() {
+        clearInterval(this.interval);
+    }
+
+    render() {
+        return <div>
+            Waiting for components and assemblies
+            <img src="/assets/images/dots_2.gif" width="5%" height="3%"/>
+        </div>;
+    }
+}
+
 
 function mapStateToProps(state) {
     // console.log("into map state to prop in simulation monitor");
@@ -273,6 +380,9 @@ function mapStateToProps(state) {
         ,response:state.simulation.response
         ,isSimulationComplete:state.simulation.isSimulationComplete
         ,simulationTime:state.simulation.simulationTime
+        ,simulationVersionId:state.mainMode.simulationVersionId
+        ,mode:state.mainMode.mode
+        ,isLoadingComplete:state.mainMode.isLoadingComplete
     };
 }
 

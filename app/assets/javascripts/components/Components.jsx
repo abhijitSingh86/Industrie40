@@ -1,15 +1,21 @@
 var React = require('react')
 var SelectDiv = require('./SelectDiv')
 var CustomComponentTable = require('./CustomComponentTable')
+import {connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import * as Actions from './redux/actions/registrationaction';
 
-var Components = React.createClass({
+class Components extends React.Component{
 
-  getInitialState(){
+  constructor(props){
+      super(props);
     this.localComponentCounter = this.props.fieldValues.componentCounter;
-    return {
-      componentArr:this.props.fieldValues.components
+    this.state = {
+      componentArr:this.props.fieldValues.components,
+        opSeqArr:[],
+        rowCount:0
     }
-  },
+  }
 
   remove(arr, id) {
     for(var i = arr.length; i--;) {
@@ -19,8 +25,9 @@ var Components = React.createClass({
         return val;
       }
     }
-  },
-    edit(id){
+  }
+
+  edit(id){
 
     var arr = this.state.componentArr;
     var removedNode = this.remove(arr,id);
@@ -33,7 +40,7 @@ var Components = React.createClass({
       rowCount:removedNode.operationDetails.length
 
     });
-    },
+  }
 
 
   handleInputChange(e){
@@ -44,8 +51,19 @@ var Components = React.createClass({
 
       var opSeqArr=[];
       var defaultSelectArr=[];
-      for(var i=0;i<count;i++){
-        defaultSelectArr[i] = this.props.fieldValues.operations[i % this.props.fieldValues.operations.length];
+      //load default changed list from past.. Code can be modified to include all the previous op seq with only the changed value.
+        // Will add only if needed after confirmation
+      if(this.state.opSeqArr.length >0){
+
+          for (var i = 0; i < count; i++) {
+              defaultSelectArr[i] = this.state.opSeqArr[0][i % this.state.opSeqArr.length];
+          }
+
+      }else{
+
+          for (var i = 0; i < count; i++) {
+              defaultSelectArr[i] = this.props.fieldValues.operations[i % this.props.fieldValues.operations.length];
+          }
       }
       opSeqArr[0]=defaultSelectArr;
 
@@ -57,34 +75,47 @@ var Components = React.createClass({
     }else{
       this.setState({
         opCount:0,
-        rowCount:0
+        rowCount:0,
+          opSeqArr:[]
       })
     }
 
-  },
+  }
   handleSelectChange(id,opSeq){
+      console.log("Inside handle select change");
+      console.log(id);
+      console.log(opSeq);
     var arr=this.state.opSeqArr;
     arr[id]=opSeq;
     this.setState({
       opSeqArr:arr
     })
-  },
+  }
 
 
-  render: function() {
+    removeRow(id){
+      console.log("remove row came for id "+id);
+        var arr=this.state.opSeqArr;
+        //immutable array slicing
+        arr =[].concat(arr.slice(0,id),arr.slice(id+1));
+        this.setState({
+            opSeqArr:arr
+        });
+    }
+
+  render() {
+        console.log("Render called for component");
     //populate Select Div Instances
     var rows = [];
-    if(this.state.opCount > 0){
       var display = this.state.rowCount>0 ?'block':'none';
 
-      for(var i=0;i<this.state.rowCount;i++)
+      for(var i=0;i<this.state.opSeqArr.length;i++)
         rows.push(<SelectDiv fieldValues={this.props.fieldValues}
-                             count={this.state.opCount}
-                             id={i}
+                             index={i}
                              selectArr={this.state.opSeqArr[i]}
-                             propagateSelectChange = {this.handleSelectChange}
-                             style={{display}} />);
-    }
+                             propagateSelectChange = {this.handleSelectChange.bind(this)}
+                             style={{display}}
+                             removeRow={this.removeRow.bind(this)}/>);
 
 
     return (
@@ -97,35 +128,99 @@ var Components = React.createClass({
           </li>
           <li>
             <label>Operation Count</label>
-            <input type="text" ref={(o)=>{this.inputOperationCount=o}} onChange = {this.handleInputChange} />
+            <input type="text" ref={(o)=>{this.inputOperationCount=o}} onChange = {this.handleInputChange.bind(this)} />
           </li>
           <li>
             <label>Component Count</label>
-            <input type="text" ref={(o)=>{this.inputComponentCount=o}} onChange = {this.handleComponentCOuntInputChange} />
+            <input type="text" ref={(o)=>{this.inputComponentCount=o}} onChange = {this.handleComponentCOuntInputChange.bind(this)} />
           </li>
           {rows}
-          <button onClick={this.handleOperationsSequenceAddClick} style={{display}}>Add</button>
+
+          <li>
+            <label>Custom Sequence Json</label>
+            <input type="text" ref={(o)=>{this.inputCustomSequence=o}} onBlur= {this.handleInputCustomSequenceJson.bind(this)} />
+          </li>
+
+          <button onClick={this.handleOperationsSequenceAddClick.bind(this)} style={{display}}>Add</button>
 
           <li className="form-footer">
-            <button className="btn -default pull-left" onClick={this.add}>Add</button>
-            <button className="btn -default pull-center" onClick={this.props.previousStep}>Back</button>
-            <button className="btn -primary pull-right" onClick={this.nextStep}>Save &amp; Continue</button>
+            <button className="btn -default pull-left" onClick={this.add.bind(this)}>Add</button>
+            <button className="btn -default pull-center" onClick={this.props.actions.decrementStep}>Back</button>
+            <button className="btn -primary pull-right" onClick={this.nextStep.bind(this)}>Save &amp; Continue</button>
 
           </li>
         </ul>
 
-        <CustomComponentTable data={this.state.componentArr} editrow={this.edit}/>
+        <CustomComponentTable data={this.state.componentArr} editrow={this.edit.bind(this)}/>
 
       </div>
     )
-  },
+  }
+    handleInputCustomSequenceJson(e){
+    var value = e.target.value;
+    if(value !== ""){
+        this.setState({
+            rowCount:0,
+            opCount:0,
+            opSeqArr:[]
+        });
+        this.inputOperationCount.value = 0;
+    }else{
+      return;
+    }
+        try{
+            var json = JSON.parse(value)
+
+
+            //setting the context
+            var count =0
+            if(json.length>0)
+                count = json[0].length;
+
+            var rowCount = json.length;
+
+            this.inputOperationCount.value = count;
+
+
+            var opSeqArr=[];
+            for(var i=0;i<json.length;i++){
+                  var defaultSelectArr=[];
+                  for(var j=0;j<count;j++){
+                    var ops = this.props.fieldValues.operations;
+                    var flag=false;
+                      for(var k=0;k<ops.length;k++) {
+
+                        if(ops[k].label === json[i][j]) {
+                            defaultSelectArr[j] = ops[k];
+                            flag=true;
+                            break;
+                        }
+                      }
+                      if(!flag) {
+                          defaultSelectArr[j] = ops[j % ops.length];
+                      }
+                  }
+                  opSeqArr[i]=defaultSelectArr;
+              }
+              console.log(opSeqArr);
+            this.setState({
+                rowCount:rowCount,
+                opCount:count,
+                opSeqArr:opSeqArr
+            })
+        }catch(e){
+          console.log(e);
+          console.log("into component.jsx");
+          this.inputCustomSequence.value = "{'':'Please enter correct Json Value'}"
+        }
+    }
     handleComponentCOuntInputChange(e){
         var value = e.target.value;
         if(!isNaN(value) && value != ""){
             var count = (parseInt(value));
             this.inputComponentCount.value = value;
         }
-  },
+  }
   handleOperationsSequenceAddClick(){
     var count =this.state.rowCount;
     if(count !=0){
@@ -138,7 +233,7 @@ var Components = React.createClass({
         rowCount:count+1
       })
     }
-  },
+  }
   add(){
 
       var arr = this.state.componentArr
@@ -171,26 +266,37 @@ var Components = React.createClass({
              components: arr,
               componentCounter:this.localComponentCounter
       }
-    this.props.saveValues(data);
-
+      this.props.actions.saveComponentFormData(data);
     this.setState({
       componentArr: arr,
       removedComponent:undefined,
-      rowCount:0
+      rowCount:0,
+        opSeqArr:[]
     });
 
 
     this.componentName.value = "";
     this.inputOperationCount.value=0;
-  },
-  nextStep: function() {
+  }
+  nextStep(){
     var data = {
       components : this.state.componentArr
       ,componentCounter :this.localComponentCounter
     }
-    this.props.saveValues(data)
-    this.props.nextStep()
+    this.props.actions.saveComponentFormData(data);
+    this.props.actions.incrementStep();
   }
-})
+}
 
-module.exports = Components
+function mapStateToProps(state) {
+    return {
+        fieldValues:state.registration.fieldValues
+    };
+}
+
+function mapDispatchToProps(dispatch) {
+    return {
+        actions: bindActionCreators(Actions, dispatch)
+    };
+}
+export default connect(mapStateToProps,mapDispatchToProps)(Components);
