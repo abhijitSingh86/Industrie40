@@ -28,6 +28,7 @@ export function saveFieldValueData(data){
 export function submitDataToServer(data){
     return function(dispatch){
         axios.post('/simulation' , data).then( function(response){
+            //TODO CHECK THE SERVER RESPONSE
             var action = {
                 type:SUBMIT_DATA_TO_SERVER
                 ,payload:response.data

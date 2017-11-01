@@ -35,12 +35,21 @@ trait SlickSimulationDaoRepo extends SimulationDaoRepo{
     private lazy val simulationJsonTT  = Tables.Simulationjson
 
     def saveJsoninDatabaseforClone(simulationId:Int,jsondata:String): Unit ={
-          Await.result(db.run(simulationJsonTT += new generatedtable.Tables.SimulationjsonRow(simulationId,Some(jsondata))),Duration.Inf)
+      val b = new javax.sql.rowset.serial.SerialBlob(jsondata.getBytes);
+          Await.result(db.run(simulationJsonTT += new generatedtable.Tables.SimulationjsonRow(simulationId,Some(b))),Duration.Inf)
     }
 
     def getJsonFromCloneDatabase(simulationId:Int):String = {
       Await.result(db.run(simulationJsonTT.filter(_.simulationid === simulationId).result.headOption), Duration.Inf) match {
-        case Some(x: Tables.SimulationjsonRow) => x.jsondata.getOrElse("")
+        case Some(x: Tables.SimulationjsonRow) =>{
+          val b = x.jsondata
+          if(!b.isDefined){
+            ""
+          }else {
+            val len:Int = b.get.length().asInstanceOf[Int]
+            (new java.lang.String(b.get.getBytes(1,len)))
+          }
+        }
         case None => ""
       }
     }
