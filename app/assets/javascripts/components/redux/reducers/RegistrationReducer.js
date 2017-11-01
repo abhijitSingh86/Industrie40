@@ -13,7 +13,7 @@ import {RESET_REGISTRATION_DETAILS} from '../actions/index'
 
 
 const initialState = {
-    step:5,
+    step:0,
     renderSuccess:false,
     responseMessage:"",
     isError:false,
@@ -61,8 +61,8 @@ export default function registration(state = initialState ,action){
         case SUBMIT_DATA_TO_SERVER_FAIL:{
             var state = Object.assign({},state,{
                 responseMessage : action.payload,
-                isError:true,
-                renderSuccess:true
+                isError:true
+
             });
 
             return state;
@@ -132,6 +132,8 @@ export default function registration(state = initialState ,action){
             var state = Object.assign({},state,
                 {
                     step:state.step+action.payload
+                    ,renderSuccess:false
+                    ,isError:false
                 });
             return state;
         }

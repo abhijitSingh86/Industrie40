@@ -474,12 +474,12 @@ trait Tables {
 
   /** Entity class storing rows of table Simulationjson
     *  @param simulationid Database column simulationId SqlType(INT), PrimaryKey
-    *  @param jsondata Database column jsonData SqlType(VARCHAR), Length(20000,true), Default(None) */
-  case class SimulationjsonRow(simulationid: Int, jsondata: Option[String] = None)
+    *  @param jsondata Database column jsonData SqlType(BLOB), Default(None) */
+  case class SimulationjsonRow(simulationid: Int, jsondata: Option[java.sql.Blob] = None)
   /** GetResult implicit for fetching SimulationjsonRow objects using plain SQL queries */
-  implicit def GetResultSimulationjsonRow(implicit e0: GR[Int], e1: GR[Option[String]]): GR[SimulationjsonRow] = GR{
+  implicit def GetResultSimulationjsonRow(implicit e0: GR[Int], e1: GR[Option[java.sql.Blob]]): GR[SimulationjsonRow] = GR{
     prs => import prs._
-      SimulationjsonRow.tupled((<<[Int], <<?[String]))
+      SimulationjsonRow.tupled((<<[Int], <<?[java.sql.Blob]))
   }
   /** Table description of table simulationJson. Objects of this class serve as prototypes for rows in queries. */
   class Simulationjson(_tableTag: Tag) extends Table[SimulationjsonRow](_tableTag, "simulationJson") {
@@ -489,8 +489,8 @@ trait Tables {
 
     /** Database column simulationId SqlType(INT), PrimaryKey */
     val simulationid: Rep[Int] = column[Int]("simulationId", O.PrimaryKey)
-    /** Database column jsonData SqlType(VARCHAR), Length(20000,true), Default(None) */
-    val jsondata: Rep[Option[String]] = column[Option[String]]("jsonData", O.Length(20000,varying=true), O.Default(None))
+    /** Database column jsonData SqlType(BLOB), Default(None) */
+    val jsondata: Rep[Option[java.sql.Blob]] = column[Option[java.sql.Blob]]("jsonData", O.Default(None))
 
     /** Foreign key referencing Simulation (database name fk_simulationJson_1) */
     lazy val simulationFk = foreignKey("fk_simulationJson_1", simulationid, Simulation)(r => r.id, onUpdate=ForeignKeyAction.Cascade, onDelete=ForeignKeyAction.Cascade)

@@ -25,7 +25,8 @@ class Success extends React.Component{
                             simulationId={this.props.simulationId}
                             response={this.props.responseMessage}
                             previousStep = {this.props.actions.decrementStep}
-                            changeMainMode={this.props.actions.changeMainMode}/>
+                            changeMainMode={this.props.actions.changeMainMode}
+                            resetRegistrationForm={this.props.actions.resetRegistrationForm}/>
         </div>
     )
   }
@@ -56,6 +57,7 @@ class SubmittedValue extends React.Component{
         this.startSimulationMonitor = this.startSimulationMonitor.bind(this);
     }
     startSimulationMonitor(){
+        this.props.resetRegistrationForm();
         this.props.changeMainMode(this.props.simulationId,'start');
         // this.props.changeHandler(this.props.simulationId,'start')
     }
@@ -64,7 +66,7 @@ class SubmittedValue extends React.Component{
      this.props.previousStep();
     }
     render(){
-         if(this.props.render && this.props.isError) {
+         if(this.props.isError) {
              return  <div>
                  <p>Error during simulation data entry</p>
                  <p>{this.props.response}</p>

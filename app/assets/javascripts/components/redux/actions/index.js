@@ -133,6 +133,15 @@ export function stopSimulation(id , mode){
     }
 }
 
+export function resetRegistrationForm(){
+    return function(dispatch) {
+        dispatch({
+            type:RESET_REGISTRATION_DETAILS,
+            payload:""
+        });
+    }
+}
+
 export function changeMainMode(id,mode)  {
 
     console.log("in idex.js changeMainMode")
@@ -150,6 +159,8 @@ export function changeMainMode(id,mode)  {
                }
            };
            dispatch(action);
+
+
        }else {
 
            axios.get("/simulation/" + id + "/" + mode).then(function (res) {
