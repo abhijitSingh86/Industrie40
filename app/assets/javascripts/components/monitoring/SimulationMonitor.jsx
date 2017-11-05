@@ -33,11 +33,14 @@ class SimulationMonitor extends React.Component {
 
 
     doSomething(){
+        console.log("logs for doSomething"+this.props.isSimulationComplete+":"+this.props.isLoadingComplete+":"+this.props.isStarted);
         if(!this.props.isSimulationComplete) {
             if(this.props.isLoadingComplete){
-                this.start_simulation();
+                this.props.actions.getSimulationRunningStatus(this.props.simulation.simulationId );
+                    if(!this.props.isStarted)
+                        this.start_simulation();
             }
-            this.props.actions.getSimulationRunningStatus(this.props.simulation.simulationId );
+
         }else {
             this.props.actions.stopSimulation(this.props.simulation.simulationId, this.props.mode);
             this.stopTimer()
@@ -142,7 +145,7 @@ class SimulationMonitor extends React.Component {
 
     getSimulationTimeData(){
         if(!this.props.isLoadingComplete){
-            return <LoadingModal interval={1} checkforstatus={this.props.actions.simulationLoadingCheck()}/>;
+            return <LoadingModal interval={1} checkforstatus={this.props.actions.simulationLoadingCheck}/>;
         }else if(this.props.simulationTime.sttime !=0 && this.props.simulationTime.ettime !=0 ) {
             return (
                 <div>
@@ -383,6 +386,7 @@ function mapStateToProps(state) {
         ,simulationVersionId:state.mainMode.simulationVersionId
         ,mode:state.mainMode.mode
         ,isLoadingComplete:state.mainMode.isLoadingComplete
+        ,isStarted:state.simulation.isStarted
     };
 }
 

@@ -25,6 +25,15 @@ class NetworkProxy(ws:WSClient) {
   //Ghost App hooks
   val ghostStartHook = "/simulationStart"
   val ghostStopHook = "/simulationStop"
+  val ghostKillCompletedComponentHook = "/killCompletedComponent"
+
+
+  def sendKillCompletedComponentToGhostApp(list:Seq[Int]): Unit ={
+    val ghostAppUrl = ApplicationLevelData.ghostUrl
+
+    val data = Json.toJson(list)
+    val req = Await.result(ws.url(ghostAppUrl+ghostKillCompletedComponentHook).post(data), Duration.Inf)
+  }
 
   def sendStartToGhostApp(simulation:Simulation): Unit ={
     val ghostAppUrl = ApplicationLevelData.ghostUrl

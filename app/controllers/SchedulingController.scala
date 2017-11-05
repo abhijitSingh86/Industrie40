@@ -63,6 +63,7 @@ class SchedulingController(schedulingThread:SchedulerThread,db:DbModule , networ
           schedulingThread.endExecution()
           db.updateSimulationEndTime(id)
           ComponentQueue.popAll()
+          OnlineData.resetOnlineData()
           failureGeneratorActor ! Stop
           db.getAllAssemblyUrlBySimulationId(ComponentQueue.getSimulationId()).map(x=>{
             networkProxy.sendFinishNotificationToAssembly(x._2)

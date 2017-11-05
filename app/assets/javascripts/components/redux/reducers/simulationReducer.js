@@ -9,6 +9,7 @@ const initialState = {
     ,components:[]
     ,assemblies:[]
     ,isSimulationComplete:false
+    ,isStarted:false
     ,simulationTime:{
         sttime:0,ettime:0
     }
@@ -20,14 +21,15 @@ export default function simulationReducer(state = initialState,action){
         case START_SIMULATION : {
             // console.log(action.payload.response === true)
             var response = action.payload.response === true ? "Started Successfully" : "Error Starting:"+action.payload.response
-            return Object.assign({},state,{response:response , isSimulationComplete:false})
+            return Object.assign({},state,{response:response , isSimulationComplete:false,isStarted:true})
         }
 
         case STOP_SIMULATION : {
             if(action.payload.mode != "view"){
                 var response = action.payload.response.ettime !=0 ? "Stopped Successfully" : "Stopped in progress Simulation"
             }
-            return Object.assign({},state,{response:response , simulationTime:action.payload.response})
+            Object.assign({},state,initialState)
+            return Object.assign({},Object.assign({},state,initialState),{response:response , simulationTime:action.payload.response})
         }
 
         case CHANGE_COMPLETION_COUNT : {
@@ -44,9 +46,11 @@ export default function simulationReducer(state = initialState,action){
                     t.push(x);
                 }
             });
-            var simulationCompleteFlag = body.components.length === t.length && t.length !=0
+
+
+
             return Object.assign({},state,{components:body.components,completedComponents:t , assemblies:body.assemblies ,
-                isSimulationComplete:simulationCompleteFlag})
+                isSimulationComplete:body.isSimulationComplete})
         }
 
 

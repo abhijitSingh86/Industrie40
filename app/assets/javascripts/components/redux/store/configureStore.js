@@ -9,6 +9,7 @@ export default function configureStore(initialState) {
         initialState,
         compose(
             applyMiddleware(thunk),
+            //conditional check for redux tools for debug purpose only
             window.devToolsExtension ? window.devToolsExtension() : f => f
         )
     );

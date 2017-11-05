@@ -50,6 +50,7 @@ export default function mainModeReducer(state = initialState,action){
                         ,mode:action.payload.mode
                         ,pagemode:action.payload.pagemode
                         ,isLoadingComplete:false
+
                     });
             }
             return state;

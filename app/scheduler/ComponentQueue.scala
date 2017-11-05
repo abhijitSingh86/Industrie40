@@ -15,7 +15,7 @@ object ComponentQueue {
   private var componentTT:List[ComponentToAssemblyTransTime] =List()
   private var assemvlyTT:List[AssemblyTransportTime] = List()
   val logger = Logger(this.getClass())
-  val requestQueue:mutable.LinkedHashSet[Component] = new mutable.LinkedHashSet[Component]()
+  val requestQueue:mutable.LinkedHashSet[Int] = new mutable.LinkedHashSet[Int]()
   private var simulationId =0
   private var versionId=1
 
@@ -75,7 +75,7 @@ object ComponentQueue {
   def getSimulationVersionId():Int=versionId
   def getSimulationId():Int=simulationId
 
-  def push(component:Component): Unit ={
+  def push(component:Int): Unit ={
     logger.info("push invoked size"+requestQueue.size)
     requestQueue.synchronized{
 
@@ -85,7 +85,7 @@ object ComponentQueue {
     logger.info("push finished size"+requestQueue.size)
   }
 
-  def pop():Option[Component]= {
+  def pop():Option[Int]= {
     requestQueue.synchronized {
       requestQueue.size match {
         case x if x > 0 =>
@@ -95,7 +95,7 @@ object ComponentQueue {
     }
   }
 
-  def popAll(): List[Component] = {
+  def popAll(): List[Int] = {
     logger.info("popAll invoked size"+requestQueue.size)
     requestQueue.synchronized {
       requestQueue.size match {
@@ -106,7 +106,7 @@ object ComponentQueue {
           comps
         case _ => {
           logger.info("found empty list")
-          List[Component]()
+          List[Int]()
         }
       }
     }
