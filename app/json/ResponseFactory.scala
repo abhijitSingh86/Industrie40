@@ -41,11 +41,13 @@ sealed trait Response{
 //  }
 //}
 
-case class ProcessingStatus(cmps:Map[Int,Component] , asms:Map[Int,(Assembly,Seq[Tables.ComponentProcessingStateRow])]) extends Response{
+case class ProcessingStatus(cmps:Map[Int,Component] , asms:Map[Int,(Assembly,Seq[Tables.ComponentProcessingStateRow])] ,
+                            isSimulationComplete:Boolean) extends Response{
   def generate() = {
     val componentNameMap = cmps.values.map(x=>(x.id->x.name)).toMap
     Json.obj("components" -> cmps.values.map(ComponentWithSchedulingInfo(_).generate()),
-    "assemblies"-> asms.values.map(x=>AssemblySchedulingInfo(x._1,componentNameMap,x._2).generate()))
+    "assemblies"-> asms.values.map(x=>AssemblySchedulingInfo(x._1,componentNameMap,x._2).generate()),
+    "isSimulationComplete"->isSimulationComplete)
   }
 }
 

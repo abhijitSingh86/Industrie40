@@ -8,9 +8,9 @@ import db.generatedtable.Tables
 import json._
 import models._
 import network.NetworkProxy
-import play.api.Logger
-import play.api.mvc._
+import play.api.mvc.{Action, Controller, Result}
 import scheduler.{ApplicationLevelData, ComponentQueue}
+import utils.ComponentUtils
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -42,7 +42,14 @@ class SimulationController(database:DbModule,networkproxy:NetworkProxy) extends 
       val componentMap: Map[Int, Component] = compIds.map(id => (id ->
                 database.getComponentById(id, simulationId,ComponentQueue.getSimulationVersionId(), rows.filter(_.componentid == id)))).toMap
 
-      Ok(ResponseFactory.make(ProcessingStatus(componentMap,assemblyMap)))
+
+      val completedComponents = componentMap.values.filter(x=>ComponentUtils.isCompleted(x)).map(_.id)
+
+      if(completedComponents.size >0){
+        networkproxy.sendKillCompletedComponentToGhostApp(completedComponents.toSeq)
+      }
+
+      Ok(ResponseFactory.make(ProcessingStatus(componentMap,assemblyMap,completedComponents.size == OnlineData.getTotalComponents().size)))
       }
       )
 
@@ -64,6 +71,8 @@ class SimulationController(database:DbModule,networkproxy:NetworkProxy) extends 
       response = Some(Ok(ResponseFactory.make(SimulationJson(sim))))
 
       if (mode.equalsIgnoreCase("start")) {
+        OnlineData.setSimulationData(sim)
+        OnlineData.resetOnlineData()
         OnlineData.setTotalComponentCount(sim.components.size+sim.assemblies.size);
         networkproxy.sendStartToGhostApp(sim)
       }
@@ -116,6 +125,7 @@ class SimulationController(database:DbModule,networkproxy:NetworkProxy) extends 
         database.incrementSimulationVersionDetails(simulationId.get) map{
           case version:Int => {
             ComponentQueue.updateSimulationId(simulationId.get,version)
+            OnlineData.resetOnlineData()
             Ok(DefaultRequestFormat.getEmptySuccessResponse())
           }
         }

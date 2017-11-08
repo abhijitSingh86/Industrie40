@@ -29,11 +29,11 @@ class ComponentController(db:DbModule) extends Controller {
 
 
         //Add to next scheduling
-        db.getComponentWithProcessingInfo(componentId,simulationId ,ComponentQueue.getSimulationVersionId()  ) match{
+        db.getComponentWithProcessingInfo(componentId,simulationId ,ComponentQueue.getSimulationVersionId()) match{
           case Some(x)  =>
           {
             if(!x.isComplete())
-              ComponentQueue.push(x)
+              ComponentQueue.push(x.id)
           }
         }
         Ok(DefaultRequestFormat.getEmptySuccessResponse())
@@ -107,14 +107,16 @@ class ComponentController(db:DbModule) extends Controller {
     val componentId = (json.get \ "componentId").get.as[Int]
     val simulationId = (json.get \ "simulationId").get.as[Int]
 
-    if(ComponentQueue.requestQueue.filter(_.id == componentId).size >0){
+    if(ComponentQueue.requestQueue.filter(_ == componentId).size >0){
       Ok(DefaultRequestFormat.getEmptySuccessResponse())
     }
     //check for init id and url params
-    db.getComponentWithProcessingInfo(componentId,simulationId , ComponentQueue.getSimulationVersionId() ) match{
+
+
+    db.getComponentMappedToSimulationId(componentId,simulationId)match{
       case Some(x)  =>
       {
-        ComponentQueue.push(x)
+        ComponentQueue.push(x.id)
         //return OK response
         Ok(DefaultRequestFormat.getEmptySuccessResponse())
       }

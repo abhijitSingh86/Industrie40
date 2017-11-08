@@ -14,6 +14,7 @@ import akka.pattern.ask
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration._
 import akka.util.Timeout
+import utils.ComponentUtils
 /**
   * Created by billa on 10.01.17.
   */
@@ -25,13 +26,18 @@ class ScheduleCommand(dbModule : DbModule,scheduler:Scheduler,proxy: NetworkProx
     //retrieve all the assemblies to schedule on
 
     //retrieve all components from the queue
-    val components = ComponentQueue.popAll()
+    val componentIds = ComponentQueue.popAll()
+
+//    dbModule.get
+    val components = dbModule.getComponentsWithProcessingInfo(componentIds,ComponentQueue.getSimulationId() , ComponentQueue.getSimulationVersionId()).getOrElse(List())
+
     logger.debug("retrieved Components"+components.mkString(","))
     if(components.size >0) {
 
       println("++++++++++++++++++++++++++++++++++++")
       println(ComponentQueue.failedAssemblyId +"  :  "+ComponentQueue.failTime)
       println("++++++++++++++++++++++++++++++++++++")
+
       val assemblies = dbModule.getAllAssembliesForSimulation(ComponentQueue.getSimulationId())
       logger.debug("Retrieved Assemblies" + assemblies.mkString(","))
       val filteredBusyAssemblies = assemblies.filterNot(x=>{
@@ -40,9 +46,11 @@ class ScheduleCommand(dbModule : DbModule,scheduler:Scheduler,proxy: NetworkProx
 
       logger.debug("Filtered  Assemblies  =" + filteredBusyAssemblies.mkString(","))
 
+      val alreadyCompletedComponents = components.filter(x=>ComponentUtils.isCompleted(x)).map(_.id)
       val alreadyScheduledList = components.filter(_.getCurrentOperation().isDefined).map(_.id)
       //call algorithm for scheduling
-      val scheduledComponentIds = scheduler.scheduleComponents(components.filterNot(x=> alreadyScheduledList.contains(x.id))
+      val scheduledComponentIds = scheduler.scheduleComponents(components.filterNot(x=>
+        alreadyScheduledList.contains(x.id) || alreadyCompletedComponents.contains(x.id))
         , filteredBusyAssemblies)
       //get scheduled component and send them to network proxy for information sending
 
@@ -52,7 +60,7 @@ class ScheduleCommand(dbModule : DbModule,scheduler:Scheduler,proxy: NetworkProx
 
       logger.debug("command nearly finished, processed Scheduled components are " + scheduledComponentIds.mkString(","))
       //add pending if any to the component queue again
-      components.filter(x=> !finalListToSendSchedulingInfo.contains(x.id)).map(ComponentQueue.push(_))
+      components.filter(x=> !finalListToSendSchedulingInfo.contains(x.id)).map(x=>ComponentQueue.push(x.id))
     }
     logger.info("Schedule command execute finished")
   }

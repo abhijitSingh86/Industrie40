@@ -7,7 +7,7 @@ import db.generatedtable.Tables
 import db.generatedtable.Tables.ComponentProcessingStateRow
 import models._
 import play.api.cache.CacheApi
-import utils.DateTimeUtils
+import utils.{ComponentUtils, DateTimeUtils}
 
 import scala.collection.mutable
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -215,11 +215,24 @@ trait SlickComponentDaoRepo extends ComponentDaoRepo {
 
     def createComponentSchedulingInfo(componentId: Int, simulationId: Int,simulationVersionId:Int, cache: CacheApi ,
                                       assemblyNameMap:Map[Int,String]): ComponentSchedulingInfo = {
-      //TODO check for sort be descending after some values
       val result = db.run(componentProcessingState.filter(x => (x.componentid === componentId &&
         x.simulationid === simulationId && x.version  === simulationVersionId)).sortBy(_.startTime.desc).result).map(y => convertComponentProcessing(cache, assemblyNameMap, y))
       Await.result(result, Duration.Inf)
     }
+
+    def createMultipleComponentSchedulingInfo(componentIds: List[Int], simulationId: Int,simulationVersionId:Int, cache: CacheApi ,
+                                      assemblyNameMap:Map[Int,String]): Map[Int,ComponentSchedulingInfo] = {
+
+      val result = db.run(componentProcessingState.filter(x=>x.componentid.inSet(componentIds) && x.simulationid === simulationId && x.version === simulationVersionId)
+        .sortBy(_.startTime.desc).result)
+
+      val rows =  Await.result(result, Duration.Inf)
+
+        componentIds.map(id=>{
+          id -> convertComponentProcessing(cache, assemblyNameMap, rows.filter(_.componentid == id))
+        }).toMap
+    }
+
 
     private def convertComponentProcessing(cache: CacheApi, assemblyNameMap: Map[Int, String], CPSRDbRows: Seq[Tables.ComponentProcessingStateRow]) = {
 
@@ -275,6 +288,27 @@ trait SlickComponentDaoRepo extends ComponentDaoRepo {
       }
     }
 
+    private def getProcessingInfos(cid:List[Int] , cache:CacheApi):Map[Int,List[ProcessingSequence]] = {
+      cid.map(x=>x-> cache.getOrElse[List[ProcessingSequence]](s"c${x}"){
+       getProcessingInfo(x,cache)
+      }).toMap
+    }
+
+    def selectComponentsBySimulationId(componentIds: List[Int], simulationId:Int,simulationVersionId:Int,cache:CacheApi,assemblyNameMap:Map[Int,String])
+    :Option[List[models.Component]] = {
+      Await.result(db.run(components.filter(x=>x.id.inSet(componentIds)).result), Duration.Inf) match {
+        case x if(x.size > 0)=> {
+          val processingSequenceList = getProcessingInfos(componentIds,cache)
+          val componentSchedulingInfo = createMultipleComponentSchedulingInfo(componentIds, simulationId,simulationVersionId , cache , assemblyNameMap)
+
+          Some(x.map(comp=>{
+            Component(comp.id, comp.name, processingSequenceList(comp.id), componentSchedulingInfo(comp.id))
+          }).toList)
+
+        }
+        case _ => None
+      }
+    }
 
     def selectByComponentSimulationId(componentId: Int, simulationId: Int, simulationVersionId:Int,cache: CacheApi,assemblyNameMap:Map[Int,String]): Option[Component] = {
       Await.result(db.run(components.filter(_.id === componentId).result.headOption), Duration.Inf) match {

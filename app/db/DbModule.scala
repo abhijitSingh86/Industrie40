@@ -59,6 +59,8 @@ trait DbModule {
 
   def getComponentWithProcessingInfo(componentId:Int,simulationId:Int,simulationVersionId:Int):Option[Component]
 
+  def getComponentsWithProcessingInfo(componentIds:List[Int],simulationId:Int,simulationVersionId:Int):Option[List[Component]]
+
   def addComponentsToSimulation(simulationId:Int,componentsId:List[Int])
 
   def addAssembliesToSimulation(simulationId:Int,assemblyIds:List[Int])
@@ -106,6 +108,10 @@ class SlickModuleImplementation(cache:CacheApi) extends DbModule {
     with OperationDaoRepo
     with DBComponent =>
 
+  def getComponentsWithProcessingInfo(componentIds:List[Int],simulationId:Int,simulationVersionId:Int):Option[List[Component]] = {
+    val assemblyNameMap = assembly.selectAssemblyNameMapBySimulationId(simulationId,cache)
+    component.selectComponentsBySimulationId(componentIds,simulationId,simulationVersionId,cache,assemblyNameMap)
+  }
 
   def addAssemblyFailureEntry(simulationId:Int,simulationVersionId:Int,assemblyId:Int,duration:Int):Long={
     assembly.addAssemblyFailureEntry(simulationId,simulationVersionId:Int,assemblyId,duration)
