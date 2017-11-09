@@ -19,6 +19,7 @@ const initialState = {
 export default function simulationReducer(state = initialState,action){
 
     switch(action.type){
+
         case "resetSimulation" :{
             return initialState;
         }

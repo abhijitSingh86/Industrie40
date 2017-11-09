@@ -20,11 +20,13 @@ class StartPage extends React.Component {
         this.createSimulationIdDropDown = this.createSimulationIdDropDown.bind(this);
         this.view_simulation = this.view_simulation.bind(this);
         this.clone_simulation = this.clone_simulation.bind(this);
+        this.handleVersionSelectd = this.handleVersionSelectd.bind(this)
 
         this.props.history.listen((location,action)=>{
             console.log("Into browser listen");
             if(location.pathname === "/"){
                 //clear two
+                this.props.actions.resetStartPageState();
                 this.props.actions.resetRegistrationPageState();
                 this.props.actions.resetSimulationAndMainMode();
              }else if(location.pathname === "/register"){
@@ -61,7 +63,10 @@ class StartPage extends React.Component {
         this.setState({
             selectedSimulationName : key.target.innerHTML,
             selectedSimulationId : evt
-        })
+        });
+
+        this.props.actions.clearVersionInfo();
+
     }
     startagain_simulation(){
 
@@ -80,6 +85,13 @@ class StartPage extends React.Component {
     componentWillReceiveProps(nextProps){
         if(nextProps.monitor){
             this.props.history.push("/monitor");
+        }
+
+        console.log("In startpahe component receive props");
+        console.log(nextProps);
+
+        if(nextProps.versionsFetched && nextProps.versions.length ===0){
+            this.props.actions.changeMainMode(this.state.selectedSimulationId, 'view');
         }
     }
 
@@ -101,8 +113,18 @@ class StartPage extends React.Component {
                 selectedSimulationName:"Please Select a simulation First."
             })
         }else {
-            this.props.actions.changeMainMode(this.props.simulationId,'view');
+            //event fire to fetch versions,
+            if(!this.props.versionsFetched) {
+                this.props.actions.getVersionForSimulation(this.state.selectedSimulationId);
+            }else {
+                // if any then display each in new select box
+                this.props.actions.changeMainMode(this.state.selectedSimulationId, 'view');
+            }
         }
+    }
+
+    handleVersionSelectd(e,k){
+        this.props.actions.changeMainMode(this.state.selectedSimulationId, 'view',e);
     }
 
     componentDidMount() {
@@ -140,6 +162,8 @@ class StartPage extends React.Component {
     startSimulationMonitor(){
         this.props.actions.changeMainMode(this.props.simulationId,'start');
     }
+
+
     render() {
         var er="";
         if(this.props.simulationMonitorError != undefined){
@@ -147,6 +171,20 @@ class StartPage extends React.Component {
         }else{
             er=this.props.response;
         }
+
+        var veriosnDropDown = <div/>
+        if(this.props.versionsFetched) {
+
+            var versionRows = this.props.versions.map((x) => {
+                return <MenuItem eventKey={x}>{x}</MenuItem>
+            });
+
+            veriosnDropDown = <DropdownButton title="Select Version" onSelect={this.handleVersionSelectd}>
+                {versionRows}
+            </DropdownButton>
+        }
+
+
         var rows = this.createSimulationIdDropDown();
         return (
             <div>
@@ -160,7 +198,8 @@ class StartPage extends React.Component {
                         <td>
                             <DropdownButton  title="Select Simulation" onSelect={this.handleSelect} >
                                 {rows}
-                            </DropdownButton>{this.state.selectedSimulationName}
+                            </DropdownButton>{this.state.selectedSimulationName} &nbsp;&nbsp;&nbsp;
+                            {veriosnDropDown}
                         </td>
                         <td className="pull-right">
                             <Button  bsStyle="primary" onClick={this.clone_simulation}>
@@ -193,6 +232,8 @@ function mapStateToProps(state) {
         ,simulationMonitorError:state.mainMode.simulationMonitorError
         ,response:state.startPage.responseMsg
         ,monitor:state.mainMode.monitor
+        ,versionsFetched:state.startPage.versionsFetched
+        ,versions:state.startPage.versions
     };
 }
 

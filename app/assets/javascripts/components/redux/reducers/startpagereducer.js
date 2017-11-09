@@ -2,19 +2,36 @@ import {
     SETUP_FOR_RERUN,
     SETUP_FOR_RERUN_FAIL,
     SETUP_FOR_CLONE,
-    SETUP_FOR_CLONE_FAIL} from "../actions/startpageaction";
+    SETUP_FOR_CLONE_FAIL
+,SIMULATION_VERSION_FETCH
+,SIMULATION_VERSION_FETCH_FAIL} from "../actions/startpageaction";
 
 
 const initialState = {
 
-    responseMsg:""
+    responseMsg:"",
+    versionsFetched:false
+    ,versions:[]
+
 };
 
 export default function startpage(state = initialState , action){
 
     switch(action.type){
+        case "resetVersion":{
+            return {...state,responseMsg:"",versions:[],versionsFetched:false}
+        }
+
         case "reset" :{
             return initialState;
+        }
+        case SIMULATION_VERSION_FETCH:{
+
+            return {...state,responseMsg:"Please select appropriate version first",versions:action.payload,versionsFetched:true}
+
+        }
+        case SIMULATION_VERSION_FETCH_FAIL:{
+            return {...state,responseMsg:"Error occurred during version info fetch"+action.payload}
         }
         case SETUP_FOR_RERUN: {
 

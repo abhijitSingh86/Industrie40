@@ -50,11 +50,11 @@ class SimulationMonitor extends React.Component {
     }
     startTimer() {
         if(this.props.mode == "view") {
-            this.doSomething();
-            this.props.actions.stopSimulation(this.props.simulation.simulationId, this.props.mode);
+            this.props.actions.getSimulationRunningStatus(this.props.simulation.simulationId );
+        }else {
+            clearInterval(this.timer);
+            this.timer = setInterval(this.doSomething.bind(this), 7000)
         }
-        clearInterval(this.timer);
-        this.timer = setInterval(this.doSomething.bind(this), 7000)
     }
 
     stopTimer() {
@@ -161,11 +161,6 @@ class SimulationMonitor extends React.Component {
         if(!this.props.isLoadingComplete){
             return <LoadingModal interval={1} checkforstatus={this.props.actions.simulationLoadingCheck}/>;
         }else if(!(this.props.simulationTime.sttime === 0) && !(this.props.simulationTime.ettime === 0 ) ) {
-            console.log("Timing Details");
-            console.log(!(this.props.simulationTime.sttime === 0) && !(this.props.simulationTime.ettime === 0 ));
-            console.log(this.props.simulationTime.sttime);
-            console.log(this.props.simulationTime.ettime);
-
             return (
                 <div>
                     <tr>

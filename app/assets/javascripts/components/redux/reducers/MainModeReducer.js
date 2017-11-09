@@ -45,6 +45,10 @@ export default function mainModeReducer(state = initialState,action){
                         ,pagemode:action.payload.pagemode
                     }    );
             }else{
+                var loadComplete = false;
+                if(action.payload.mode === "view"){
+                    loadComplete=true;
+                }
                 var state = Object.assign({},state,
                     {
                         simulationId:action.payload.simulationId,
@@ -53,7 +57,7 @@ export default function mainModeReducer(state = initialState,action){
                         simulationObj:action.payload.simulationObj
                         ,mode:action.payload.mode
                         ,pagemode:action.payload.pagemode
-                        ,isLoadingComplete:false
+                        ,isLoadingComplete:loadComplete
 
                     });
             }

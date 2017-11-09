@@ -31,6 +31,12 @@ trait SlickComponentDaoRepo extends ComponentDaoRepo {
     private lazy val componentProcessingState = Tables.ComponentProcessingState
     private lazy val simulationComponentMapping = Tables.SimulationComponentMapping
 
+
+    def getSimulationVersionsFromComponentProsessings(simulationId:Int):Future[Seq[Int]]={
+      db.run(componentProcessingState.filter(_.simulationid === simulationId).distinctOn(_.version).map(_.version).result)
+    }
+
+
     def clearComponentProcessingDetailsAsync(simulationId: Int): Future[Boolean] = {
       db.run(componentProcessingState.filter(_.simulationid === simulationId).delete).map {
         case a: Int if a > 0 => true

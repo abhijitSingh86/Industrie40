@@ -84,6 +84,9 @@ trait ComponentDaoRepo {
   def component: ComponentDao
 
   trait ComponentDao {
+
+    def getSimulationVersionsFromComponentProsessings(simulationId:Int):Future[Seq[Int]]
+
     def updateComponentProcessingInfo(simulationId: Int,simulationVersionId:Int, componentId: Int, assemblyId: Int, sequence: Int, operationId: Int, status: ComponentProcessingStatus, failureWaitTime: Int): Boolean
 
     def add(component: models.Component): Int

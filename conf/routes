@@ -30,7 +30,8 @@ GET           /simulation/onlinecheck               controllers.SchedulingContro
 POST          /simulation/:id/runningstatus         controllers.SimulationController.simulationRunningStatus(id:Int)
 GET           /simulation/:id/clone                 controllers.SimulationController.getCloneData(id:Int)
 GET           /simulation/:id/assemblytimeline      controllers.SimulationController.getAssemblyTimelineDetails(id:Int)
-GET           /simulation/:id/:mode                 controllers.SimulationController.getSimulation(id:Int,mode:String)
+GET           /simulation/:id/versions              controllers.SimulationController.getVersionData(id:Int)
+GET           /simulation/:id/:mode/:version        controllers.SimulationController.getSimulation(id:Int,mode:String,version:Int)
 
 
 # Map static resources from the /public folder to the /assets URL path

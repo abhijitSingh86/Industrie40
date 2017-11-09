@@ -23,6 +23,12 @@ import play.api.libs.json._
 
 class SimulationController(database:DbModule,networkproxy:NetworkProxy) extends Controller {
 
+  def getVersionData(id:Int) = Action.async {
+    val ids = database.getSimulationVersions(id)
+    ids.map(x=>
+    Ok(Json.toJson(x.distinct)))
+
+  }
 
   def getAllSimulations() = Action {
     Ok(ResponseFactory.make(SimulationsJson(database.getAllSimulation())))
@@ -57,7 +63,7 @@ class SimulationController(database:DbModule,networkproxy:NetworkProxy) extends 
 
 
 
-  def getSimulation(id:Int,mode:String) = Action{
+  def getSimulation(id:Int,mode:String , version:Int) = Action{
     //All code loading for the
     var response:Option[Result]=None
     //start the Ghost loading
@@ -66,6 +72,14 @@ class SimulationController(database:DbModule,networkproxy:NetworkProxy) extends 
         response=  Some(BadRequest("Background Ghost app is not running. Not able to start the Simulation monitoring."))
       }
     }
+
+    if(version == -1){
+      ComponentQueue.updateSimulationId(id,0)
+    }else{
+      ComponentQueue.updateSimulationId(id,version)
+    }
+
+
     if(!response.isDefined) {
       val sim = database.getCompleteSimulationObject(id)
       response = Some(Ok(ResponseFactory.make(SimulationJson(sim))))

@@ -16,6 +16,8 @@ import scala.concurrent.duration.Duration
 trait DbModule {
 
 
+  def getSimulationVersions(simulationId:Int):Future[Seq[Int]]
+
   def addAssemblyFailureEntry(simulationId:Int,simulationVersionId:Int,assemblyId:Int,duration:Int):Long
 
   def addEndTimeInAssemblyFailureEntry(simulationId:Int,simulationVersionId:Int,assemblyId:Int,stdate:Long)
@@ -107,6 +109,11 @@ class SlickModuleImplementation(cache:CacheApi) extends DbModule {
     with ComponentDaoRepo
     with OperationDaoRepo
     with DBComponent =>
+
+  def getSimulationVersions(simulationId:Int):Future[Seq[Int]] ={
+    component.getSimulationVersionsFromComponentProsessings(simulationId)
+  }
+
 
   def getComponentsWithProcessingInfo(componentIds:List[Int],simulationId:Int,simulationVersionId:Int):Option[List[Component]] = {
     val assemblyNameMap = assembly.selectAssemblyNameMapBySimulationId(simulationId,cache)
