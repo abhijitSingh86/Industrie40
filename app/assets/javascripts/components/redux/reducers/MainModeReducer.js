@@ -1,6 +1,6 @@
 import {CHANGE_MAIN_MODE , SIMULATION_ONLINE_CHECK} from '../actions'
 
-
+// import { push } from 'react-router-redux';
 const initialState = {
         monitor:false
     ,pagemode:"reset"
@@ -14,6 +14,9 @@ export default function mainModeReducer(state = initialState,action){
     // console.log(action);
 
     switch(action.type){
+        case "resetMainMode" :{
+            return initialState;
+        }
         case SIMULATION_ONLINE_CHECK :
 
             var state = Object.assign({},state,
@@ -27,6 +30,7 @@ export default function mainModeReducer(state = initialState,action){
                 {
                     pagemode:action.payload
                 });
+            // push('/register');
             return state;
 
         case CHANGE_MAIN_MODE:

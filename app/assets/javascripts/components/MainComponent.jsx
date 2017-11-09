@@ -2,11 +2,15 @@ import React from "react"
 import Registration from "./Registration"
 import SimulationMonitor from "./monitoring/SimulationMonitor"
 import StartPage from "./StartPage"
-import {connect } from 'react-redux';
+import {connect} from 'react-redux';
 import { bindActionCreators } from 'redux';
-import * as Actions from './redux/actions';
-import {Grid,Col,Button,Modal} from 'react-bootstrap'
-import assign        from 'object-assign'
+import * as Actions from './redux/actions/index.js';
+import {Grid,Col,Button,Modal} from 'react-bootstrap';
+import {
+    BrowserRouter as Router,
+    Route,
+    Link
+} from 'react-router-dom'
 
 
 class MainComponent extends React.Component {
@@ -16,22 +20,21 @@ class MainComponent extends React.Component {
         this.getPanelForDisplay = this.getPanelForDisplay.bind(this);
         this.state = {
             modal:false,
-        }
+        };
+
     }
+
+
     getPanelForDisplay() {
         console.log("page mode is "+this.props.pagemode);
         if(this.props.pagemode === "registration"){
-            return <Registration simulationMonitorError={this.props.simulationMonitorError}
-
-                               />
+            return <Registration/>
         } else if(this.props.pagemode === "monitor") {
             return (
                     <SimulationMonitor/>
                )
         }else{
-            return <StartPage
-                simulationMonitorError={this.props.simulationMonitorError}
-                />
+            return <StartPage/>
         }
     }
 
@@ -60,15 +63,34 @@ class MainComponent extends React.Component {
         });
     }
 
+
     render() {
 
         return (<div>
             <Grid>
                 <Col md={1.5}>
-                    <img src="/assets/images/home.jpg" width={100} height={50} onClick={this.handleHomeClick.bind(this)}/>
+                   
                 </Col>
            <Col md={10.5}>
-                { this.getPanelForDisplay() }
+
+               <Router >
+                   <div>
+                   <div id="navigation">
+                       <ul>
+                           <li><Link to="/" >Home</Link></li>
+                           <li><Link to="/register" >Create New</Link></li>
+                       </ul>
+                   </div>
+                       <div id="mainComponent">
+                       <hr/>
+
+                       <Route exact path="/" component={StartPage}/>
+                       <Route exact path="/register" component={Registration}/>
+                       <Route exact path="/monitor" component={SimulationMonitor}/>
+                       </div>
+                   </div>
+               </Router>
+
            </Col>
             </Grid>
                 <Modal show={this.state.modal} onHide={this.handleCloseClick.bind(this)}>

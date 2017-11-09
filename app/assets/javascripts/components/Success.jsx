@@ -4,6 +4,8 @@ var React = require('react')
 import {connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import * as Actions from './redux/actions/';
+import {withRouter} from "react-router-dom";
+
 
 class Success extends React.Component{
     constructor(props){
@@ -13,8 +15,16 @@ class Success extends React.Component{
                 ,body :""
             }
     }
+
+    changeMainMode(){
+        this.props.actions.resetRegistrationForm();
+        this.props.actions.changeMainMode(this.props.simulationId,'start');
+        this.props.history.push("/");
+    }
+
   submit(){
         this.props.actions.submitDataToServer(this.props.fieldValues);
+
   }
   render() {
     return (
@@ -25,8 +35,8 @@ class Success extends React.Component{
                             simulationId={this.props.simulationId}
                             response={this.props.responseMessage}
                             previousStep = {this.props.actions.decrementStep}
-                            changeMainMode={this.props.actions.changeMainMode}
-                            resetRegistrationForm={this.props.actions.resetRegistrationForm}/>
+                            changeMainMode={this.changeMainMode.bind(this)}
+                            />
         </div>
     )
   }
@@ -57,9 +67,7 @@ class SubmittedValue extends React.Component{
         this.startSimulationMonitor = this.startSimulationMonitor.bind(this);
     }
     startSimulationMonitor(){
-        this.props.resetRegistrationForm();
-        this.props.changeMainMode(this.props.simulationId,'start');
-        // this.props.changeHandler(this.props.simulationId,'start')
+        this.props.changeMainMode();
     }
 
     back(){
@@ -109,4 +117,4 @@ function mapDispatchToProps(dispatch) {
     };
 }
 
-export default connect(mapStateToProps,mapDispatchToProps)(Success);
+export default withRouter(connect(mapStateToProps,mapDispatchToProps)(Success));

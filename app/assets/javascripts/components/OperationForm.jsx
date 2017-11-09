@@ -2,7 +2,7 @@ var React                   = require('react')
 var CustomTable  = require('./CustomTable')
 import {connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import * as Actions from './redux/actions/registrationaction';
+import * as Actions from './redux/actions/index';
 
 
 class OperationForm extends React.Component{

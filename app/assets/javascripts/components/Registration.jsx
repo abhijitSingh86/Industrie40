@@ -56,6 +56,7 @@ class Registration extends React.Component{
 function mapStateToProps(state) {
     return {
        step:state.registration.step
+        ,simulationMonitorError:state.mainMode.simulationMonitorError
     };
 }
 
