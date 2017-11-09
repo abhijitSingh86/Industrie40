@@ -9,7 +9,7 @@ import {SAVE_SIMULATION_DATA , INCREMENT_STEP , DECREMENT_STEP
 
 } from "../actions/registrationaction"
 
-import {RESET_REGISTRATION_DETAILS} from '../actions/index'
+import {RESET_REGISTRATION_DETAILS} from '../actions/index';
 
 
 const initialState = {
@@ -37,6 +37,9 @@ export default function registration(state = initialState ,action){
 
     switch(action.type){
 
+        case "resetregister":{
+            return initialState
+        }
         case RESET_REGISTRATION_DETAILS: {
             return initialState
         }

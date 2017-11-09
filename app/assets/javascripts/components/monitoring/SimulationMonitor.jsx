@@ -6,6 +6,8 @@ import {connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import * as Actions from '../redux/actions';
 import ComponentOverviewTab from "./ComponentOverviewTab"
+import {withRouter} from "react-router-dom";
+
 
 var axios = require('axios');
 
@@ -59,7 +61,19 @@ class SimulationMonitor extends React.Component {
         clearInterval(this.timer)
     }
 
+    componentWillMount(){
+        console.log("Into monitor Mount");
+        console.log(this.props.simulationMonitorError);
+        if(this.props.simulationMonitorError !=undefined && this.props.simulationMonitorError != "")
+        {
+            console.log("Into monitor Mount sending back to startpage");
+            this.props.history.push("/");
+
+        }
+    }
+
     componentDidMount() {
+
         this.startTimer()
     }
 
@@ -146,7 +160,12 @@ class SimulationMonitor extends React.Component {
     getSimulationTimeData(){
         if(!this.props.isLoadingComplete){
             return <LoadingModal interval={1} checkforstatus={this.props.actions.simulationLoadingCheck}/>;
-        }else if(this.props.simulationTime.sttime !=0 && this.props.simulationTime.ettime !=0 ) {
+        }else if(!(this.props.simulationTime.sttime === 0) && !(this.props.simulationTime.ettime === 0 ) ) {
+            console.log("Timing Details");
+            console.log(!(this.props.simulationTime.sttime === 0) && !(this.props.simulationTime.ettime === 0 ));
+            console.log(this.props.simulationTime.sttime);
+            console.log(this.props.simulationTime.ettime);
+
             return (
                 <div>
                     <tr>
@@ -188,7 +207,7 @@ class SimulationMonitor extends React.Component {
     }
 
     handleCheckBox(){
-        const autoStart = this.state.autobind
+        const autoStart = this.state.autoStart
         this.setState({
            autoStart:!autoStart
         });
@@ -356,6 +375,7 @@ class LoadingModal extends React.Component{
 
 
     componentDidMount() {
+
      this.interval = setInterval(() => {
          this.props.checkforstatus();
         }, this.props.interval*1000);
@@ -387,6 +407,7 @@ function mapStateToProps(state) {
         ,mode:state.mainMode.mode
         ,isLoadingComplete:state.mainMode.isLoadingComplete
         ,isStarted:state.simulation.isStarted
+        ,simulationMonitorError:state.mainMode.simulationMonitorError
     };
 }
 
@@ -397,4 +418,4 @@ function mapDispatchToProps(dispatch) {
 }
 
 
-export default connect(mapStateToProps,mapDispatchToProps)(SimulationMonitor);
+export default withRouter(connect(mapStateToProps,mapDispatchToProps)(SimulationMonitor));

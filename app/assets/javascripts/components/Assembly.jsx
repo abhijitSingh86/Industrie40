@@ -3,20 +3,22 @@ var AssemblyOperationInput =require("./AssemblyOperationInput")
 var CustomAssemblyTable = require("./CustomAssemblyTable");
 import {connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import * as Actions from './redux/actions/registrationaction';
+import * as Actions from './redux/actions/index';
 
 
 
-var Assembly = React.createClass({
+class Assembly extends React.Component{
 
-  getInitialState(){
-    return {
+  constructor(props){
+      super(props);
+    this.state = {
       localAssemblyCounter : this.props.fieldValues.assemblyCounter,
       assemblyArr:this.props.fieldValues.assemblies,
       operationDetails:[],
         isFailed:true
     }
-  },
+  }
+
   handleOpCountInputChange(e){
     var value = e.target.value;
     if(!isNaN(value) && value != ""){
@@ -40,7 +42,7 @@ var Assembly = React.createClass({
       })
     }
 
-  },
+  }
   remove(arr, id) {
     for(var i = arr.length; i--;) {
       if(arr[i].id === id) {
@@ -49,12 +51,12 @@ var Assembly = React.createClass({
         return val;
       }
     }
-  },
+  }
     handleOperationSelectChange(focusArr){
         this.setState({
           operationDetails:focusArr
         })
-    },
+    }
     handleEditCall(id){
       this.setState({
         operationDetails:[],
@@ -73,7 +75,7 @@ var Assembly = React.createClass({
 
       });
       console.log(removedNode);
-    },
+    }
 
    failpanel(){
       return (<div>
@@ -87,13 +89,15 @@ var Assembly = React.createClass({
             </li>
           </div>
           );
-    },
-    render: function() {
+    }
+
+
+    render() {
       var inputRow = [];
       console.log("opCount"+this.state.opCount+"opndetails"+this.state.operationDetails.length);
         if (this.state.opCount > 0) {
           inputRow.push(<AssemblyOperationInput fieldValues={this.props.fieldValues}
-            focusArr={this.state.operationDetails} count={this.state.opCount} saveHandler={this.handleOperationSelectChange} />
+            focusArr={this.state.operationDetails} count={this.state.opCount} saveHandler={this.handleOperationSelectChange.bind(this)} />
           );}
           var failureEntryPanel = "";
         console.log(this.state.isFailed)
@@ -117,21 +121,22 @@ var Assembly = React.createClass({
 
           <li>
             <label>Operation Count</label>
-            <input type="text" ref={(o)=> this.operationCount=o} onChange={this.handleOpCountInputChange}/>
+            <input type="text" ref={(o)=> this.operationCount=o} onChange={this.handleOpCountInputChange.bind(this)}/>
           </li>
           <li className="li">{inputRow}</li>
           <li className="form-footer">
-            <button className="btn -default pull-left" onClick={this.add}>Add</button>
+            <button className="btn -default pull-left" onClick={this.add.bind(this)}>Add</button>
             <button className="btn -default pull-center" onClick={this.props.actions.decrementStep}>Back</button>
-            <button className="btn -primary pull-right" onClick={this.nextStep}>Save &amp; Continue</button>
+            <button className="btn -primary pull-right" onClick={this.nextStep.bind(this)}>Save &amp; Continue</button>
 
           </li>
         </ul>
-      <CustomAssemblyTable data={this.state.assemblyArr} editrow = {this.handleEditCall}/>
+      <CustomAssemblyTable data={this.state.assemblyArr} editrow = {this.handleEditCall.bind(this)}/>
 
       </div>
     );
-  },
+  }
+
   add(){
    var od = this.state.operationDetails
       var tempArr = []
@@ -184,8 +189,8 @@ var Assembly = React.createClass({
       }
     this.operationCount.value="";
     this.assemblyName.value = "";
-  },
-  nextStep: function() {
+  }
+  nextStep() {
     var data = {
       assemblies : this.state.assemblyArr
       ,assemblyCounter :this.state.localAssemblyCounter
@@ -193,7 +198,7 @@ var Assembly = React.createClass({
     this.props.actions.saveAssemblyFormData(data);
     this.props.actions.incrementStep();
   }
-})
+}
 
 
 function mapStateToProps(state) {

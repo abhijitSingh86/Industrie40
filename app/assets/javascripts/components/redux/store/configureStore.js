@@ -1,26 +1,34 @@
-import { createStore, compose, applyMiddleware } from 'redux';
-import thunk from 'redux-thunk';
-import rootReducer from '../reducers/rootReducer';
+import { createStore, applyMiddleware, compose } from 'redux'
+import thunk from 'redux-thunk'
+import createHistory from 'history/createBrowserHistory'
+import rootReducer from '../reducers/rootReducer'
 
+export const history = createHistory();
 
-export default function configureStore(initialState) {
-    const store = createStore(
-        rootReducer,
-        initialState,
-        compose(
-            applyMiddleware(thunk),
-            //conditional check for redux tools for debug purpose only
-            window.devToolsExtension ? window.devToolsExtension() : f => f
-        )
-    );
+const initialState = {}
+const enhancers = []
+const middleware = [
+    thunk
+]
 
-    if (module.hot) {
-        // Enable Webpack hot module replacement for reducers
-        module.hot.accept('../reducers', () => {
-            const nextRootReducer = require('../reducers').default;
-            store.replaceReducer(nextRootReducer);
-        });
+// if (process.env.NODE_ENV === 'development') {
+    const devToolsExtension = window.devToolsExtension
+
+    if (typeof devToolsExtension === 'function') {
+        enhancers.push(devToolsExtension())
     }
+// }
 
-    return store;
-}
+const composedEnhancers = compose(
+    applyMiddleware(...middleware),
+    ...enhancers
+)
+
+
+const store = createStore(
+    rootReducer,
+    initialState,
+    composedEnhancers
+)
+
+export default store;

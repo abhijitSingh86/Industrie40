@@ -3,7 +3,7 @@ var SelectDiv = require('./SelectDiv')
 var CustomComponentTable = require('./CustomComponentTable')
 import {connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import * as Actions from './redux/actions/registrationaction';
+import * as Actions from './redux/actions/index';
 
 class Components extends React.Component{
 

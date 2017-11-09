@@ -1,9 +1,11 @@
 var React = require('react')
 var axios = require('axios');
 import {DropdownButton,MenuItem,Button} from 'react-bootstrap';
-import {connect } from 'react-redux';
+import {connect}  from 'react-redux';
 import { bindActionCreators } from 'redux';
 import * as Actions from './redux/actions';
+import {withRouter} from "react-router-dom";
+
 var fileJson = {};
 class StartPage extends React.Component {
 
@@ -11,14 +13,31 @@ class StartPage extends React.Component {
     constructor(props) {
         super(props);
         console.log("Start page component construstor");
-        this.state = {};
+        this.state={};
         this.handleFileChange = this.handleFileChange.bind(this);
-        this.nextStep = this.nextStep.bind(this);
         this.startagain_simulation = this.startagain_simulation.bind(this);
         this.handleSelect = this.handleSelect.bind(this);
         this.createSimulationIdDropDown = this.createSimulationIdDropDown.bind(this);
         this.view_simulation = this.view_simulation.bind(this);
         this.clone_simulation = this.clone_simulation.bind(this);
+
+        this.props.history.listen((location,action)=>{
+            console.log("Into browser listen");
+            if(location.pathname === "/"){
+                //clear two
+                this.props.actions.resetRegistrationPageState();
+                this.props.actions.resetSimulationAndMainMode();
+             }else if(location.pathname === "/register"){
+                this.props.actions.resetStartPageState();
+                this.props.actions.resetSimulationAndMainMode();
+             }
+             else if(location.pathname === "/monitor"){
+                this.props.actions.resetStartPageState();
+                this.props.actions.resetRegistrationPageState();
+            }
+            console.log(location);
+            console.log(action);
+        })
     }
 
     createSimulationIdDropDown(){
@@ -52,19 +71,15 @@ class StartPage extends React.Component {
             })
         }else {
             var key = this.state.selectedSimulationId;
-            var _this = this;
-            axios.post('/simulation/'+key+'/clear').then(function (response) {
-                _this.setState({
-                    response: "Previous run data cleared successfully."
-                });
+            this.props.actions.setupforRerun(key);
+            this.props.actions.changeMainMode(key,'start');
+        }
+    }
 
-                _this.props.actions.changeMainMode(_this.state.selectedSimulationId,'start');
 
-            }).catch(function (error) {
-                _this.setState({
-                    response: "Error while clearing previous simulation data. \n " + error
-                });
-            })
+    componentWillReceiveProps(nextProps){
+        if(nextProps.monitor){
+            this.props.history.push("/monitor");
         }
     }
 
@@ -74,25 +89,9 @@ class StartPage extends React.Component {
                 selectedSimulationName:"Please Select a simulation First."
             })
         }else {
-
             var key = this.state.selectedSimulationId;
-            var _this = this;
-            axios.get('/simulation/'+key+'/clone').then(function (response) {
-                _this.setState({
-                    response: "Previous json data retrieved successfully."
-                });
-                console.log(response);
-                console.log(response.data);
-                _this.props.actions.saveFieldValueData(response.data);
-                _this.props.actions.recordRunningMode("registration")
-
-
-            }).catch(function (error) {
-                _this.setState({
-                    response: "Error retrieving previous simulation data. \n " + error
-                });
-            })
-
+           this.props.actions.cloneSetup(key);
+            this.props.history.push("/register");
         }
     }
 
@@ -104,11 +103,6 @@ class StartPage extends React.Component {
         }else {
             this.props.actions.changeMainMode(this.props.simulationId,'view');
         }
-    }
-
-    nextStep() {
-        this.props.actions.saveFieldValueData(this.props.fieldValues);
-        this.props.actions.recordRunningMode("registration")
     }
 
     componentDidMount() {
@@ -135,7 +129,8 @@ class StartPage extends React.Component {
             var dataURL = reader.result;
             fileJson = JSON.parse(dataURL)
             this.props.actions.saveFieldValueData(fileJson);
-            this.props.actions.recordRunningMode("registration")
+            this.props.actions.recordRunningMode("registration");
+            this.props.history.push("/register");
             console.log(dataURL)
         };
         console.log(file);
@@ -150,7 +145,7 @@ class StartPage extends React.Component {
         if(this.props.simulationMonitorError != undefined){
             er= this.props.simulationMonitorError;
         }else{
-            er=this.state.response;
+            er=this.props.response;
         }
         var rows = this.createSimulationIdDropDown();
         return (
@@ -181,10 +176,7 @@ class StartPage extends React.Component {
                         </tr></tbody></table>
 
                     </li>
-                    <li className="form-footer">
-                        <button className="btn -primary pull-right" onClick={this.nextStep}>Create New Simulation</button>
 
-                    </li>
                 </ul>
 
             </div>
@@ -198,6 +190,9 @@ class StartPage extends React.Component {
 function mapStateToProps(state) {
     return {
         fieldValues:state.registration.fieldValues
+        ,simulationMonitorError:state.mainMode.simulationMonitorError
+        ,response:state.startPage.responseMsg
+        ,monitor:state.mainMode.monitor
     };
 }
 
@@ -208,4 +203,4 @@ function mapDispatchToProps(dispatch) {
 }
 
 
-export default connect(mapStateToProps,mapDispatchToProps)(StartPage);
+export default withRouter(connect(mapStateToProps,mapDispatchToProps)(StartPage));

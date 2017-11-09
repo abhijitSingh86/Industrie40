@@ -2,7 +2,7 @@
 import React from "react"
 import {connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import * as Actions from './redux/actions/registrationaction';
+import * as Actions from './redux/actions/index';
 
 class SimulationForm extends React.Component{
   constructor(props){

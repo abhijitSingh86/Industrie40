@@ -11,25 +11,30 @@ const initialState = {
     ,isSimulationComplete:false
     ,isStarted:false
     ,simulationTime:{
-        sttime:0,ettime:0
+        sttime:0,
+        ettime:0
     }
 }
 
 export default function simulationReducer(state = initialState,action){
 
     switch(action.type){
+        case "resetSimulation" :{
+            return initialState;
+        }
         case START_SIMULATION : {
             // console.log(action.payload.response === true)
             var response = action.payload.response === true ? "Started Successfully" : "Error Starting:"+action.payload.response
-            return Object.assign({},state,{response:response , isSimulationComplete:false,isStarted:true})
+            return Object.assign({},state,{response:response , isSimulationComplete:false,isStarted:true , simulationTime:{sttime:1,ettime:0}})
         }
 
         case STOP_SIMULATION : {
             if(action.payload.mode != "view"){
                 var response = action.payload.response.ettime !=0 ? "Stopped Successfully" : "Stopped in progress Simulation"
             }
-            Object.assign({},state,initialState)
-            return Object.assign({},Object.assign({},state,initialState),{response:response , simulationTime:action.payload.response})
+            var state = {...state , response:response , simulationTime:action.payload.response}
+
+            return state;
         }
 
         case CHANGE_COMPLETION_COUNT : {
