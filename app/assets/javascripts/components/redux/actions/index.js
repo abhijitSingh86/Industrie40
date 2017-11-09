@@ -162,7 +162,7 @@ export function resetRegistrationForm(){
     }
 }
 
-export function changeMainMode(id,mode)  {
+export function changeMainMode(id,mode,version = -1)  {
 
     console.log("in idex.js changeMainMode")
     console.log(mode);
@@ -183,7 +183,7 @@ export function changeMainMode(id,mode)  {
 
        }else {
 
-           axios.get("/simulation/" + id + "/" + mode).then(function (res) {
+           axios.get("/simulation/" + id + "/" + mode+"/"+version).then(function (res) {
                var action = {
                    type: CHANGE_MAIN_MODE,
                    payload: {
@@ -204,7 +204,7 @@ export function changeMainMode(id,mode)  {
                        monitor: false,
                        mode: mode,
                        pagemode:"reset",
-                       error: e.response.data
+                       error: e
                    }
                };
                dispatch(action);
