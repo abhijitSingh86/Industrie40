@@ -82,7 +82,13 @@ class ScheduleCommand(dbModule : DbModule,scheduler:Scheduler,proxy: NetworkProx
       val transportTime  = ComponentQueue.getTransportTime(x,ass)
 
       logger.info("**********Transport Time is "+transportTime)
-      proxy.sendAssemblyDetails(urls.get(x.id).get,ass,assemblyUrls,x.componentSchedulingInfo.currentProcessing.get.operationId , transportTime)
+      try {
+        proxy.sendAssemblyDetails(urls.get(x.id).get, ass, assemblyUrls, x.componentSchedulingInfo.currentProcessing.get.operationId, transportTime)
+      }catch {
+        case t:Throwable =>{
+          logger.error("$$$$$$$$$$$$$$$$Error in Sending scheduling inmfo",t)
+        }
+      }
     })
   }
 }
