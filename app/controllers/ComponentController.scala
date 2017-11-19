@@ -26,16 +26,9 @@ class ComponentController(db:DbModule) extends Controller {
     val failureWaitTime= (json.get \ "failureWaitTime").get.as[Int]
     db.updateComponentProcessingInfo(simulationId,ComponentQueue.getSimulationVersionId() ,componentId,assemblyId,sequence , operationId,failureWaitTime) match {
       case true => {
-
-
+        ComponentQueue.removeFromInProcess(componentId)
         //Add to next scheduling
-        db.getComponentWithProcessingInfo(componentId,simulationId ,ComponentQueue.getSimulationVersionId()) match{
-          case Some(x)  =>
-          {
-            if(!x.isComplete())
-              ComponentQueue.push(x.id)
-          }
-        }
+        ComponentQueue.push(componentId)
         Ok(DefaultRequestFormat.getEmptySuccessResponse())
       }
       case false => Ok(DefaultRequestFormat.getValidationErrorResponse(

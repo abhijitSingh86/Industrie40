@@ -16,10 +16,20 @@ object ComponentQueue {
   private var assemvlyTT:List[AssemblyTransportTime] = List()
   val logger = Logger(this.getClass())
   val requestQueue:mutable.LinkedHashSet[Int] = new mutable.LinkedHashSet[Int]()
+
+  val inProcessComponentsIds = new mutable.LinkedHashSet[Int]()
   private var simulationId =0
   private var versionId=1
 
 
+
+  def updateInProcess(list:List[Int]): Unit ={
+    list.map(inProcessComponentsIds.add)
+  }
+
+  def removeFromInProcess(id:Int): Unit ={
+    inProcessComponentsIds.remove(id)
+  }
 
 
   var failTime=0
@@ -77,9 +87,10 @@ object ComponentQueue {
 
   def push(component:Int): Unit ={
     logger.info("push invoked size"+requestQueue.size)
-    requestQueue.synchronized{
 
-      requestQueue +=  component
+    requestQueue.synchronized{
+      if(!inProcessComponentsIds.contains(component))
+          requestQueue +=  component
 
     }
     logger.info("push finished size"+requestQueue.size)

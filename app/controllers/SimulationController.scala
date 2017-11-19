@@ -85,8 +85,8 @@ class SimulationController(database:DbModule,networkproxy:NetworkProxy) extends 
       response = Some(Ok(ResponseFactory.make(SimulationJson(sim))))
 
       if (mode.equalsIgnoreCase("start")) {
-        OnlineData.setSimulationData(sim)
         OnlineData.resetOnlineData()
+        OnlineData.setSimulationData(sim)
         OnlineData.setTotalComponentCount(sim.components.size+sim.assemblies.size);
         networkproxy.sendStartToGhostApp(sim)
       }

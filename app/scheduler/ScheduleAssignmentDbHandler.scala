@@ -20,10 +20,8 @@ class ScheduleAssignmentDbHandler(db:DbModule) extends SchedulerAssignmentHandle
   def assign(cmp:Component,op:Operation,assembly:Assembly):Boolean ={
 
     if(ComponentQueue.requestQueue.filter(_ == cmp.id).size > 0 ){
-
-      false
-
-    }else {
+        ComponentQueue.requestQueue.remove(cmp.id)
+    }
 
       val newTime = assembly.totalOperations.filter(_.operation.id == op.id)(0).time
 
@@ -32,6 +30,5 @@ class ScheduleAssignmentDbHandler(db:DbModule) extends SchedulerAssignmentHandle
       db.addComponentProcessingInfo(ComponentQueue.getSimulationId(), ComponentQueue.getSimulationVersionId(), cmp.id, assembly.id, cmp.componentSchedulingInfo.sequence,
         op.id, newTime)
 
-    }
   }
 }

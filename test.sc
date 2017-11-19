@@ -12,31 +12,39 @@ import scala.collection.mutable
 //
 //val li:mutable.ListBuffer[Int] = mutable.ListBuffer(1,2)
 //li :+ 3
+//
+//val m = Map(1->List(1,2),2 -> List(2,3,4))
+//
+//val n = Map(1 -> List(1))
+//
+//m ++ n
 
-val m = Map(1->List(1,2),2 -> List(2,3,4))
+1.20.09-1.11.30
+val list = new mutable.LinkedHashSet[Int]()
 
-val n = Map(1 -> List(1))
+List(8,1,2,3,4,5,6,7).map(list.add)
 
-m ++ n
+if(list.filter(_==1).size>0){
+  list.remove(1)
+}
 
-val list = List(8,1,2,3,4,5,6,7)
+list
 
-list.sortWith(_ < _)
 
-val did1 = 1502475975562l-1502475509103l
-val did2 = 1503231823633l-1503231382838l
-val did3 = 1503532558166l-1503532118549l
-val did = 1502481012013l-1502480568788l
-
-val f = (did/(1000f))/(60f)
-val f1 = (did1/(1000f))/(60f)
-val f2 = (did2/(1000f))/(60f)
-val f3 = (did3/(1000f))/(60f)
-
-f1-f
-val st = Calendar.getInstance().setTimeInMillis(1502192176025l)
-val et = Calendar.getInstance().setTimeInMillis(1502192643126l)
-
+//val did1 = 1502475975562l-1502475509103l
+//val did2 = 1503231823633l-1503231382838l
+//val did3 = 1503532558166l-1503532118549l
+//val did = 1502481012013l-1502480568788l
+//
+//val f = (did/(1000f))/(60f)
+//val f1 = (did1/(1000f))/(60f)
+//val f2 = (did2/(1000f))/(60f)
+//val f3 = (did3/(1000f))/(60f)
+//
+//f1-f
+//val st = Calendar.getInstance().setTimeInMillis(1502192176025l)
+//val et = Calendar.getInstance().setTimeInMillis(1502192643126l)
+//
 
 
 

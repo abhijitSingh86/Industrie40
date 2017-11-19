@@ -54,8 +54,10 @@ class ScheduleCommand(dbModule : DbModule,scheduler:Scheduler,proxy: NetworkProx
         , filteredBusyAssemblies)
       //get scheduled component and send them to network proxy for information sending
 
+
       val finalListToSendSchedulingInfo = alreadyScheduledList ::: scheduledComponentIds
       sendScheduleInformationToComponent(ComponentQueue.getSimulationId(), components.filter(x=> finalListToSendSchedulingInfo.contains(x.id)))
+      ComponentQueue.updateInProcess(finalListToSendSchedulingInfo)
 
 
       logger.debug("command nearly finished, processed Scheduled components are " + scheduledComponentIds.mkString(","))
