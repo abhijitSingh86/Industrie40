@@ -74,8 +74,17 @@ trait SlickComponentDaoRepo extends ComponentDaoRepo {
     }
 
     def addComponentProcessingInfo(simId: Int,simulationVersionId:Int, cmpId: Int, assemblyId: Int, sequence: Int, opId: Int,operationTime:Int): Boolean = {
-      val result = db.run(componentProcessingState += new ComponentProcessingStateRow(cmpId, simId, sequence, opId,
-        Calendar.getInstance().getTimeInMillis, None, assemblyId , InProgressProcessingStatus.text,None , actualoperationtime = operationTime , simulationVersionId))
+
+      val obj = new ComponentProcessingStateRow(cmpId, simId, sequence, opId,
+        Calendar.getInstance().getTimeInMillis, None, assemblyId , InProgressProcessingStatus.text,None , actualoperationtime = operationTime , simulationVersionId)
+
+      val filterQ = db.run(componentProcessingState.filter(x=>x.componentid === cmpId && x.simulationid === simId &&
+        x.version === simulationVersionId  && x.status === InProgressProcessingStatus.text).result.headOption)
+
+      val result = filterQ.map(x=>
+        if(!x.isDefined){
+          db.run(componentProcessingState += obj)
+        })
 
       Await.result(result, Duration.Inf) match {
         case 1 => true
@@ -269,9 +278,9 @@ trait SlickComponentDaoRepo extends ComponentDaoRepo {
       val headElement= CPSRDbRows.filterNot(_.status.equalsIgnoreCase(FailedProcessingStatus.text)).sortWith(_.sequencenum > _.sequencenum).take(1)
       val seq = if(headElement.size ==1) headElement(0).sequencenum+1 else 0
       println("Component Sequence number is"+seq)
-      val completedOPerationList = oinfo.filter(_.status.equalsIgnoreCase(FinishedProcessingStatus.text)).map(_.operationId).reverse.map(operation.selectByOperationId(_, cache))
+      val completedOperationList = oinfo.filter(_.status.equalsIgnoreCase(FinishedProcessingStatus.text)).map(_.operationId).reverse.map(operation.selectByOperationId(_, cache))
 
-      new ComponentSchedulingInfo(oinfo.reverse, curr, seq, completedOPerationList)
+      new ComponentSchedulingInfo(oinfo.reverse, curr, seq, completedOperationList)
 
     }
 

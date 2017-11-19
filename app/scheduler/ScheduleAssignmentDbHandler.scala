@@ -19,11 +19,19 @@ class ScheduleAssignmentDbHandler(db:DbModule) extends SchedulerAssignmentHandle
 
   def assign(cmp:Component,op:Operation,assembly:Assembly):Boolean ={
 
-    val newTime = assembly.totalOperations.filter(_.operation.id==op.id)(0).time
+    if(ComponentQueue.requestQueue.filter(_ == cmp.id).size > 0 ){
 
-    db.updateAssemblyOperationStatus(assembly.id,op.id,BusyOperationStatus.text)
+      false
 
-    db.addComponentProcessingInfo(ComponentQueue.getSimulationId(),ComponentQueue.getSimulationVersionId() ,cmp.id,assembly.id,cmp.componentSchedulingInfo.sequence,
-        op.id ,newTime)
+    }else {
+
+      val newTime = assembly.totalOperations.filter(_.operation.id == op.id)(0).time
+
+      db.updateAssemblyOperationStatus(assembly.id, op.id, BusyOperationStatus.text)
+
+      db.addComponentProcessingInfo(ComponentQueue.getSimulationId(), ComponentQueue.getSimulationVersionId(), cmp.id, assembly.id, cmp.componentSchedulingInfo.sequence,
+        op.id, newTime)
+
+    }
   }
 }

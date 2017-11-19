@@ -197,6 +197,15 @@ export function changeMainMode(id,mode,version = -1)  {
                dispatch(action);
            }).catch(function (e) {
                console.log("error in ChangeMain Mode async call" + e.response + " : " + id + " : " + mode);
+
+               var message = "";
+               if(e.response != undefined ){
+                   message = e.response.data
+               }else if(e.message != undefined){
+                   message = e.message
+               }
+
+
                var action = {
                    type: CHANGE_MAIN_MODE,
                    payload: {
@@ -204,7 +213,7 @@ export function changeMainMode(id,mode,version = -1)  {
                        monitor: false,
                        mode: mode,
                        pagemode:"reset",
-                       error: e
+                       error: message
                    }
                };
                dispatch(action);

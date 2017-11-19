@@ -51,9 +51,10 @@ class ComponentScheduler(scheduleDbHandler:SchedulerAssignmentHandler) extends S
               case None if(!scheduledComponent.contains(component.id)) => {
                 val assembly = availableResourceMap.get(operation).get(0)
 
-                scheduleDbHandler.assign(component,operation,assembly)
-                availableResourceMap = removeAssemblyFromAvailabelResourceMap(availableResourceMap,assembly)
-                scheduledComponent += component.id
+                if(scheduleDbHandler.assign(component,operation,assembly)) {
+                  availableResourceMap = removeAssemblyFromAvailabelResourceMap(availableResourceMap, assembly)
+                  scheduledComponent += component.id
+                }
               }
               case _ =>{
                 logger.info(s"Skipping scheduling for this component ${component.id} flag: ${component.getCurrentOperation()} list: ${scheduledComponent}")

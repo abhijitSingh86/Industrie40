@@ -36,14 +36,15 @@ class SimulationMonitor extends React.Component {
 
     doSomething(){
         console.log("logs for doSomething"+this.props.isSimulationComplete+":"+this.props.isLoadingComplete+":"+this.props.isStarted);
-        if(!this.props.isSimulationComplete) {
+        if(!this.props.isSimulationComplete && this.props.mode != "view") {
             if(this.props.isLoadingComplete){
                 this.props.actions.getSimulationRunningStatus(this.props.simulation.simulationId );
-                    if(!this.props.isStarted)
+                    if(!this.props.isStarted )
                         this.start_simulation();
             }
 
         }else {
+            this.props.actions.getSimulationRunningStatus(this.props.simulation.simulationId );
             this.props.actions.stopSimulation(this.props.simulation.simulationId, this.props.mode);
             this.stopTimer()
         }
@@ -51,26 +52,27 @@ class SimulationMonitor extends React.Component {
     startTimer() {
         if(this.props.mode == "view") {
             this.props.actions.getSimulationRunningStatus(this.props.simulation.simulationId );
-        }else {
-            clearInterval(this.timer);
-            this.timer = setInterval(this.doSomething.bind(this), 7000)
         }
+
+        clearInterval(this.timer);
+        this.timer = setInterval(this.doSomething.bind(this), 7000)
+
     }
 
     stopTimer() {
         clearInterval(this.timer)
     }
 
-    componentWillMount(){
-        console.log("Into monitor Mount");
-        console.log(this.props.simulationMonitorError);
-        if(this.props.simulationMonitorError !=undefined && this.props.simulationMonitorError != "")
-        {
-            console.log("Into monitor Mount sending back to startpage");
-            this.props.history.push("/");
-
-        }
-    }
+    // componentWillMount(){
+        // console.log("Into monitor Mount");
+        // console.log(this.props.simulationMonitorError);
+        // if(this.props.simulationMonitorError !=undefined && this.props.simulationMonitorError != "")
+        // {
+        //     console.log("Into monitor Mount sending back to startpage");
+        //     this.props.history.push("/");
+        //
+        // }
+    // }
 
     componentDidMount() {
 
@@ -193,7 +195,7 @@ class SimulationMonitor extends React.Component {
             if(this.props.mode == 'view')
                 return <div>No Execution on this Simulation.</div>;
             else
-                return <div>Execution on this Simulation not started.</div>;
+                return <div></div>;
         }
 
         // else{

@@ -87,9 +87,12 @@ export function setupforRerun(key){
 
 
         }).catch(function (error) {
+
+            console.log("Error during the setup for rerun method");
+            console.log(error.data);
             var action = {
                 type:SETUP_FOR_RERUN_FAIL
-                ,payload:error.message
+                ,payload:error.data
             };
             dispatch(action);
         })

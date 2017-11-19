@@ -32,20 +32,38 @@ class NetworkProxy(ws:WSClient) {
     val ghostAppUrl = ApplicationLevelData.ghostUrl
 
     val data = Json.toJson(list)
-    val req = Await.result(ws.url(ghostAppUrl+ghostKillCompletedComponentHook).post(data), Duration.Inf)
+    try {
+      val req = Await.result(ws.url(ghostAppUrl + ghostKillCompletedComponentHook).post(data), Duration.Inf)
+    }catch{
+      case t:Throwable => {
+        println("Error while sending error"+t.getMessage)
+      }
+    }
   }
 
   def sendStartToGhostApp(simulation:Simulation): Unit ={
     val ghostAppUrl = ApplicationLevelData.ghostUrl
 
     val data =Json.obj("id"->simulation.id,"name"->simulation.name,"components"->simulation.components.map(_.id),"assemblies"->simulation.assemblies.map(_.id))
+    try{
     val req = Await.result(ws.url(ghostAppUrl+ghostStartHook).post(data), Duration.Inf)
+    }catch{
+      case t:Throwable => {
+        println("Error while sending error"+t.getMessage)
+      }
+    }
   }
 
   def sendStopToGhostApp(): Unit ={
     val ghostAppUrl = ApplicationLevelData.ghostUrl
     val data =Json.obj()
+    try{
     val req = Await.result(ws.url(ghostAppUrl+ghostStopHook).post(data), Duration.Inf)
+    }catch{
+      case t:Throwable => {
+        println("Error while sending error"+t.getMessage)
+      }
+    }
   }
 
   def sendAssemblyDetails(url: String, assembly: Assembly, assemblyUrls: Map[Int, String],operationId:Int,transportTime:Int) = {
@@ -62,8 +80,15 @@ class NetworkProxy(ws:WSClient) {
     do {
       logger.info(s"Posted Url ${url}${componentAssemblyHook}")
       logger.info(s"Posted Data ${data.toString()}")
+     try{
       val req = Await.result(ws.url(url+componentAssemblyHook).post(data), Duration.Inf)
       status = if(req.status !=200)status+1 else req.status
+     }catch{
+       case t:Throwable => {
+         println("Error while sending error"+t.getMessage)
+       }
+     }
+
     }while (status != 200 && status !=5)
   }
 
@@ -82,8 +107,15 @@ class NetworkProxy(ws:WSClient) {
     do {
       logger.info(s"Posted Url ${url}${componentFailureHook}")
       logger.info(s"Posted Data ${data.toString()}")
+      try{
       val req = Await.result(ws.url(url+componentFailureHook).post(data), Duration.Inf)
       status = if(req.status !=200)status+1 else req.status
+      }catch{
+        case t:Throwable => {
+          println("Error while sending error"+t.getMessage)
+        }
+      }
+
     }while (status != 200 && status !=5)
   }
 
@@ -92,10 +124,16 @@ class NetworkProxy(ws:WSClient) {
     var flag = true
     do{
       val data = Json.obj("finish"->true)
-      val req = Await.result(ws.url(url+assemblyFinishHook).post(data),Duration.Inf)
-      logger.info("Assembly Failure Request send and Response is "+req.status+"  :: "+req)
-      status = if(req.status !=200)status+1 else req.status
-      flag = ((Json.parse(req.body.toString) \ "body") \ "status").as[Boolean]
+      try {
+        val req = Await.result(ws.url(url + assemblyFinishHook).post(data), Duration.Inf)
+        logger.info("Assembly Failure Request send and Response is " + req.status + "  :: " + req)
+        status = if (req.status != 200) status + 1 else req.status
+        flag = ((Json.parse(req.body.toString) \ "body") \ "status").as[Boolean]
+      }catch{
+        case t:Throwable => {
+          println("Error while sending error"+t.getMessage)
+        }
+      }
     }while(status !=200 && status !=5)
     flag
   }
@@ -106,11 +144,17 @@ class NetworkProxy(ws:WSClient) {
     var flag  =true
     do{
       val data = Json.obj("failureTime"->failureTime,"componentAction"->action)
+      try{
       val req = Await.result(ws.url(url+assemblyFailureHook).post(data),Duration.Inf)
       logger.info("Assembly Failure Request send and Response is "+req.status+"  :: "+req)
 
       status = if(req.status !=200)status+1 else req.status
       flag = ((Json.parse(req.body.toString) \ "body") \ "status").as[Boolean]
+      }catch{
+        case t:Throwable => {
+          println("Error while sending error"+t.getMessage)
+        }
+      }
     }while(status !=200 && status !=5)
     flag
   }
@@ -123,8 +167,14 @@ class NetworkProxy(ws:WSClient) {
     var status=0
     do {
       logger.info(s"Posted Url ${url}${componentStartSimulationHook}")
+      try{
       val req = Await.result(ws.url(url+componentStartSimulationHook).post(Results.EmptyContent()), Duration.Inf)
       status = if(req.status !=200)status+1 else req.status
+      }catch{
+        case t:Throwable => {
+          println("Error while sending error"+t.getMessage)
+        }
+      }
     }while (status != 200 && status !=5)
   }
 
