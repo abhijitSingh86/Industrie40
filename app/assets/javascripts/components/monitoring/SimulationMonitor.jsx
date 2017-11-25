@@ -192,10 +192,10 @@ class SimulationMonitor extends React.Component {
                 </div>
             );
         }else if(this.props.simulationTime.sttime ==0 && this.props.simulationTime.ettime ==0 ) {
-            if(this.props.mode == 'view')
-                return <div>No Execution on this Simulation.</div>;
-            else
-                return <div></div>;
+           // if(this.props.mode == 'view')
+                return <div><img src="/assets/images/loading.gif" width="5%" height="3%"/></div>;
+            //else
+              //  return <div></div>;
         }
 
         // else{

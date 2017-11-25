@@ -204,11 +204,19 @@ trait SlickComponentDaoRepo extends ComponentDaoRepo {
     }
 
 
-    def getLastEndTimeFromComponentProcessingInfo(simulationId:Int):Long = {
-    val q =db.run(componentProcessingState.filter(x => (x.simulationid === simulationId)).sortBy(_.endTime.desc).result.headOption)
+    def getSimulationTimingDetailsFromComponentProcessingInfo(simulationId:Int, simulationVersionId:Int):Tuple2[Long,Long] = {
+    val q =db.run(componentProcessingState.filter(x => (x.simulationid === simulationId && x.version === simulationVersionId)).result)
       Await.result(q,Duration.Inf) match{
-        case Some(x) => if(x.endTime.isDefined) x.endTime.get else 0l
-        case _ => 0l
+        case x if x.size >0 =>
+
+          val sortedBySTartTime = x.sortBy(_.startTime)
+          val sortedByEndTime = x.sortBy(_.endTime)
+
+          val sttime = sortedBySTartTime.head.startTime
+          val endtime = sortedByEndTime.last.endTime.getOrElse(0l)
+
+          (sttime , endtime)
+        case _ => (0l,0l)
       }
     }
 

@@ -30,7 +30,6 @@ trait DbModule {
 
   def updateComponentProcessingInfoInFailureScenarion(simulationId: Int,simulationVersionId:Int, componentId: Int, assemblyId: Int, sequence: Int, operationId: Int ):Boolean
 
-  def updateSimulationEndTime(simulationId:Int):Boolean
 
 
   def getCompleteSimulationObject(simulationId:Int):Simulation
@@ -99,7 +98,7 @@ trait DbModule {
   def getComponentTimeMap(simulationId:Int): List[ComponentToAssemblyTransTime]
 
   def getAssemblyNameMapForSimulation(simulationid:Int):Map[Int,String]
-  def getSimulationObject(id:Int):Simulation
+  def getSimulationTimeDetails(simulationId:Int,simulationVersionId:Int):Tuple2[Long,Long]
 }
 
 class SlickModuleImplementation(cache:CacheApi) extends DbModule {
@@ -145,8 +144,10 @@ class SlickModuleImplementation(cache:CacheApi) extends DbModule {
     assembly.selectAssemblyNameMapBySimulationId(simulationid,cache)
   }
 
-  def getSimulationObject(id:Int):Simulation ={
-    simulation.getSimulationById(id)
+  def getSimulationTimeDetails(simulationId:Int,simulationVersionId:Int):Tuple2[Long,Long] ={
+    component.getSimulationTimingDetailsFromComponentProcessingInfo(simulationId,simulationVersionId)
+
+
   }
 
   def getAssemblyTimeMap(simulationId:Int):List[AssemblyTransportTime] = {
@@ -189,10 +190,6 @@ class SlickModuleImplementation(cache:CacheApi) extends DbModule {
 
   }
 
-  def updateSimulationEndTime(simulationId:Int):Boolean = {
-    val etTime = component.getLastEndTimeFromComponentProcessingInfo(simulationId)
-    simulation.updateEndTime(simulationId , etTime)
-  }
 
   def updateSimulationStartTime(simulationId:Int):Boolean = {
     val stTime = Calendar.getInstance().getTimeInMillis

@@ -97,7 +97,7 @@ trait ComponentDaoRepo {
 
     def selectAll(): List[models.Component]
 
-    def getLastEndTimeFromComponentProcessingInfo(simulationId:Int):Long
+    def getSimulationTimingDetailsFromComponentProcessingInfo(simulationId:Int, simulationVersionId:Int):Tuple2[Long,Long]
 
     def selectComponentNameMapBySimulationId(simulationId: Int , cache: CacheApi): Map[Int,String]
 

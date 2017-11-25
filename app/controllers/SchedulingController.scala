@@ -38,7 +38,9 @@ class SchedulingController(schedulingThread:SchedulerThread,db:DbModule , networ
         //Start the failure actor
         failureGeneratorActor ! Start
         schedulingThread.startExecution()
-        db.updateSimulationStartTime(simulationId.get)
+
+          //REMOVED not needed
+       // db.updateSimulationStartTime(simulationId.get)
         Logger.info("Schedule thread created")
         Ok(DefaultRequestFormat.getEmptySuccessResponse())
       case _=> Ok(DefaultRequestFormat.getValidationErrorResponse(List(("error","simulation Id is not found in Json"))) )
@@ -61,20 +63,23 @@ class SchedulingController(schedulingThread:SchedulerThread,db:DbModule , networ
         Logger.info("Stop request recieved..")
         if(schedulingThread !=null && mode != "view"){
           schedulingThread.endExecution()
-          db.updateSimulationEndTime(id)
+          //REMOVED not needed
+          //db.updateSimulationEndTime(id)
           ComponentQueue.popAll()
           OnlineData.resetOnlineData()
           failureGeneratorActor ! Stop
-          db.getAllAssemblyUrlBySimulationId(ComponentQueue.getSimulationId()).map(x=>{
-            networkProxy.sendFinishNotificationToAssembly(x._2)
-          })
+          //REMOVED as ghost app will handle this
+//          db.getAllAssemblyUrlBySimulationId(ComponentQueue.getSimulationId()).map(x=>{
+//            networkProxy.sendFinishNotificationToAssembly(x._2)
+//          })
 
           networkProxy.sendStopToGhostApp()
           Logger.info("Stop request processed.. ")
         }
-      val simObj = db.getSimulationObject(id)
 
-      Ok(DefaultRequestFormat.getSuccessResponse(Json.obj("sttime"->simObj.startTime,"ettime"->simObj.endTime)))
+      val simObj = db.getSimulationTimeDetails(id,ComponentQueue.getSimulationVersionId())
+
+      Ok(DefaultRequestFormat.getSuccessResponse(Json.obj("sttime"->simObj._1,"ettime"->simObj._2)))
   }
 
 

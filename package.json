@@ -12,6 +12,7 @@
   "dependencies": {
     "axios": "^0.16.1",
     "fixed-data-table": "^0.6.4",
+    "fixed-data-table-2": "^0.8.6",
     "history": "^4.7.2",
     "react": "^15.5.0",
     "react-dom": "^15.5.0",

@@ -1,4 +1,5 @@
 //import java.sql.Timestamp
+import java.text.SimpleDateFormat
 import java.time.{Duration, LocalDate, LocalDateTime, Period}
 import java.util.{Calendar, Date}
 import java.util.concurrent.TimeUnit
@@ -19,17 +20,6 @@ import scala.collection.mutable
 //
 //m ++ n
 
-1.20.09-1.11.30
-val list = new mutable.LinkedHashSet[Int]()
-
-List(8,1,2,3,4,5,6,7).map(list.add)
-
-if(list.filter(_==1).size>0){
-  list.remove(1)
-}
-
-list
-
 
 //val did1 = 1502475975562l-1502475509103l
 //val did2 = 1503231823633l-1503231382838l
@@ -42,8 +32,12 @@ list
 //val f3 = (did3/(1000f))/(60f)
 //
 //f1-f
-//val st = Calendar.getInstance().setTimeInMillis(1502192176025l)
-//val et = Calendar.getInstance().setTimeInMillis(1502192643126l)
+
+val parser = new SimpleDateFormat("ddMMMyyyy hh:mm:ss")
+val st = Calendar.getInstance()
+  st.setTimeInMillis(1511094129018l)
+parser.format(st.getTime)
+val et = Calendar.getInstance().setTimeInMillis(1502192643126l)
 //
 
 
