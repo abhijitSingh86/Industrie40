@@ -38,6 +38,11 @@ class Index @Inject()(ws:WSClient,db:DbModule)  extends Controller{
     Ok(views.html.index("Your new application is ready."))
   }
 
+  def index404(s:String) =Action {
+    Ok(views.html.index("404 App redirected"))
+  }
+
+
 
   def assemblyRunningStatus(asmId:Int,simId:Int) = Action.async {
     //get Assembly processing record

@@ -55,7 +55,10 @@ var config = {
             compress: { warnings: false },
             output: { comments: false }
         })
-    ]
+    ],
+    devServer: {
+        historyApiFallback: true
+    }
 };
 
 module.exports = config;

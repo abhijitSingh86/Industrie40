@@ -9,6 +9,6 @@ import '../stylesheets/app.scss';
 
 ReactDom.render((
     <Provider store={store}>
-        <MainComponent/>
+        <MainComponent />
     </Provider>
     ),document.getElementById("app"));

@@ -12,8 +12,11 @@ class StartPage extends React.Component {
 
     constructor(props) {
         super(props);
+
         console.log("Start page component construstor");
-        this.state={};
+        this.state={
+            loading:false
+        };
         this.handleFileChange = this.handleFileChange.bind(this);
         this.startagain_simulation = this.startagain_simulation.bind(this);
         this.handleSelect = this.handleSelect.bind(this);
@@ -124,8 +127,15 @@ class StartPage extends React.Component {
     }
 
     handleVersionSelectd(e,k){
+        //start the loading image on overlay
+        this.setState({
+            loading :true
+        });
+
         this.props.actions.changeMainMode(this.state.selectedSimulationId, 'view',e);
     }
+
+
 
     componentDidMount() {
         var _this = this;
@@ -188,6 +198,13 @@ class StartPage extends React.Component {
         var rows = this.createSimulationIdDropDown();
         return (
             <div>
+                { this.state.loading === true &&
+                    <div>
+                        <center> <img src="/assets/images/loading.gif" width="30%" height="30%"/></center>
+                    </div>
+                }
+                {this.state.loading === false &&
+            <div>
                 <ul className="form-fields">
                     <li>
                         <label> Upload Json Data File</label>
@@ -217,7 +234,8 @@ class StartPage extends React.Component {
                     </li>
 
                 </ul>
-
+            </div>
+                }
             </div>
 
         )

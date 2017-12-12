@@ -87,6 +87,7 @@ class MainComponent extends React.Component {
                        <Route exact path="/" component={StartPage}/>
                        <Route exact path="/register" component={Registration}/>
                        <Route exact path="/monitor" component={SimulationMonitor}/>
+
                        </div>
                    </div>
                </Router>

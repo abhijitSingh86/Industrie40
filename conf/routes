@@ -32,7 +32,7 @@ GET           /simulation/:id/clone                 controllers.SimulationContro
 GET           /simulation/:id/assemblytimeline      controllers.SimulationController.getAssemblyTimelineDetails(id:Int)
 GET           /simulation/:id/versions              controllers.SimulationController.getVersionData(id:Int)
 GET           /simulation/:id/:mode/:version        controllers.SimulationController.getSimulation(id:Int,mode:String,version:Int)
-
+GET             /:s                                  controllers.Index.index404(s:String)
 
 # Map static resources from the /public folder to the /assets URL path
 GET           /assets/*file                         controllers.Assets.versioned(path="/public", file:Asset)
