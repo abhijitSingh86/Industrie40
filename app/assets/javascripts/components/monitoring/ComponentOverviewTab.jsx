@@ -5,13 +5,13 @@ import {connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import * as Actions from '../redux/actions';
 import {withRouter} from "react-router-dom";
-import {Table } from 'react-bootstrap'
-
+import ReactTable from "react-table";
+import "react-table/react-table.css";
 class ComponentOverviewTab extends React.Component {
 
     render() {
 
-        var rows =<tr/>;
+        var rows =[];
 
         if(this.props.completedComponents.length >0) {
             rows = this.props.completedComponents.map(function (obj) {
@@ -25,36 +25,55 @@ class ComponentOverviewTab extends React.Component {
                         return 1;
                 }
 
+                var ptime = 0;
+
+                obj.schedulinginfo.pastOperations.map(function(x){
+                    ptime += x.endTime - x.startTime;
+                });
+
                 var startTime = obj.schedulinginfo.pastOperations.sort((x, y) => CompareForSort(x.startTime, y.startTime))[0].startTime
                 var sortedByEndTimeArr = obj.schedulinginfo.pastOperations.sort((x, y) => CompareForSort(x.endTime, y.endTime))
 
                 var endTime = sortedByEndTimeArr[sortedByEndTimeArr.length - 1].endTime
 
+                var data = {
+                    "name" : obj.name
+                    ,"stime":(new Date(startTime)).toLocaleString()
+                    ,"etime":(new Date(endTime)).toLocaleString()
+                    ,"ptspent":parseFloat(ptime / 60000).toFixed(2)
+                    ,"tspent":parseFloat((endTime - startTime) / 60000).toFixed(2)
+                }
 
-                return (<tr>
-                    <td>{obj.name}</td>
-                    <td>{(new Date(startTime)).toLocaleString()}</td>
-                    <td>{(new Date(endTime)).toLocaleString()}</td>
-                    <td>{(endTime - startTime) / 60000}</td>
-
-                </tr>);
+                return data;
             });
         }
 
         return (
-
-            <Table striped bordered condensed hover>
-                <thead>
-                <tr>
-                    <th>Component Name</th>
-                    <th>Start Time</th>
-                    <th>End Time</th>
-                    <th>Time Taken</th>
-                </tr>
-                </thead>
-               <tbody>{rows}</tbody>
-            </Table>
-
+            <ReactTable
+                data={rows}
+                columns={[
+                    {
+                        Header:"Component Name",
+                        accessor:"name"
+                    },
+                    {
+                        Header:"Start Time",
+                        accessor:"stime"
+                    },
+                    {
+                        Header:"End Time",
+                        accessor:"etime"
+                    },{
+                        Header:"Processing Time Spent (In Min.)",
+                        accessor:"ptspent"
+                    },{
+                        Header:"Total Time Spent (In Min.)",
+                        accessor:"tspent"
+                    }
+                ]}
+                defaultPageSize={10}
+                className="-striped -highlight"
+            />
         );
     }
 }

@@ -156,6 +156,24 @@ class Components extends React.Component{
       </div>
     )
   }
+
+  addOperation(label,id){
+        var aArr = this.props.fieldValues.operations;
+
+      aArr.push(
+          {
+              label:label,
+              id:id
+          }
+      );
+
+      var data = {
+          operations : aArr
+          ,operationCounter :id+1
+      };
+      this.props.actions.saveOperationFormData(data);
+
+  }
     handleInputCustomSequenceJson(e){
     var value = e.target.value;
     if(value !== ""){
@@ -168,6 +186,8 @@ class Components extends React.Component{
     }else{
       return;
     }
+
+        var localOperationCounter =this.props.fieldValues.operationCounter;
         try{
             var json = JSON.parse(value)
 
@@ -197,7 +217,14 @@ class Components extends React.Component{
                         }
                       }
                       if(!flag) {
-                          defaultSelectArr[j] = ops[j % ops.length];
+                            var data =  {
+                                label:json[i][j],
+                                id:localOperationCounter
+                            }
+
+                          this.addOperation(json[i][j],localOperationCounter);
+                            localOperationCounter +=1;
+                            defaultSelectArr[j] = data;
                       }
                   }
                   opSeqArr[i]=defaultSelectArr;
