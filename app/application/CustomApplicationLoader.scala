@@ -38,7 +38,7 @@ class MyComponents(context:Context) extends BuiltInComponentsFromContext(context
   lazy val schedulerThread = new SchedulerThread(5000,command)
   logger.info("MyComponent started the Timely scheduler")
   lazy val router = new Routes(httpErrorHandler,schedulingController, applicationController,componentController,simulationCOntrolller, assets)
-  lazy val componentController = new controllers.ComponentController(dbModule)
+  lazy val componentController = new controllers.ComponentController(dbModule , networkProxy)
   lazy val applicationController = new controllers.Index(wsClient,dbModule)
 //    with SlickOperationDao with MySqlDBComponent
   lazy val schedulingController = new controllers.SchedulingController(schedulerThread,dbModule,networkProxy)

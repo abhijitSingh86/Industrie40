@@ -29,6 +29,7 @@ class SchedulingController(schedulingThread:SchedulerThread,db:DbModule , networ
     val simulationId = Try(id)//Try((json.get \ "simulationId").get.as[Int])
     simulationId.isSuccess match{
       case true =>
+        OnlineData.setStarted(true)
         failureGeneratorActor ! SetSimulation(simulationId.get)
         ComponentQueue.updateSimulationId(simulationId.get,versionId)
         //Fetch Transport Time Details
@@ -47,8 +48,14 @@ class SchedulingController(schedulingThread:SchedulerThread,db:DbModule , networ
     }
   }
 
+  /**
+    * Function to send the start scheduling to all online components also with others ut will send immediate scheduling
+    * start in case of already scheduled components
+    * @param simulationId
+    * @return
+    */
   def sendStartMsgToAllComponent(simulationId:Int)={
-    db.getAllComponentUrlBySimulationId(simulationId).map(x=>{
+    db.getAllComponentUrlBySimulationId(simulationId).filter(y=>OnlineData.isComponentOnline(y._1)).map(x=>{
       networkProxy.sendSimulationStartDetails(x._2)
     })
   }
@@ -62,6 +69,7 @@ class SchedulingController(schedulingThread:SchedulerThread,db:DbModule , networ
   def stop(id:Int,mode:String) = Action {
         Logger.info("Stop request recieved..")
         if(schedulingThread !=null && mode != "view"){
+          OnlineData.setStarted(false)
           schedulingThread.endExecution()
           //REMOVED not needed
           //db.updateSimulationEndTime(id)

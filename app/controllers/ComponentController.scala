@@ -1,9 +1,14 @@
 package controllers
 
+import actor.DelayedStartActor.Schedule
+import actor.{DelayedStartActor, FailureGeneratorActor}
+import akka.actor.{ActorSystem, Props}
+import akka.stream.ActorMaterializer
 import data.OnlineData
 import db.DbModule
 import json.{ComponentWithSchedulingInfo, DefaultRequestFormat, ResponseFactory}
 import models.Component
+import network.NetworkProxy
 import play.api.libs.json.Json
 import play.api.mvc.{Action, Controller}
 import scheduler.ComponentQueue
@@ -14,7 +19,11 @@ import scala.concurrent.Future
 /**
   * Created by billa on 09.01.17.
   */
-class ComponentController(db:DbModule) extends Controller {
+class ComponentController(db:DbModule, networkproxy:NetworkProxy) extends Controller {
+
+  implicit val system = ActorSystem("Assembly-System")
+  implicit val materializer = ActorMaterializer()
+  lazy val delayedStartActor = system.actorOf(Props(new DelayedStartActor(networkproxy)) , name="delayedStartActor")
 
   def updateComponentCompletionTime() = Action{ implicit request =>
     val json = request.body.asJson
@@ -67,6 +76,9 @@ class ComponentController(db:DbModule) extends Controller {
         //add url into component simulation table
         db.addComponentUrlToSimulationMapEntry(simulationId,x.id,url) match{
           case true =>
+            if(OnlineData.isStarted()){
+              delayedStartActor ! Schedule(url)
+            }
             //return OK response
             Ok(DefaultRequestFormat.getSuccessResponse(Json.obj("id" -> x.id,"name" -> x.name ,
               "totalOperationCount" -> x.totalReqdOperationCount , "completedOperationCount"->x.componentSchedulingInfo.completedOperations.length)))
