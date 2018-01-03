@@ -37,7 +37,7 @@ class OperationForm extends React.Component{
             <button className="btn -primary pull-right" onClick={this.nextStep.bind(this)}>Save &amp; Continue</button>
           </li>
         </ul>
-        <CustomTable data={this.state.operationArr} editrow={this.edit.bind(this)}/>
+        <CustomTable data={this.props.fieldValues.operations} editrow={this.edit.bind(this)}/>
 
       </div>
     )

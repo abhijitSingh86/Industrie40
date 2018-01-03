@@ -16,6 +16,9 @@ class CustomSelect extends React.Component{
     this.setState({
       value:e.target.value
     });
+
+    console.log("in handle change custom select");
+    console.log(e);
   }
   render(){
     var rows=[];

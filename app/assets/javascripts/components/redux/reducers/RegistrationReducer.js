@@ -20,12 +20,12 @@ const initialState = {
     simulationId:-1,
     simulationVersionId:-1,
     fieldValues:{
-        simulationName     : "sim",
-        simulationDesc    : "hit and try",
-        operations : [{id:0,label:"0"},{id:1,label:"1"},{id:2,label:"2"},{id:3,label:"3"}],
+        simulationName     : "",
+        simulationDesc    : "",
+        operations : [],//{id:0,label:"0"},{id:1,label:"1"},{id:2,label:"2"},{id:3,label:"3"}],
         components      : [],
         assemblies   : [],
-        operationCounter:4,
+        operationCounter:0,
         componentCounter:0,
         assemblyCounter:0,
         assemblyTT:[],
@@ -33,15 +33,41 @@ const initialState = {
     }
 }
 
-export default function registration(state = initialState ,action){
+export default function registration(state  ,action){
 
     switch(action.type){
 
         case "resetregister":{
-            return initialState
+            var resetPay = {
+                simulationName     : "",
+                    simulationDesc    : "",
+                    operations : [],//{id:0,label:"0"},{id:1,label:"1"},{id:2,label:"2"},{id:3,label:"3"}],
+                    components      : [],
+                    assemblies   : [],
+                    operationCounter:0,
+                    componentCounter:0,
+                    assemblyCounter:0,
+                    assemblyTT:[],
+                    componentTT:[]
+            }
+
+
+            return {...state , fieldValues : resetPay}
         }
         case RESET_REGISTRATION_DETAILS: {
-            return initialState
+            var resetPay = {
+                simulationName     : "",
+                simulationDesc    : "",
+                operations : [],//{id:0,label:"0"},{id:1,label:"1"},{id:2,label:"2"},{id:3,label:"3"}],
+                components      : [],
+                assemblies   : [],
+                operationCounter:0,
+                componentCounter:0,
+                assemblyCounter:0,
+                assemblyTT:[],
+                componentTT:[]
+            }
+            return {...state , fieldValues : resetPay}
         }
         case SAVE_FIELD_VALUE_DATA:{
             var state = Object.assign({},state,{
@@ -131,6 +157,15 @@ export default function registration(state = initialState ,action){
             return state;
         }
 
+        case SAVE_TRANSPORT_DATA : {
+            var newFieldValues = Object.assign({},state.fieldValues,{
+                componentTT : action.payload.componentTT,
+                assemblyTT : action.payload.assemblyTT
+            });
+
+            return {...state , fieldValues : newFieldValues}
+        }
+
         case DECREMENT_STEP :{
             var state = Object.assign({},state,
                 {
@@ -142,7 +177,7 @@ export default function registration(state = initialState ,action){
         }
 
         default:
-            return state;
+            return {...initialState};
     }
 
 }
