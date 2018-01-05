@@ -30,7 +30,7 @@ class StartPage extends React.Component {
             if(location.pathname === "/"){
                 //clear two
                 this.props.actions.resetStartPageState();
-                this.props.actions.resetRegistrationPageState();
+                this.props.actions.resetRegistrationForm();
                 this.props.actions.resetSimulationAndMainMode();
              }else if(location.pathname === "/register"){
                 this.props.actions.resetStartPageState();
@@ -38,7 +38,7 @@ class StartPage extends React.Component {
              }
              else if(location.pathname === "/monitor"){
                 this.props.actions.resetStartPageState();
-                this.props.actions.resetRegistrationPageState();
+                this.props.actions.resetRegistrationForm();
             }
             console.log(location);
             console.log(action);

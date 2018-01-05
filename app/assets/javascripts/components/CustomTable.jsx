@@ -41,7 +41,7 @@ class CustomTable extends React.Component {
       rows.push(<CustomRow row={eachData} key={eachData.id+eachData.label} editrow={callback} />);
     });
     return (
-      <table class="container">
+      <table className="container">
         <thead>
         <tr>
           <th>Label</th>

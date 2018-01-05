@@ -12,9 +12,7 @@ export const SAVE_TRANSPORT_DATA = "SAVE_TRANSPORT_DATA";
 export const SUBMIT_DATA_TO_SERVER = "SUBMIT_DATA_TO_SERVER";
 export const SUBMIT_DATA_TO_SERVER_FAIL = "SUBMIT_DATA_TO_SERVER_FAIL";
 
-export function resetRegistrationPageState(){
-    return ((dispatch) => {dispatch({type:"resetregister",payload:{}})})
-}
+
 export function saveFieldValueData(data){
     return function (dispatch) {
 

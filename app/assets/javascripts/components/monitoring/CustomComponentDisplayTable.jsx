@@ -43,7 +43,7 @@ class CustomComponentDisplayTable extends React.Component {
     }
 
     return (
-    <table class="tablecontainer">
+    <table className="tablecontainer">
       <thead>
       <tr>
         <th>Name</th>

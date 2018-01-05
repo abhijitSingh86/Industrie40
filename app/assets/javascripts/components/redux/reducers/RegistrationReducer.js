@@ -33,27 +33,11 @@ const initialState = {
     }
 }
 
-export default function registration(state  ,action){
+export default function registration(state =initialState ,action){
 
     switch(action.type){
 
-        case "resetregister":{
-            var resetPay = {
-                simulationName     : "",
-                    simulationDesc    : "",
-                    operations : [],//{id:0,label:"0"},{id:1,label:"1"},{id:2,label:"2"},{id:3,label:"3"}],
-                    components      : [],
-                    assemblies   : [],
-                    operationCounter:0,
-                    componentCounter:0,
-                    assemblyCounter:0,
-                    assemblyTT:[],
-                    componentTT:[]
-            }
 
-
-            return {...state , fieldValues : resetPay}
-        }
         case RESET_REGISTRATION_DETAILS: {
             var resetPay = {
                 simulationName     : "",
@@ -67,7 +51,11 @@ export default function registration(state  ,action){
                 assemblyTT:[],
                 componentTT:[]
             }
-            return {...state , fieldValues : resetPay}
+            return {...state , fieldValues : resetPay , step:0 ,renderSuccess:false,
+                responseMessage:"",
+                isError:false,
+                simulationId:-1,
+                simulationVersionId:-1}
         }
         case SAVE_FIELD_VALUE_DATA:{
             var state = Object.assign({},state,{
@@ -177,7 +165,7 @@ export default function registration(state  ,action){
         }
 
         default:
-            return {...initialState};
+            return state;
     }
 
 }

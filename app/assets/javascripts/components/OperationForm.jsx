@@ -9,6 +9,11 @@ class OperationForm extends React.Component{
 
 
   componentWillMount(){
+      console.log("int set state of operation form");
+      console.log(this.state);
+      if(this.state){
+          this.setState({});
+      }
     this.localOperationCounter = this.props.fieldValues.operationCounter;
   }
   componentWillReceiveProps(nextProps){

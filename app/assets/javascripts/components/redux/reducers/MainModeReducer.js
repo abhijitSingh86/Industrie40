@@ -15,7 +15,7 @@ export default function mainModeReducer(state = initialState,action){
 
     switch(action.type){
         case "resetMainMode" :{
-            return initialState;
+            return {...initialState};
         }
         case SIMULATION_ONLINE_CHECK :
 

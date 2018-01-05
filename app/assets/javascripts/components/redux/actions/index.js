@@ -76,16 +76,7 @@ export function getSimulationRunningStatus(simulationId){
     };
 }
 
-export function recordRunningMode(mode){
 
-    return function(dispatch){
-            var action ={
-                type:"MODE",
-                payload:mode
-            }
-            dispatch(action);
-    }
-}
 
 function parseResponse(res){
     if(res.responseType === "successEmpty"){
@@ -157,7 +148,7 @@ export function resetRegistrationForm(){
     return function(dispatch) {
         dispatch({
             type:RESET_REGISTRATION_DETAILS,
-            payload:""
+            payload:{}
         });
     }
 }
