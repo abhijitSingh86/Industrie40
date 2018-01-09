@@ -78,13 +78,14 @@ class ScheduleCommand(dbModule : DbModule,scheduler:Scheduler,proxy: NetworkProx
     val assemMap = assemblies.map(x=>(x.id -> x)).toMap
     updatedCmps.map(x => {
       //TODO
+      try {
       // send request at component attached urls for assembly assignments
       val ass = assemMap.get(x.componentSchedulingInfo.currentProcessing.get.assemblyId).get
       //Calculate Transport Time
       val transportTime  = ComponentQueue.getTransportTime(x,ass)
 
       logger.info("**********Transport Time is "+transportTime)
-      try {
+
         proxy.sendAssemblyDetails(urls.get(x.id).get, ass, assemblyUrls, x.componentSchedulingInfo.currentProcessing.get.operationId, transportTime)
       }catch {
         case t:Throwable =>{
