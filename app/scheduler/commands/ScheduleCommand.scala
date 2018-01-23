@@ -73,12 +73,20 @@ class ScheduleCommand(dbModule : DbModule,scheduler:Scheduler,proxy: NetworkProx
 
   def sendScheduleInformationToComponent(simulationId: Int, components: List[Component]) = {
     val updatedCmps = components.map(x=> dbModule.getComponentWithProcessingInfo(x.id,simulationId,ComponentQueue.getSimulationVersionId() )).flatten
+    val doubleCheckedMapDbRaceCondi = updatedCmps.map(x=>{
+      if(x.getCurrentOperation().isEmpty){
+        logger.info(s"***** FOUND AN SCHEULED COMPONENT WITH EMPTY OP compId:${x.id} simId:${simulationId} version:${ComponentQueue.getSimulationVersionId()}")
+        dbModule.getComponentWithProcessingInfo(x.id,simulationId,ComponentQueue.getSimulationVersionId() ).get
+      }else{
+        x
+      }
+    })
     val urls = dbModule.getAllComponentUrlBySimulationId(simulationId).toMap
     val assemblyUrls =dbModule.getAllAssemblyUrlBySimulationId(simulationId).toMap
 
     val assemblies = dbModule.getAllAssembliesForSimulation(simulationId)
     val assemMap = assemblies.map(x=>(x.id -> x)).toMap
-    updatedCmps.map(x => {
+    doubleCheckedMapDbRaceCondi.map(x => {
       //TODO
       try {
       // send request at component attached urls for assembly assignments
