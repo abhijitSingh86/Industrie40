@@ -119,6 +119,14 @@ class SimulationMonitor extends React.Component {
 
         var _this = this;
         axios.get('/simulation/'+simulationId+'/assemblytimeline').then(function (response) {
+            function compare(a,b) {
+                if (a < b)
+                    return -1;
+                if (a > b)
+                    return 1;
+                return 0;
+            }
+            //response.data.group.sort(compare);
             console.log(response.data);
             console.log(response.data.body);
             _this.setState({
@@ -133,6 +141,29 @@ class SimulationMonitor extends React.Component {
 
     }
 
+    compareByGroupId(a,b) {
+        if (a.id < b.id)
+            return -1;
+        if (a.id > b.id)
+            return 1;
+        return 0;
+    }
+
+    compareByGroupName(a,b) {
+        if (a.group < b.group)
+            return -1;
+        if (a.group > b.group)
+            return 1;
+        return 0;
+    }
+
+    compare(a,b) {
+        if (a < b)
+            return -1;
+        if (a > b)
+            return 1;
+        return 0;
+    }
     createTimeLine(){
         //fetch the details of component processing
 
@@ -152,6 +183,11 @@ class SimulationMonitor extends React.Component {
                 })
             });
         })
+
+
+        myVal = myVal.sort(this.compareByGroupName.bind(this));
+        grps = grps.sort(this.compareByGroupId.bind(this));
+
        console.log(JSON.stringify(myVal));
        this.setState({
            timelineDates:myVal
@@ -237,10 +273,14 @@ class SimulationMonitor extends React.Component {
 
         if(this.state.assemblytimeline){
             console.log("got into assembly Timeline");
+            var aVal = this.state.assemblytimeline.data;
+            aVal = aVal.sort(this.compareByGroupName.bind(this));
+            var arps = this.state.assemblytimeline.groups
+            arps = arps.sort(this.compareByGroupId.bind(this));
             assemblytimeLine =  <div> Assembly Timeline<Timeline
                 options={options}
-                items={this.state.assemblytimeline.data}
-                groups={this.state.assemblytimeline.groups}
+                items={aVal}
+                groups={arps}
             /></div>;
             componenttimeLine = <div> Component Timeline <Timeline
                 options={options}
@@ -288,6 +328,14 @@ class SimulationMonitor extends React.Component {
                                 <td colSpan={2}>
                                     <p>Simulation Monitoring Panel</p>
                                     {this.props.response}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    Simulation Name
+                                </td>
+                                <td>
+                                    {this.props.simulation.simulationName}
                                 </td>
                             </tr>
                             <tr>

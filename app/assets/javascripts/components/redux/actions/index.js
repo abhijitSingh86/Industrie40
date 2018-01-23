@@ -55,7 +55,16 @@ export function simulationLoadingCheck(){
     }
 }
 
+export function recordRunningMode(mode){
 
+    return function(dispatch){
+        var action ={
+            type:"MODE",
+            payload:mode
+        }
+        dispatch(action);
+    }
+}
 
 export function getSimulationRunningStatus(simulationId){
     return function(dispatch){

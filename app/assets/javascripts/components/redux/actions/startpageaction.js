@@ -7,6 +7,7 @@ export const SETUP_FOR_CLONE= "SETUP_FOR_CLONE";
 export const SETUP_FOR_CLONE_FAIL= "SETUP_FOR_CLONE_FAIL";
 export const SIMULATION_VERSION_FETCH = "SIMULATION_VERSION_FETCH";
 export const SIMULATION_VERSION_FETCH_FAIL = "SIMULATION_VERSION_FETCH_FAIL";
+import {changeMainMode} from "./index";
 
 export function resetStartPageState(){
     return ((dispatch) => {dispatch({type:"reset",payload:{}})})
@@ -81,15 +82,17 @@ export function setupforRerun(key){
 
             var action = {
                 type:SETUP_FOR_RERUN
-                ,payload:response.data
+                ,payload:{rerun:true}
             };
+
+
             dispatch(action);
 
 
         }).catch(function (error) {
 
             console.log("Error during the setup for rerun method");
-            console.log(error.data);
+            console.log(error);
             var action = {
                 type:SETUP_FOR_RERUN_FAIL
                 ,payload:error.data

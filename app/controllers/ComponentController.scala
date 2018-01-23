@@ -62,6 +62,7 @@ class ComponentController(db:DbModule, networkproxy:NetworkProxy) extends Contro
   def initComponentRequest() = Action { implicit request =>
     val json =request.body.asJson
 
+    request.remoteAddress
     //get Component DAO
     val componentId = (json.get \ "componentId").get.as[Int]
     val simulationId = (json.get \ "simulationId").get.as[Int]

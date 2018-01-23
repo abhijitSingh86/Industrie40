@@ -11,7 +11,8 @@ const initialState = {
 
     responseMsg:"",
     versionsFetched:false
-    ,versions:[]
+    ,versions:[],
+    rerun:false
 
 };
 
@@ -35,14 +36,14 @@ export default function startpage(state = initialState , action){
         }
         case SETUP_FOR_RERUN: {
 
-            var state = {...state,responseMsg:"Previous Data reset complete.. starting monitoring mode" };
+            var state = {...state,responseMsg:"Previous Data reset complete.. starting monitoring mode"  , rerun:true};
 
             return state;
         }
 
         case SETUP_FOR_RERUN_FAIL: {
 
-            var state = {...state,responseMsg:"Error during previous data clear. <br/>"+action.payload }
+            var state = {...state,responseMsg:"Error during previous data clear. <br/>"+action.payload , rerun:false }
             return state;
         }
 

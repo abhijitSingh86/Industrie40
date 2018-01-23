@@ -1,3 +1,5 @@
+import {changeMainMode} from "./redux/actions";
+
 var React = require('react')
 var axios = require('axios');
 import {DropdownButton,MenuItem,Button} from 'react-bootstrap';
@@ -80,7 +82,6 @@ class StartPage extends React.Component {
         }else {
             var key = this.state.selectedSimulationId;
             this.props.actions.setupforRerun(key);
-            this.props.actions.changeMainMode(key,'start');
         }
     }
 
@@ -88,8 +89,10 @@ class StartPage extends React.Component {
     componentWillReceiveProps(nextProps){
         if(nextProps.monitor){
             this.props.history.push("/monitor");
+        }else if(nextProps.rerun){
+            var key = this.state.selectedSimulationId;
+            this.props.actions.changeMainMode(key,'start');
         }
-
         console.log("In startpahe component receive props");
         console.log(nextProps);
 
@@ -252,6 +255,7 @@ function mapStateToProps(state) {
         ,monitor:state.mainMode.monitor
         ,versionsFetched:state.startPage.versionsFetched
         ,versions:state.startPage.versions
+        ,rerun:state.startPage.rerun
     };
 }
 
