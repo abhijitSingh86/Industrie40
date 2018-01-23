@@ -47,6 +47,7 @@ class ScheduleCommand(dbModule : DbModule,scheduler:Scheduler,proxy: NetworkProx
       logger.debug("Filtered  Assemblies  =" + filteredBusyAssemblies.mkString(","))
 
       val alreadyCompletedComponents = components.filter(x=>ComponentUtils.isCompleted(x)).map(_.id)
+      //TODO test this calling IMPORTATNT
       val alreadyScheduledList = components.filter(_.getCurrentOperation().isDefined).map(_.id)
       //call algorithm for scheduling
       val scheduledComponentIds = scheduler.scheduleComponents(components.filterNot(x=>
@@ -54,15 +55,16 @@ class ScheduleCommand(dbModule : DbModule,scheduler:Scheduler,proxy: NetworkProx
         , filteredBusyAssemblies)
       //get scheduled component and send them to network proxy for information sending
 
-
-      val finalListToSendSchedulingInfo = alreadyScheduledList ::: scheduledComponentIds
-      sendScheduleInformationToComponent(ComponentQueue.getSimulationId(), components.filter(x=> finalListToSendSchedulingInfo.contains(x.id)))
-      ComponentQueue.updateInProcess(finalListToSendSchedulingInfo)
+      //TODO test this calling IMPORTATNT
+      //val finalListToSendSchedulingInfo = alreadyScheduledList ::: scheduledComponentIds
+      //TODO test this calling IMPORTATNT
+      sendScheduleInformationToComponent(ComponentQueue.getSimulationId(), components.filter(x=> scheduledComponentIds.contains(x.id)))
+      ComponentQueue.updateInProcess(scheduledComponentIds)
 
 
       logger.debug("command nearly finished, processed Scheduled components are " + scheduledComponentIds.mkString(","))
       //add pending if any to the component queue again
-      components.filter(x=> !finalListToSendSchedulingInfo.contains(x.id)).map(x=>ComponentQueue.push(x.id))
+      components.filterNot(x=>scheduledComponentIds.contains(x.id) || x.isComplete()).map(x=>ComponentQueue.push(x.id))
     }
     logger.info("Schedule command execute finished")
   }
