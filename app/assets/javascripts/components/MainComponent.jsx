@@ -68,7 +68,7 @@ class MainComponent extends React.Component {
 
         const pStyle = {
             position:'absolute',
-            margin: '0 40% 0 0',
+            margin: '0 0 0 40%',
 
             width:'8%'
         };
