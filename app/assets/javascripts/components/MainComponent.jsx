@@ -66,20 +66,28 @@ class MainComponent extends React.Component {
 
     render() {
 
+        const pStyle = {
+            position:'absolute',
+            margin: '0 40% 0 0',
+
+            width:'8%'
+        };
         return (<div>
             <Grid>
                 <Col md={1.5}>
-                   
+
                 </Col>
            <Col md={10.5}>
 
                <Router >
                    <div>
                    <div id="navigation">
+                       <img src="/assets/images/DiK-Logo.png" style={pStyle}/>
                        <ul>
                            <li><Link to="/" >Home</Link></li>
                            <li><Link to="/register" >Create New</Link></li>
                        </ul>
+
                    </div>
                        <div id="mainComponent">
                        <hr/>

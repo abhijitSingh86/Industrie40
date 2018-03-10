@@ -227,7 +227,7 @@ class SimulationMonitor extends React.Component {
                             Difference
                         </td>
                         <td>
-                            {(this.props.simulationTime.ettime - this.props.simulationTime.sttime) / (60000)}
+                            {parseFloat((this.props.simulationTime.ettime - this.props.simulationTime.sttime) / (60000)).toFixed(2)}
                         </td>
                     </tr>
                 </div>
