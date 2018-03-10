@@ -101,11 +101,16 @@ class SimulationMonitor extends React.Component {
     }
 
     getOperationLabel(id) {
-        var opd = this.props.completedComponents[0].operationDetails
-        for (var i = 0; i < opd[0].length; i++) {
-            // console.log(opd[0][i] +":"+id)
-            if (opd[0][i].id === id)
-                return opd[0][i].label;
+        var opd = this.props.completedComponents.map((x) => {
+           return  x.operationDetails[0]
+        });
+        for (var i = 0; i < opd.length; i++) {
+
+            for (var j = 0; j < opd[i].length; j++) {
+                console.log("Inside operationLabel Matching "+opd[i][j] +":"+id)
+                if (opd[i][j].id === id)
+                    return opd[i][j].label;
+            }
         }
         return "No Label";
     }
