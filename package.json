@@ -10,7 +10,7 @@
   },
   "homepage": "not defined yet",
   "dependencies": {
-    "axios": "^0.16.1",
+    "axios": "^0.19.0",
     "fixed-data-table": "^0.6.4",
     "fixed-data-table-2": "^0.8.6",
     "history": "^4.7.2",
